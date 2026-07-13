@@ -1,0 +1,651 @@
+export const categories = [
+  { id: 'passeios', name: 'Passeios e Atrativos', icon: 'Map' },
+  { id: 'restaurantes', name: 'Restaurantes', icon: 'Utensils' },
+  { id: 'bares', name: 'Bares', icon: 'Beer' },
+  { id: 'cafe_da_manha', name: 'Café da Manhã', icon: 'Coffee' },
+  { id: 'cafeterias_docerias', name: 'Cafeterias e Docerias', icon: 'CupSoda' },
+  { id: 'acomodacoes', name: 'Acomodações', icon: 'Bed' },
+  { id: 'lanches', name: 'Lanches', icon: 'Pizza' },
+  { id: 'mercados', name: 'Mercados', icon: 'ShoppingCart' },
+  { id: 'compras_fronteira', name: 'Compras e Fronteira', icon: 'Store' },
+  { id: 'esportes', name: 'Onde Treinar', icon: 'Dumbbell' },
+  { id: 'academias', name: 'Academias', icon: 'Dumbbell' },
+  { id: 'conveniencias', name: 'Conveniências', icon: 'Store' }
+];
+
+export const places = [
+  // ==================== PASSEIOS E ATRATIVOS ====================
+  {
+    id: 'cataratas-lado-brasileiro',
+    name: 'Parque Nacional do Iguaçu (Cataratas)',
+    category: 'passeios',
+    description: 'O principal atrativo da cidade e uma das Sete Maravilhas Naturais do Mundo. Trilha de passarelas com vista panorâmica das quedas, incluindo a Garganta do Diabo.',
+    address: 'Rodovia das Cataratas, Km 32 - Parque Nacional do Iguaçu',
+    time: '09:00 às 17:00',
+    tags: ['natureza', 'passeio', 'turismo', 'fotos', 'cataratas', 'trilha', 'familia', 'imperdivel'],
+    image: '/cataratas.jpg',
+    zone: 'Parque Nacional',
+    priceRange: '$$'
+  },
+  {
+    id: 'parque-das-aves',
+    name: 'Parque das Aves',
+    category: 'passeios',
+    description: 'Um dos maiores parques de aves da América Latina, com viveiros imersivos onde é possível caminhar entre araras, tucanos e outras espécies. Fica na entrada do Parque Nacional.',
+    address: 'Av. das Cataratas, 12.450 - Vila Yolanda',
+    time: '08:30 às 17:30',
+    tags: ['natureza', 'passeio', 'turismo', 'fotos', 'aves', 'familia', 'ecoturismo'],
+    image: '/parque_das_aves.jpg',
+    zone: 'Avenida das Cataratas',
+    priceRange: '$$'
+  },
+  {
+    id: 'itaipu-tour-panoramico',
+    name: 'Itaipu Binacional - Tour Panorâmico',
+    category: 'passeios',
+    description: 'Visita guiada por uma das maiores hidrelétricas do mundo, com vista da estrutura da represa e explicação sobre a geração de energia limpa.',
+    address: 'Av. Tancredo Neves, 6702 - Itaipu Binacional',
+    time: '08:00 às 16:00',
+    tags: ['passeio', 'turismo', 'historico', 'tecnologia', 'familia', 'fotos'],
+    image: '/itaipu.jpg',
+    zone: 'Itaipu',
+    priceRange: '$'
+  },
+  {
+    id: 'iguassu-iluminado',
+    name: 'Iguassu Iluminado (Show de Luzes na Itaipu)',
+    category: 'passeios',
+    description: 'Espetáculo noturno de luzes e projeções na estrutura da barragem de Itaipu, com trilha sonora e efeitos visuais.',
+    address: 'Av. Tancredo Neves, 6702 - Itaipu Binacional',
+    time: '19:30 às 21:00',
+    tags: ['passeio', 'noite', 'romantico', 'fotos', 'familia', 'imperdivel'],
+    image: '/itaipu_noite.jpg',
+    zone: 'Itaipu',
+    priceRange: '$$'
+  },
+  {
+    id: 'marco-tres-fronteiras',
+    name: 'Marco das Três Fronteiras',
+    category: 'passeios',
+    description: 'Ponto onde se encontram Brasil, Argentina e Paraguai, no encontro dos rios Paraná e Iguaçu. Ótimo mirante para ver o pôr do sol.',
+    address: 'Av. Gen. Meira, s/n - Porto Meira',
+    time: '08:00 às 18:00',
+    tags: ['passeio', 'fotos', 'gratis', 'romantico', 'familia', 'por do sol'],
+    image: '/marco_tres_fronteiras.jpg',
+    zone: 'Porto Meira',
+    priceRange: '$'
+  },
+  {
+    id: 'templo-budista-chen-tien',
+    name: 'Templo Budista Chen Tien',
+    category: 'passeios',
+    description: 'Maior templo budista da América Latina, com arquitetura chinesa tradicional, jardins e um Buda de bronze de 5,5 metros.',
+    address: 'Rua Um, s/n - Loteamento Sant\'Ana',
+    time: '08:00 às 18:00',
+    tags: ['passeio', 'cultura', 'religiao', 'fotos', 'gratis', 'historico'],
+    image: '/templo_budista.jpg',
+    zone: 'Loteamento Sant\'Ana',
+    priceRange: '$'
+  },
+  {
+    id: 'mesquita-omar-ibn-al-khattab',
+    name: 'Mesquita Omar Ibn Al-Khattab',
+    category: 'passeios',
+    description: 'A maior mesquita muçulmana da América do Sul, reflexo da forte comunidade árabe da tríplice fronteira. Visitas guiadas disponíveis.',
+    address: 'Av. Ipiranga, esquina com Muhammad Ali - Centro',
+    tags: ['passeio', 'cultura', 'religiao', 'historico', 'gratis'],
+    image: '/mesquita.jpg',
+    zone: 'Centro',
+    priceRange: '$'
+  },
+  {
+    id: 'refugio-biologico-bela-vista',
+    name: 'Refúgio Biológico Bela Vista',
+    category: 'passeios',
+    description: 'Área de conservação da Itaipu com trilhas guiadas por mata nativa, viveiro de animais silvestres resgatados e observação de fauna.',
+    address: 'Rodovia das Cataratas, Km 10 - Área da Itaipu',
+    time: '08:00 às 16:00',
+    tags: ['natureza', 'passeio', 'trilha', 'ecoturismo', 'familia', 'esporte'],
+    image: '/foz_do_iguacu.jpg',
+    zone: 'Rodovia das Cataratas',
+    priceRange: '$'
+  },
+  {
+    id: 'dreamland-museu-de-cera',
+    name: 'Dreamland Museu de Cera',
+    category: 'passeios',
+    description: 'Museu interativo com estátuas de cera de personalidades e personagens, cenários temáticos e experiências para famílias.',
+    address: 'Av. das Cataratas, 6535 - Vila Yolanda',
+    time: '09:00 às 20:00',
+    tags: ['passeio', 'familia', 'kids', 'fotos', 'instagramavel'],
+    image: '/foz_do_iguacu.jpg',
+    zone: 'Avenida das Cataratas',
+    priceRange: '$$'
+  },
+  {
+    id: 'vale-dos-dinossauros',
+    name: 'Vale dos Dinossauros',
+    category: 'passeios',
+    description: 'Parque temático com réplicas de dinossauros em tamanho real em meio à natureza, com trilha auto-guiada.',
+    address: 'Av. das Cataratas, 5000 - Vila Yolanda',
+    time: '09:00 às 18:00',
+    tags: ['passeio', 'familia', 'kids', 'fotos', 'natureza'],
+    image: '/foz_do_iguacu.jpg',
+    zone: 'Avenida das Cataratas',
+    priceRange: '$$'
+  },
+  {
+    id: 'ponte-da-amizade-ciudad-del-este',
+    name: 'Ponte da Amizade / Ciudad del Este',
+    category: 'passeios',
+    description: 'Travessia até o Paraguai para compras, com vista dos rios na fronteira. Ponto de partida para quem quer conhecer o comércio paraguaio.',
+    address: 'Ponte da Amizade - Fronteira Brasil/Paraguai',
+    tags: ['passeio', 'compras', 'fronteira', 'internacional'],
+    image: '/ponte_amizade.jpg',
+    zone: 'Fronteira',
+    priceRange: '$'
+  },
+
+  // ==================== RESTAURANTES ====================
+  {
+    id: 'rafain-churrascaria-show',
+    name: 'Rafain Churrascaria Show',
+    category: 'restaurantes',
+    description: 'Rodízio de carnes com show internacional de danças típicas ao vivo. Clássico para jantar em grupo ou em família.',
+    address: 'Av. das Cataratas, 1749 - Vila Yolanda',
+    time: '19:00 às 23:00',
+    tags: ['jantar', 'carne', 'churrasco', 'show', 'familia', 'turismo', 'noite'],
+    image: '/rest_rafain.jpg',
+    zone: 'Avenida das Cataratas',
+    priceRange: '$$$'
+  },
+  {
+    id: 'zaragoza-restaurante',
+    name: 'Restaurante Zaragoza',
+    category: 'restaurantes',
+    description: 'Cozinha espanhola e internacional, ambiente sofisticado com jardim. Um dos mais tradicionais e premiados da cidade.',
+    address: 'Rua Quintino Bocaiúva, 882 - Centro',
+    tags: ['jantar', 'sofisticado', 'internacional', 'romantico', 'elegante'],
+    image: '/rest_zaragoza.jpg',
+    zone: 'Centro',
+    priceRange: '$$$'
+  },
+  {
+    id: 'tempero-da-bahia',
+    name: 'Tempero da Bahia',
+    category: 'restaurantes',
+    description: 'Culinária baiana com moquecas, bobó e acarajé em ambiente descontraído e colorido.',
+    address: 'Rua Rebouças, 361 - Centro',
+    tags: ['comida', 'almoco', 'jantar', 'regional', 'nordestina', 'baiana'],
+    image: '/rest_tempero_da_bahia.jpg',
+    zone: 'Centro',
+    priceRange: '$$'
+  },
+  {
+    id: 'bufalo-branco',
+    name: 'Búfalo Branco',
+    category: 'restaurantes',
+    description: 'Churrascaria rodízio tradicional, uma das mais conhecidas da cidade, com cortes nobres e ampla estrutura.',
+    address: 'Rua Rebouças, 530 - Centro',
+    tags: ['jantar', 'almoco', 'carne', 'churrasco', 'familia', 'turismo'],
+    image: '/rest_bufalo_branco.jpg',
+    zone: 'Centro',
+    priceRange: '$$$'
+  },
+  {
+    id: 'park-foz-steakhouse',
+    name: 'Park Foz Steakhouse',
+    category: 'restaurantes',
+    description: 'Carnes nobres dry aged (Wagyu, Angus e Duroc), chopp artesanal e boa carta de vinhos. Indicado para jantar romântico ou de negócios.',
+    address: 'Rua Almirante Barroso, 1009 - Centro',
+    tags: ['jantar', 'sofisticado', 'carne', 'vinho', 'romantico', 'elegante'],
+    image: '/rest_parkfoz.jpg',
+    zone: 'Centro',
+    priceRange: '$$$'
+  },
+  {
+    id: 'restaurante-terramar',
+    name: 'Terramar',
+    category: 'restaurantes',
+    description: 'Primeira e única churrascaria de peixes de Foz do Iguaçu, com rodízio de peixes e frutos do mar grelhados e pratos à la carte.',
+    address: 'Rua Marechal Deodoro da Fonseca, 1681 - Centro',
+    tags: ['almoco', 'jantar', 'peixe', 'frutos do mar', 'familia'],
+    image: '/rest_terramar.jpg',
+    zone: 'Centro',
+    priceRange: '$$'
+  },
+  {
+    id: 'le-mir-comida-arabe',
+    name: 'Le Mir Comida Árabe',
+    category: 'restaurantes',
+    description: 'Eleito um dos 20 melhores restaurantes do mundo pelo TripAdvisor em 2024. Pratos árabes autorais em porções para compartilhar, refletindo a forte cultura da tríplice fronteira.',
+    address: 'Rua Jorge Sanwais, 1146 - Centro',
+    tags: ['comida', 'almoco', 'jantar', 'arabe', 'cultura', 'imperdivel'],
+    image: '/rest_lemir.jpg',
+    zone: 'Centro',
+    priceRange: '$$$'
+  },
+  {
+    id: 'marias-e-maria',
+    name: 'Marias & Maria',
+    category: 'restaurantes',
+    description: 'Buffet por quilo tradicional no Centro, com carnes, massas, saladas frescas e sobremesas variadas. Ótimo custo-benefício para o almoço.',
+    address: 'Av. Brasil, 505 - Centro',
+    time: '08:00 às 19:00',
+    tags: ['comida', 'almoco', 'barato', 'buffet', 'economico'],
+    image: '/rest_mariasemaria.jpg',
+    zone: 'Centro',
+    priceRange: '$'
+  },
+  {
+    id: 'trapiche-restaurante',
+    name: 'Trapiche Restaurante',
+    category: 'restaurantes',
+    description: 'Culinária contemporânea com toques regionais, ambiente aconchegante e boa seleção de drinks.',
+    address: 'Rua Almirante Barroso, 1240 - Centro',
+    tags: ['jantar', 'contemporaneo', 'drinks', 'romantico'],
+    image: '/rest_trapiche.jpg',
+    zone: 'Centro',
+    priceRange: '$$'
+  },
+  {
+    id: 'miyako-japanese-restaurant',
+    name: 'Miyako Japanese Restaurant',
+    category: 'restaurantes',
+    description: 'Restaurante japonês tradicional e uma referência na cidade, com sushi, sashimi e pratos quentes autênticos.',
+    address: 'Rua Parigot de Souza, 258 - Vila Yolanda',
+    tags: ['comida', 'almoco', 'jantar', 'japonesa', 'sushi', 'familia'],
+    image: '/rest_miyako.jpg',
+    zone: 'Vila Yolanda',
+    priceRange: '$$'
+  },
+
+  // ==================== BARES ====================
+  {
+    id: 'capitao-bar',
+    name: 'Capitão Bar',
+    category: 'bares',
+    description: 'Tradicional bar do Centro desde 1999, famoso pela picanha grelhada e pelos nachos, com música ao vivo e ambiente descontraído.',
+    address: 'Av. Jorge Schimmelpfeng, 288 - Centro',
+    time: '11:30 às 00:00',
+    tags: ['bebidas', 'petiscos', 'centro', 'amigos', 'chope', 'cerveja', 'comidinhas'],
+    image: '/bar_capitao.jpg',
+    zone: 'Centro',
+    priceRange: '$$'
+  },
+  {
+    id: '277-craft-beer',
+    name: '277 Craft Beer',
+    category: 'bares',
+    description: 'Cervejaria artesanal com fábrica própria no local, boa seleção de rótulos autorais e petiscos elaborados.',
+    address: 'Rua Marechal Floriano Peixoto, 790 - Centro',
+    time: '18:00 às 00:00',
+    tags: ['bebidas', 'cerveja artesanal', 'petiscos', 'amigos', 'noite'],
+    image: '/bar_277craft.jpg',
+    zone: 'Centro',
+    priceRange: '$$'
+  },
+  {
+    id: 'eden-steak-garden',
+    name: 'Eden Steak Garden & Chopperia',
+    category: 'bares',
+    description: 'Beer garden estilo alemão com mesas comunais ao ar livre, chopps da casa e carnes grelhadas com salsichas.',
+    address: 'Av. das Cataratas, 480 - Vila Yolanda',
+    tags: ['bebidas', 'chopp', 'petiscos', 'familia', 'noite'],
+    image: '/bar_eden.jpg',
+    zone: 'Avenida das Cataratas',
+    priceRange: '$$'
+  },
+  {
+    id: 'bendito-bar-restaurante',
+    name: 'Bendito Bar e Restaurante',
+    category: 'bares',
+    description: 'Gastronomia brasileira contemporânea com destaque para os bolinhos (mandioca com costela, abóbora com carne seca) e drinks autorais.',
+    address: 'Rua Marechal Deodoro da Fonseca, 816 - Centro',
+    tags: ['bebidas', 'petiscos', 'comidinhas', 'descontraido', 'noite'],
+    image: '/bar_bendito.jpg',
+    zone: 'Centro',
+    priceRange: '$$'
+  },
+  {
+    id: 'sky-bar-viale-tower',
+    name: 'Sky Bar - Viale Tower',
+    category: 'bares',
+    description: 'Único rooftop de Foz do Iguaçu, no 17º andar com piscina de borda infinita e vista panorâmica da tríplice fronteira.',
+    address: 'Av. Jorge Schimmelpfeng, 232 - Centro',
+    time: '18:00 às 22:30',
+    tags: ['bebidas', 'sofisticado', 'drinks', 'vista', 'romantico', 'elegante', 'luxo'],
+    image: '/bar_skybar.webp',
+    zone: 'Centro',
+    priceRange: '$$$'
+  },
+
+  // ==================== CAFÉ DA MANHÃ ====================
+  {
+    id: 'panificadora-roma',
+    name: 'Panificadora Roma',
+    category: 'cafe_da_manha',
+    description: 'Padaria tradicional com quase 50 anos de história, pães artesanais e um café da manhã completo, com opções doces e salgadas.',
+    address: 'Rua Jorge Sanwais, 430 - Centro',
+    tags: ['cafe', 'manha', 'pao', 'tradicional', 'comidinhas', 'salgados'],
+    image: '/cafe_roma.jpg',
+    zone: 'Centro',
+    priceRange: '$'
+  },
+  {
+    id: 'famiglia-maran',
+    name: 'Famiglia Maran',
+    category: 'cafe_da_manha',
+    description: 'Panificadora, confeitaria e restaurante 24 horas no Centro, com pães frescos a qualquer hora e buffet variado.',
+    address: 'Rua Almirante Barroso, 1968 - Centro',
+    time: '24 horas',
+    tags: ['cafe', 'manha', 'colonial', 'familia', 'comida tipica', 'comidinhas'],
+    image: '/cafe_maran.jpg',
+    zone: 'Centro',
+    priceRange: '$$'
+  },
+  {
+    id: 'jauense-confeitaria',
+    name: 'Jauense Confeitaria',
+    category: 'cafe_da_manha',
+    description: 'Confeitaria tradicional desde 1979, famosa pela coxinha considerada a melhor da cidade, além de pães, tortas e bolos.',
+    address: 'Av. Juscelino Kubitschek, 117 - Centro',
+    time: '08:00 às 22:30',
+    tags: ['cafe', 'manha', 'pao', 'tradicional', 'comidinhas'],
+    image: '/cafe_jauense.jpg',
+    zone: 'Centro',
+    priceRange: '$'
+  },
+
+  // ==================== CAFETERIAS E DOCERIAS ====================
+  {
+    id: 'coar-cafeteria',
+    name: 'Co-ar Cafeteria',
+    category: 'cafeterias_docerias',
+    description: 'Cafeteria charmosa com cafés especiais, bolos artesanais e doces, ambiente aconchegante para uma tarde tranquila.',
+    address: 'Rua Xavier da Silva, 665 - Centro',
+    tags: ['cafe', 'doce', 'bolo', 'sobremesa', 'tarde', 'romantico'],
+    image: '/cafe_coar.jpg',
+    zone: 'Centro',
+    priceRange: '$$'
+  },
+  {
+    id: 'chocolato',
+    name: 'Chocolato',
+    category: 'cafeterias_docerias',
+    description: 'A única chocolateria de Foz do Iguaçu, com bombons, brownies, trufas e tabletes de chocolate belga.',
+    address: 'Rua Almirante Barroso, 1466 - Centro',
+    tags: ['doce', 'chocolate', 'presente', 'sobremesa', 'comidinhas'],
+    image: '/cafe_chocolato.jpg',
+    zone: 'Centro',
+    priceRange: '$$'
+  },
+  {
+    id: 'oficina-do-sorvete',
+    name: 'Oficina do Sorvete',
+    category: 'cafeterias_docerias',
+    description: 'Sorveteria artesanal com mais de 30 anos de tradição, com sabores de frutas nativas da Mata Atlântica.',
+    address: 'Av. Jorge Schimmelpfeng, 244 - Centro',
+    tags: ['doce', 'sorvete', 'familia', 'kids', 'comidinhas'],
+    image: '/cafe_oficinasorvete.png',
+    zone: 'Centro',
+    priceRange: '$'
+  },
+  {
+    id: 'cafe-com-passagem',
+    name: 'Café com Passagem',
+    category: 'cafeterias_docerias',
+    description: 'Café, agência de viagem e espaço coworking em um só lugar, com cafés especiais e atmosfera tranquila para trabalhar.',
+    address: 'Av. JK, 281 - Centro',
+    tags: ['cafe', 'trabalho', 'cultura', 'tarde', 'comidinhas'],
+    image: '/cafe_compassagem.jpg',
+    zone: 'Centro',
+    priceRange: '$$'
+  },
+
+  // ==================== ACOMODAÇÕES ====================
+  {
+    id: 'hotel-das-cataratas',
+    name: 'Hotel das Cataratas (Belmond)',
+    category: 'acomodacoes',
+    description: 'O único hotel dentro do Parque Nacional, com vista privilegiada para as quedas. Experiência de luxo exclusiva.',
+    address: 'Rodovia das Cataratas, Km 32 - Parque Nacional',
+    tags: ['hotel', 'dormir', 'luxo', 'exclusivo', 'romantico', 'vista', 'natureza'],
+    image: '/cataratas.jpg',
+    zone: 'Parque Nacional',
+    priceRange: '$$$'
+  },
+  {
+    id: 'bourbon-cataratas-resort',
+    name: 'Bourbon Cataratas Convention & Spa Resort',
+    category: 'acomodacoes',
+    description: 'Resort completo com piscinas, spa e área verde, próximo ao Parque Nacional.',
+    address: 'Av. das Cataratas, 2500 - Vila Yolanda',
+    tags: ['hotel', 'dormir', 'resort', 'piscina', 'spa', 'conforto', 'familia'],
+    image: '/foz_do_iguacu.jpg',
+    zone: 'Avenida das Cataratas',
+    priceRange: '$$$'
+  },
+  {
+    id: 'wish-foz-do-iguacu',
+    name: 'Wish Foz do Iguaçu',
+    category: 'acomodacoes',
+    description: 'Hotel moderno com parque aquático, ideal para famílias com crianças, próximo aos principais atrativos.',
+    address: 'Av. das Cataratas, 2420 - Vila Yolanda',
+    tags: ['hotel', 'dormir', 'piscina', 'familia', 'kids', 'conforto'],
+    image: '/foz_do_iguacu.jpg',
+    zone: 'Avenida das Cataratas',
+    priceRange: '$$$'
+  },
+  {
+    id: 'del-rey-quality-hotel',
+    name: 'Del Rey Quality Hotel',
+    category: 'acomodacoes',
+    description: 'Boa localização central, custo-benefício equilibrado, café da manhã incluso.',
+    address: 'Rua Almirante Barroso, 1000 - Centro',
+    tags: ['hotel', 'dormir', 'conforto', 'centro', 'economico'],
+    image: '/foz_do_iguacu.jpg',
+    zone: 'Centro',
+    priceRange: '$$'
+  },
+  {
+    id: 'hostel-natura-iguassu',
+    name: 'Hostel Natura Iguassu',
+    category: 'acomodacoes',
+    description: 'Hospedagem econômica com quartos compartilhados e privativos, cozinha comunitária e ambiente jovem.',
+    address: 'Rua Naipi, 1234 - Centro',
+    tags: ['hostel', 'dormir', 'barato', 'economico', 'mochileiro'],
+    image: '/foz_do_iguacu.jpg',
+    zone: 'Centro',
+    priceRange: '$'
+  },
+
+  // ==================== LANCHES ====================
+  {
+    id: 'burger-house-foz',
+    name: 'Burger House Foz',
+    category: 'lanches',
+    description: 'Hambúrgueres artesanais suculentos, batatas rústicas e milk-shakes. Ambiente descontraído e jovem.',
+    address: 'Rua Rebouças, 780 - Centro',
+    tags: ['lanche', 'hamburger', 'burger', 'comidinhas', 'noite', 'kids'],
+    image: '/food_placeholder.webp',
+    zone: 'Centro',
+    priceRange: '$$'
+  },
+  {
+    id: 'lanchonete-do-porto',
+    name: 'Lanchonete do Porto',
+    category: 'lanches',
+    description: 'Lanches rápidos e baratos, boa opção para quem está de passagem entre passeios.',
+    address: 'Av. Gen. Meira, 550 - Porto Meira',
+    tags: ['lanche', 'barato', 'rapido', 'economico'],
+    image: '/food_placeholder.webp',
+    zone: 'Porto Meira',
+    priceRange: '$'
+  },
+  {
+    id: 'pastelaria-fronteira',
+    name: 'Pastelaria Fronteira',
+    category: 'lanches',
+    description: 'Pastéis fritos na hora com recheios variados, incluindo opções árabes e brasileiras.',
+    address: 'Av. Brasil, 480 - Centro',
+    tags: ['lanche', 'pastel', 'barato', 'comidinhas'],
+    image: '/food_placeholder.webp',
+    zone: 'Centro',
+    priceRange: '$'
+  },
+  {
+    id: 'espetinho-da-praca',
+    name: 'Espetinho da Praça',
+    category: 'lanches',
+    description: 'Espetinhos variados de carne, frango e queijo coalho, tradicional ponto de encontro à noite.',
+    address: 'Praça Aiton Senna - Centro',
+    time: '18:00 às 00:00',
+    tags: ['lanche', 'espetinho', 'noite', 'barato', 'amigos'],
+    image: '/food_placeholder.webp',
+    zone: 'Centro',
+    priceRange: '$'
+  },
+  {
+    id: 'crepe-e-cia',
+    name: 'Crepe & Cia',
+    category: 'lanches',
+    description: 'Crepes doces e salgados, ambiente aconchegante para um lanche da tarde.',
+    address: 'Av. das Cataratas, 1900 - Vila Yolanda',
+    tags: ['lanche', 'doce', 'salgado', 'tarde', 'comidinhas'],
+    image: '/food_placeholder.webp',
+    zone: 'Avenida das Cataratas',
+    priceRange: '$$'
+  },
+
+  // ==================== MERCADOS ====================
+  {
+    id: 'mercado-municipal-foz',
+    name: 'Mercado Municipal de Foz do Iguaçu',
+    category: 'mercados',
+    description: 'Feira com produtos regionais, temperos, frutas e artesanato local.',
+    address: 'Rua Marechal Floriano Peixoto, 800 - Centro',
+    time: '07:00 às 18:00',
+    tags: ['mercado', 'compras', 'regional', 'artesanato', 'centro'],
+    image: '/foz_do_iguacu.jpg',
+    zone: 'Centro',
+    priceRange: '$'
+  },
+  {
+    id: 'supermercado-condor',
+    name: 'Supermercado Condor',
+    category: 'mercados',
+    description: 'Rede regional de supermercados com boa variedade de produtos e preços competitivos.',
+    address: 'Av. Paraná, 3200 - Vila Portes',
+    tags: ['mercado', 'compras', 'supermercado'],
+    image: '/foz_do_iguacu.jpg',
+    zone: 'Vila Portes',
+    priceRange: '$$'
+  },
+
+  // ==================== COMPRAS E FRONTEIRA ====================
+  {
+    id: 'shopping-cataratas-jl',
+    name: 'Cataratas JL Shopping',
+    category: 'compras_fronteira',
+    description: 'Maior shopping da cidade, com lojas, praça de alimentação e cinema.',
+    address: 'Av. Paraná, 1155 - Vila Yolanda',
+    time: '10:00 às 22:00',
+    tags: ['compras', 'shopping', 'lazer', 'familia', 'cinema'],
+    image: '/foz_do_iguacu.jpg',
+    zone: 'Vila Yolanda',
+    priceRange: '$$'
+  },
+  {
+    id: 'duty-free-iguassu',
+    name: 'Duty Free Iguassu',
+    category: 'compras_fronteira',
+    description: 'Free shop na fronteira com produtos importados, perfumaria e eletrônicos isentos de impostos.',
+    address: 'Ponte da Amizade - Fronteira',
+    tags: ['compras', 'fronteira', 'importados', 'internacional'],
+    image: '/ponte_amizade.jpg',
+    zone: 'Fronteira',
+    priceRange: '$$$'
+  },
+  {
+    id: 'shopping-cidade-do-leste',
+    name: 'Shopping China (Ciudad del Este)',
+    category: 'compras_fronteira',
+    description: 'Grande centro comercial paraguaio com eletrônicos, roupas e artigos diversos a preços competitivos.',
+    address: 'Ciudad del Este - Paraguai',
+    tags: ['compras', 'fronteira', 'internacional', 'eletronicos'],
+    image: '/ponte_amizade.jpg',
+    zone: 'Fronteira',
+    priceRange: '$$'
+  },
+
+  // ==================== ACADEMIAS E ESPORTES ====================
+  {
+    id: 'academia-smart-fit-foz',
+    name: 'Smart Fit Foz do Iguaçu',
+    category: 'academias',
+    description: 'Rede de academias com equipamentos modernos, aulas coletivas e planos flexíveis para visitantes.',
+    address: 'Av. Brasil, 1620 - Centro',
+    tags: ['academia', 'treino', 'musculacao', 'esporte'],
+    image: '/foz_do_iguacu.jpg',
+    zone: 'Centro',
+    priceRange: '$$'
+  },
+  {
+    id: 'trilha-refugio-bela-vista-esporte',
+    name: 'Trilhas do Refúgio Bela Vista',
+    category: 'esportes',
+    description: 'Trilhas leves em meio à mata nativa, boas para caminhada e observação de fauna.',
+    address: 'Rodovia das Cataratas, Km 10',
+    tags: ['esporte', 'trilha', 'natureza', 'caminhada', 'aventura'],
+    image: '/foz_do_iguacu.jpg',
+    zone: 'Rodovia das Cataratas',
+    priceRange: '$'
+  },
+  {
+    id: 'rafting-rio-melissa',
+    name: 'Rafting no Rio Melissa',
+    category: 'esportes',
+    description: 'Descida de rafting com correnteza leve a moderada, boa opção de aventura em grupo.',
+    address: 'Estrada rural próxima a Foz do Iguaçu',
+    tags: ['esporte', 'aventura', 'rafting', 'natureza', 'adrenalina'],
+    image: '/foz_do_iguacu.jpg',
+    zone: 'Zona Rural',
+    priceRange: '$$'
+  },
+
+  // ==================== CONVENIÊNCIAS ====================
+  {
+    id: 'farmacias-centro-foz',
+    name: 'Farmácias do Centro',
+    category: 'conveniencias',
+    description: 'Farmácias Pague Menos, Drogasil e Drogaria São Paulo concentradas nas principais avenidas do Centro.',
+    address: 'Av. Brasil e Av. Jorge Schimmelpfeng - Centro',
+    tags: ['farmacia', 'saude', 'centro', 'conveniencia'],
+    image: '/foz_do_iguacu.jpg',
+    zone: 'Centro',
+    priceRange: '$$'
+  },
+  {
+    id: 'hospitais-saude-foz',
+    name: 'Hospitais e Prontos-Socorros',
+    category: 'conveniencias',
+    description: 'Hospital Ministro Costa Cavalcanti, Hospital Municipal e UPAs distribuídas pela cidade.',
+    address: 'Diversas zonas de Foz do Iguaçu',
+    tags: ['saude', 'hospital', 'emergencia', 'upa'],
+    image: '/foz_do_iguacu.jpg',
+    zone: 'Diversas',
+    priceRange: '$$'
+  },
+  {
+    id: 'apps-transporte-foz',
+    name: 'Apps de Mobilidade e Táxi',
+    category: 'conveniencias',
+    description: 'Uber, 99 e cooperativas de táxi cobrem bem a cidade, incluindo trajetos até o Parque Nacional e a fronteira.',
+    address: 'Via App / Centro',
+    tags: ['transporte', 'app', 'taxi', 'carro'],
+    image: '/foz_do_iguacu.jpg',
+    zone: 'Todas',
+    priceRange: '$'
+  }
+];

@@ -1,0 +1,141 @@
+:root {
+  /* Paleta baseada na logo RotaVis */
+  --primary-dark: #faf7ef;
+  /* Fundo principal (creme da logo) */
+  --secondary-dark: #ffffff;
+  /* Fundo secundário */
+  --accent-gold: #f2b70a;
+  /* Amarelo do sol da logo */
+  --accent-gold-glow: rgba(242, 183, 10, 0.25);
+  --green-dark: #1b5e3c;
+  /* Verde escuro da logo (texto "Rota") */
+  --green: #3d9b4f;
+  /* Verde folha */
+  --blue: #1e88e5;
+  /* Azul da onda / "V" */
+  --text-main: #22382c;
+  --text-muted: #5f7268;
+
+  /* Solid Card variables */
+  --card-bg: #ffffff;
+  --card-border: #e6e0cf;
+  --card-highlight: #f2eee0;
+  --card-shadow: 0 4px 10px rgba(27, 94, 60, 0.08);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--primary-dark);
+  color: var(--text-main);
+  font-family: 'Inter', 'Roboto', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Solid Elements (Replacing Liquid Glass) */
+.liquid-glass {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  transition: all 0.3s ease;
+}
+
+.liquid-glass:hover {
+  background: var(--card-bg);
+  border: 1px solid var(--green);
+  box-shadow: 0 6px 14px rgba(27, 94, 60, 0.15);
+}
+
+.liquid-glass-header {
+  background: #fffdf6;
+  border-bottom: 1px solid var(--card-border);
+}
+
+/* Buttons */
+.btn-gold {
+  background: var(--green-dark);
+  color: #ffffff;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 28px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(27, 94, 60, 0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-gold:hover {
+  transform: translateY(-2px);
+  background: #27754c;
+  box-shadow: 0 6px 12px rgba(27, 94, 60, 0.35);
+}
+
+.btn-glass {
+  background: var(--secondary-dark);
+  border: 1px solid var(--card-border);
+  color: var(--text-main);
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-glass:hover,
+.btn-glass.active {
+  background: #ecf5ee;
+  border-color: var(--green);
+  color: var(--green-dark);
+}
+
+/* Typography */
+.text-gradient {
+  color: var(--green-dark);
+}
+
+.gold-gradient {
+  background: linear-gradient(90deg, var(--blue), #43a047);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Layout */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--primary-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d4cdb8;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--green);
+}

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 150">
+  <!-- sol -->
+  <circle cx="112" cy="46" r="26" fill="#f2b70a"/>
+  <!-- morro ao fundo -->
+  <path d="M78 92 Q104 52 128 78 Q142 66 158 86 L158 92 Z" fill="#2c7a4b"/>
+  <!-- pico principal -->
+  <path d="M34 92 Q40 46 62 30 Q84 46 90 92 Z" fill="#1b5e3c"/>
+  <!-- teleferico -->
+  <path d="M62 34 L150 62" stroke="#1b5e3c" stroke-width="2.5" fill="none"/>
+  <path d="M104 47 L104 50" stroke="#1b5e3c" stroke-width="2"/>
+  <rect x="98" y="50" width="12" height="9" rx="2.5" fill="#1b5e3c"/>
+  <!-- palmeira -->
+  <path d="M186 88 Q182 66 172 52" stroke="#2c7a4b" stroke-width="4" fill="none"/>
+  <path d="M172 52 Q158 44 148 48 Q160 52 172 54 Z" fill="#2c7a4b"/>
+  <path d="M172 52 Q162 38 152 36 Q162 46 170 52 Z" fill="#2c7a4b"/>
+  <path d="M172 52 Q172 34 182 28 Q178 42 174 52 Z" fill="#2c7a4b"/>
+  <path d="M172 52 Q184 38 194 38 Q184 46 174 54 Z" fill="#2c7a4b"/>
+  <path d="M172 52 Q188 48 196 54 Q184 56 172 55 Z" fill="#2c7a4b"/>
+  <!-- faixa verde -->
+  <path d="M18 96 Q70 78 120 90 Q170 100 204 88 L204 100 Q150 112 100 100 Q50 90 18 102 Z" fill="#3d9b4f"/>
+  <!-- onda azul -->
+  <path d="M30 108 Q80 96 130 106 Q170 112 200 104 L200 112 Q160 120 120 112 Q75 104 30 116 Z" fill="#1e88e5"/>
+  <!-- pegadas -->
+  <g fill="#1b5e3c">
+    <ellipse cx="70" cy="134" rx="5" ry="8" transform="rotate(-20 70 134)"/>
+    <ellipse cx="88" cy="127" rx="5" ry="8" transform="rotate(-15 88 127)"/>
+    <ellipse cx="106" cy="133" rx="5" ry="8" transform="rotate(-20 106 133)"/>
+    <ellipse cx="124" cy="125" rx="5" ry="8" transform="rotate(-12 124 125)"/>
+  </g>
+</svg>
