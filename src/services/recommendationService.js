@@ -3,7 +3,7 @@ export const scorePlaces = (places, profile) => {
     return [...places].sort(() => 0.5 - Math.random());
   }
 
-  const { reason, budget, preferences } = profile;
+  const { reason, budget, preferences, travelWith, ageRange } = profile;
 
   const scoredPlaces = places.map(place => {
     let score = 0;
@@ -40,6 +40,31 @@ export const scorePlaces = (places, profile) => {
           score += 3; // Preferências explícitas têm peso maior
         }
       });
+    }
+
+    // 4. Com quem viaja (travelWith)
+    if (travelWith === 'familia') {
+      if (tags.includes('familia') || tags.includes('infantil') || tags.includes('acessivel')) score += 3;
+      if (tags.includes('bebidas') || tags.includes('balada') || tags.includes('adultos')) score -= 3;
+    } else if (travelWith === 'casal') {
+      if (tags.includes('romantico') || tags.includes('vista') || tags.includes('jantar_especial')) score += 3;
+      if (tags.includes('infantil')) score -= 1;
+    } else if (travelWith === 'amigos') {
+      if (tags.includes('bebidas') || tags.includes('aventura') || tags.includes('grupo')) score += 3;
+      if (tags.includes('solitario')) score -= 1;
+    } else if (travelWith === 'solo') {
+      if (tags.includes('cafe') || tags.includes('caminhada') || tags.includes('solitario')) score += 2;
+    }
+
+    // 5. Faixa etária (ageRange)
+    if (ageRange === '18-30') {
+      if (tags.includes('aventura') || tags.includes('esporte') || tags.includes('bebidas')) score += 2;
+      if (tags.includes('tranquilo') || tags.includes('historico')) score -= 0;
+    } else if (ageRange === '31-50') {
+      if (tags.includes('gastronomia') || tags.includes('historico') || tags.includes('conforto')) score += 2;
+    } else if (ageRange === '51+') {
+      if (tags.includes('acessivel') || tags.includes('historico') || tags.includes('tranquilo')) score += 3;
+      if (tags.includes('aventura_radical') || tags.includes('balada')) score -= 3;
     }
 
     return { ...place, score };

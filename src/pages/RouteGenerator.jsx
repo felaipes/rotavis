@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { places } from '../data';
-import { Calendar, CheckCircle2, ChevronRight, Sun, Sunset, Moon, Briefcase, Map as MapIcon, Wallet, Star, Coffee, Tent, History, Utensils, GlassWater, Car, Footprints, Download, X, Activity, Rocket } from 'lucide-react';
+import { Calendar, CheckCircle2, ChevronRight, Sun, Sunset, Moon, Briefcase, Map as MapIcon, Wallet, Star, Coffee, Tent, History, Utensils, GlassWater, Car, Footprints, Download, X, Activity, Rocket, Users, UserRound, Baby, GraduationCap, Heart } from 'lucide-react';
 
 import { jsPDF } from 'jspdf';
 import PlaceCard from '../components/PlaceCard';
@@ -17,6 +17,8 @@ const RouteGenerator = () => {
     reason: '',
     budget: '',
     transport: '',
+    travelWith: '',
+    ageRange: '',
     preferences: []
   });
 
@@ -49,7 +51,30 @@ const RouteGenerator = () => {
           pdf.setFontSize(22);
           pdf.setTextColor(214, 210, 204); // --accent-gold aprox
           pdf.text('Sua Rota Perfeita - Foz do Iguaçu', 105, yOffset, { align: 'center' });
-          yOffset += 15;
+          yOffset += 10;
+
+          // Subtítulo com persona
+          const personaLabel = {
+            solo: 'Viajante solo',
+            casal: 'Casal',
+            familia: 'Família com crianças',
+            amigos: 'Grupo de amigos',
+          }[profile.travelWith] || '';
+          const ageLabel = {
+            '18-30': '18–30 anos',
+            '31-50': '31–50 anos',
+            '51+': '51 anos ou mais',
+          }[profile.ageRange] || '';
+          if (personaLabel || ageLabel) {
+            pdf.setFont('helvetica', 'italic');
+            pdf.setFontSize(12);
+            pdf.setTextColor(150, 140, 130);
+            const subtitle = [personaLabel, ageLabel].filter(Boolean).join(' · ');
+            pdf.text(`Roteiro personalizado para: ${subtitle}`, 105, yOffset, { align: 'center' });
+            yOffset += 12;
+          } else {
+            yOffset += 5;
+          }
 
           route.forEach((dayPlan, index) => {
             // Verifica quebra de página
@@ -179,8 +204,10 @@ const RouteGenerator = () => {
       let tPasseio = getNextPlace(passeios, tRest?.zone || primaryZone, isFoot) || getNextPlace(cafeterias, tRest?.zone || primaryZone, isFoot);
       
       let newPrimaryZone = tPasseio?.zone || tRest?.zone || primaryZone;
-      
-      let nLugar = (i % 2 === 0 && bares.filter(p => !usedIds.has(p.id)).length > 0) 
+
+      // Família evita bares → sempre restaurante à noite
+      const isFamily = profile.travelWith === 'familia';
+      let nLugar = (!isFamily && i % 2 === 0 && bares.filter(p => !usedIds.has(p.id)).length > 0) 
         ? getNextPlace(bares, newPrimaryZone, isFoot) 
         : getNextPlace(restaurantes, newPrimaryZone, isFoot);
         
@@ -193,7 +220,7 @@ const RouteGenerator = () => {
     }
 
     setRoute(generatedDays);
-    setStep(6);
+    setStep(8);
   };
 
   return (
@@ -292,9 +319,72 @@ const RouteGenerator = () => {
             </motion.div>
           )}
 
+          {/* ── Step 4 [NOVO]: Com quem viaja? ── */}
           {step === 4 && (
+            <motion.div
+              key="step4_travelwith"
+              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              className="liquid-glass" style={{ padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
+            >
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Com quem você vai viajar?</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', width: '100%' }}>
+                {[
+                  { id: 'solo',    label: 'Sozinho(a)',           icon: UserRound },
+                  { id: 'casal',   label: 'Casal',                icon: Heart },
+                  { id: 'familia', label: 'Família com crianças', icon: Baby },
+                  { id: 'amigos',  label: 'Grupo de amigos',      icon: Users },
+                ].map(opt => (
+                  <button
+                    key={opt.id}
+                    onClick={() => { setProfile({...profile, travelWith: opt.id}); setStep(5); }}
+                    className={`btn-glass ${profile.travelWith === opt.id ? 'active' : ''}`}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '28px' }}
+                  >
+                    <opt.icon size={32} color="var(--green)" />
+                    <span style={{ fontSize: '1.1rem', fontWeight: 500 }}>{opt.label}</span>
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => setStep(3)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+            </motion.div>
+          )}
+
+          {/* ── Step 5 [NOVO]: Faixa etária ── */}
+          {step === 5 && (
+            <motion.div
+              key="step5_agerange"
+              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              className="liquid-glass" style={{ padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
+            >
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Qual a sua faixa etária?</h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '-10px' }}>
+                Isso nos ajuda a personalizar seu roteiro com experiências ideais para você.
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', width: '100%' }}>
+                {[
+                  { id: '18-30', label: '18 – 30 anos',    sublabel: 'Jovem adulto', icon: GraduationCap },
+                  { id: '31-50', label: '31 – 50 anos',    sublabel: 'Adulto',       icon: Briefcase },
+                  { id: '51+',   label: '51 anos ou mais', sublabel: 'Experiente',   icon: Star },
+                ].map(opt => (
+                  <button
+                    key={opt.id}
+                    onClick={() => { setProfile({...profile, ageRange: opt.id}); setStep(6); }}
+                    className={`btn-glass ${profile.ageRange === opt.id ? 'active' : ''}`}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '28px 20px' }}
+                  >
+                    <opt.icon size={30} color="var(--green)" />
+                    <span style={{ fontSize: '1.05rem', fontWeight: 600 }}>{opt.label}</span>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{opt.sublabel}</span>
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => setStep(4)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+            </motion.div>
+          )}
+
+          {step === 6 && (
             <motion.div 
-              key="step4"
+              key="step6_interests"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               className="liquid-glass" style={{ padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
@@ -323,15 +413,15 @@ const RouteGenerator = () => {
                 ))}
               </div>
               <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
-                <button onClick={() => setStep(3)} className="btn-glass">Voltar</button>
-                <button onClick={() => setStep(5)} className="btn-gold" style={{ padding: '15px 30px' }}>Próximo <ChevronRight size={18} /></button>
+                <button onClick={() => setStep(5)} className="btn-glass">Voltar</button>
+                <button onClick={() => setStep(7)} className="btn-gold" style={{ padding: '15px 30px' }}>Próximo <ChevronRight size={18} /></button>
               </div>
             </motion.div>
           )}
 
-          {step === 5 && (
+          {step === 7 && (
             <motion.div 
-              key="step5"
+              key="step7_days"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               className="liquid-glass" style={{ padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
@@ -349,7 +439,7 @@ const RouteGenerator = () => {
                 ))}
               </div>
               <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
-                <button onClick={() => setStep(4)} className="btn-glass">Voltar</button>
+                <button onClick={() => setStep(6)} className="btn-glass">Voltar</button>
                 <button onClick={generateRoute} className="btn-gold" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
                   <Calendar style={{ marginRight: '10px' }} />
                   Gerar Meu Roteiro
@@ -360,7 +450,7 @@ const RouteGenerator = () => {
         </AnimatePresence>
       </div>
 
-      {step === 6 && route && (
+      {step === 8 && route && (
         <motion.div 
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -436,7 +526,7 @@ const RouteGenerator = () => {
           </div>
           
           <div style={{ textAlign: 'center', marginTop: '40px', display: 'flex', gap: '20px', justifyContent: 'center' }}>
-            <button onClick={() => setStep(1)} className="btn-glass" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
+            <button onClick={() => { setStep(1); setRoute(null); }} className="btn-glass" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
               Refazer Perfil
             </button>
             <button onClick={handleSaveRoute} className="btn-gold" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
