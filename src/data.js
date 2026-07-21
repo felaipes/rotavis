@@ -24,6 +24,7 @@ export const places = [
     time: '09:00 às 17:00',
     tags: ['natureza', 'passeio', 'turismo', 'fotos', 'cataratas', 'trilha', 'familia', 'imperdivel'],
     image: '/cataratas.jpg',
+    images: ['/cataratas.jpg', '/cataratas_2.jpg', '/cataratas_3.jpg'],
     zone: 'Parque Nacional',
     priceRange: '$$'
   },
@@ -36,6 +37,7 @@ export const places = [
     time: '08:30 às 17:30',
     tags: ['natureza', 'passeio', 'turismo', 'fotos', 'aves', 'familia', 'ecoturismo'],
     image: '/parque_das_aves.jpg',
+    images: ['/parque_das_aves.jpg', '/parque_das_aves_2.jpg', '/parque_das_aves_3.jpg'],
     zone: 'Avenida das Cataratas',
     priceRange: '$$'
   },
@@ -48,6 +50,7 @@ export const places = [
     time: '08:00 às 16:00',
     tags: ['passeio', 'turismo', 'historico', 'tecnologia', 'familia', 'fotos'],
     image: '/itaipu.jpg',
+    images: ['/itaipu.jpg', '/itaipu_2.jpg', '/itaipu_3.jpg'],
     zone: 'Itaipu',
     priceRange: '$'
   },
@@ -60,6 +63,7 @@ export const places = [
     time: '19:30 às 21:00',
     tags: ['passeio', 'noite', 'romantico', 'fotos', 'familia', 'imperdivel'],
     image: '/itaipu_noite.jpg',
+    images: ['/itaipu_noite.jpg', '/itaipu_noite_2.jpg', '/itaipu_noite_3.jpg'],
     zone: 'Itaipu',
     priceRange: '$$'
   },
@@ -72,6 +76,7 @@ export const places = [
     time: '08:00 às 18:00',
     tags: ['passeio', 'fotos', 'gratis', 'romantico', 'familia', 'por do sol'],
     image: '/marco_tres_fronteiras.jpg',
+    images: ['/marco_tres_fronteiras.jpg', '/marco_tres_fronteiras_2.jpg', '/marco_tres_fronteiras_3.jpg'],
     zone: 'Porto Meira',
     priceRange: '$'
   },
@@ -84,6 +89,7 @@ export const places = [
     time: '08:00 às 18:00',
     tags: ['passeio', 'cultura', 'religiao', 'fotos', 'gratis', 'historico'],
     image: '/templo_budista.jpg',
+    images: ['/templo_budista.jpg', '/templo_budista_2.jpg', '/templo_budista_3.jpg'],
     zone: 'Loteamento Sant\'Ana',
     priceRange: '$'
   },
@@ -95,6 +101,7 @@ export const places = [
     address: 'Av. Ipiranga, esquina com Muhammad Ali - Centro',
     tags: ['passeio', 'cultura', 'religiao', 'historico', 'gratis'],
     image: '/mesquita.jpg',
+    images: ['/mesquita.jpg', '/mesquita_2.jpg', '/mesquita_3.jpg'],
     zone: 'Centro',
     priceRange: '$'
   },
@@ -106,7 +113,8 @@ export const places = [
     address: 'Rodovia das Cataratas, Km 10 - Área da Itaipu',
     time: '08:00 às 16:00',
     tags: ['natureza', 'passeio', 'trilha', 'ecoturismo', 'familia', 'esporte'],
-    image: '/foz_do_iguacu.jpg',
+    image: '/refugio_biologico.jpg',
+    images: ['/refugio_biologico.jpg', '/refugio_biologico_2.jpg', '/refugio_biologico_3.jpg'],
     zone: 'Rodovia das Cataratas',
     priceRange: '$'
   },
@@ -118,7 +126,8 @@ export const places = [
     address: 'Av. das Cataratas, 6535 - Vila Yolanda',
     time: '09:00 às 20:00',
     tags: ['passeio', 'familia', 'kids', 'fotos', 'instagramavel'],
-    image: '/foz_do_iguacu.jpg',
+    image: '/dreamland.jpg',
+    images: ['/dreamland.jpg', '/dreamland_2.jpg', '/dreamland_3.jpg'],
     zone: 'Avenida das Cataratas',
     priceRange: '$$'
   },
@@ -130,7 +139,8 @@ export const places = [
     address: 'Av. das Cataratas, 5000 - Vila Yolanda',
     time: '09:00 às 18:00',
     tags: ['passeio', 'familia', 'kids', 'fotos', 'natureza'],
-    image: '/foz_do_iguacu.jpg',
+    image: '/vale_dinossauros.jpg',
+    images: ['/vale_dinossauros.jpg', '/vale_dinossauros_2.jpg', '/vale_dinossauros_3.jpg'],
     zone: 'Avenida das Cataratas',
     priceRange: '$$'
   },
@@ -142,6 +152,7 @@ export const places = [
     address: 'Ponte da Amizade - Fronteira Brasil/Paraguai',
     tags: ['passeio', 'compras', 'fronteira', 'internacional'],
     image: '/ponte_amizade.jpg',
+    images: ['/ponte_amizade.jpg', '/ponte_amizade_2.jpg', '/ponte_amizade_3.jpg'],
     zone: 'Fronteira',
     priceRange: '$'
   },
@@ -156,8 +167,12 @@ export const places = [
     time: '19:00 às 23:00',
     tags: ['jantar', 'carne', 'churrasco', 'show', 'familia', 'turismo', 'noite'],
     image: '/rest_rafain.jpg',
+    images: ['/rest_rafain.jpg', '/rest_rafain_2.jpg', '/rest_rafain_3.jpg'],
     zone: 'Avenida das Cataratas',
-    priceRange: '$$$'
+    priceRange: '$$$',
+    avgPrice: 250,
+    specialty: 'Rodízio de carnes nobres',
+    differential: 'Show internacional de danças típicas ao vivo, tradição desde 1959'
   },
   {
     id: 'zaragoza-restaurante',
@@ -167,8 +182,12 @@ export const places = [
     address: 'Rua Quintino Bocaiúva, 882 - Centro',
     tags: ['jantar', 'sofisticado', 'internacional', 'romantico', 'elegante'],
     image: '/rest_zaragoza.jpg',
+    images: ['/rest_zaragoza.jpg', '/rest_zaragoza_2.jpg', '/rest_zaragoza_3.jpg'],
     zone: 'Centro',
-    priceRange: '$$$'
+    priceRange: '$$$',
+    avgPrice: 140,
+    specialty: 'Frutos do mar e culinária espanhola',
+    differential: 'Um dos restaurantes mais tradicionais e premiados da Tríplice Fronteira, com jardim'
   },
   {
     id: 'tempero-da-bahia',
@@ -178,8 +197,12 @@ export const places = [
     address: 'Rua Rebouças, 361 - Centro',
     tags: ['comida', 'almoco', 'jantar', 'regional', 'nordestina', 'baiana'],
     image: '/rest_tempero_da_bahia.jpg',
+    images: ['/rest_tempero_da_bahia.jpg', '/rest_tempero_da_bahia_2.jpg', '/rest_tempero_da_bahia_3.jpg'],
     zone: 'Centro',
-    priceRange: '$$'
+    priceRange: '$$',
+    avgPrice: 90,
+    specialty: 'Moquecas e rodízio de frutos do mar nordestino',
+    differential: 'Mais de 29 anos de tradição na culinária baiana em Foz do Iguaçu'
   },
   {
     id: 'bufalo-branco',
@@ -189,8 +212,12 @@ export const places = [
     address: 'Rua Rebouças, 530 - Centro',
     tags: ['jantar', 'almoco', 'carne', 'churrasco', 'familia', 'turismo'],
     image: '/rest_bufalo_branco.jpg',
+    images: ['/rest_bufalo_branco.jpg', '/rest_bufalo_branco_2.jpg', '/rest_bufalo_branco_3.jpg'],
     zone: 'Centro',
-    priceRange: '$$$'
+    priceRange: '$$$',
+    avgPrice: 90,
+    specialty: 'Rodízio de carnes nobres no espeto',
+    differential: 'Mais de 30 anos de tradição (desde 1989) e adega com centenas de rótulos'
   },
   {
     id: 'park-foz-steakhouse',
@@ -200,8 +227,12 @@ export const places = [
     address: 'Rua Almirante Barroso, 1009 - Centro',
     tags: ['jantar', 'sofisticado', 'carne', 'vinho', 'romantico', 'elegante'],
     image: '/rest_parkfoz.jpg',
+    images: ['/rest_parkfoz.jpg', '/rest_parkfoz_2.jpg', '/rest_parkfoz_3.jpg'],
     zone: 'Centro',
-    priceRange: '$$$'
+    priceRange: '$$$',
+    avgPrice: 160,
+    specialty: 'Carnes dry aged (Wagyu, Angus e Duroc)',
+    differential: 'Técnica própria de maturação de carnes e chopp artesanal'
   },
   {
     id: 'restaurante-terramar',
@@ -211,8 +242,12 @@ export const places = [
     address: 'Rua Marechal Deodoro da Fonseca, 1681 - Centro',
     tags: ['almoco', 'jantar', 'peixe', 'frutos do mar', 'familia'],
     image: '/rest_terramar.jpg',
+    images: ['/rest_terramar.jpg', '/rest_terramar_2.jpg', '/rest_terramar_3.jpg'],
     zone: 'Centro',
-    priceRange: '$$'
+    priceRange: '$$',
+    avgPrice: 110,
+    specialty: 'Peixes e frutos do mar grelhados',
+    differential: 'Primeira e única churrascaria de peixes de Foz do Iguaçu'
   },
   {
     id: 'le-mir-comida-arabe',
@@ -222,8 +257,12 @@ export const places = [
     address: 'Rua Jorge Sanwais, 1146 - Centro',
     tags: ['comida', 'almoco', 'jantar', 'arabe', 'cultura', 'imperdivel'],
     image: '/rest_lemir.jpg',
+    images: ['/rest_lemir.jpg', '/rest_lemir_2.jpg', '/rest_lemir_3.jpg'],
     zone: 'Centro',
-    priceRange: '$$$'
+    priceRange: '$$$',
+    avgPrice: 130,
+    specialty: 'Pratos árabes autorais para compartilhar',
+    differential: 'Eleito um dos 20 melhores restaurantes do mundo pelo TripAdvisor em 2024'
   },
   {
     id: 'marias-e-maria',
@@ -234,8 +273,12 @@ export const places = [
     time: '08:00 às 19:00',
     tags: ['comida', 'almoco', 'barato', 'buffet', 'economico'],
     image: '/rest_mariasemaria.jpg',
+    images: ['/rest_mariasemaria.jpg', '/rest_mariasemaria_2.jpg', '/rest_mariasemaria_3.jpg'],
     zone: 'Centro',
-    priceRange: '$'
+    priceRange: '$',
+    avgPrice: 50,
+    specialty: 'Buffet por quilo com pratos variados',
+    differential: 'Melhor custo-benefício do Centro, aberto para almoço e jantar'
   },
   {
     id: 'trapiche-restaurante',
@@ -245,8 +288,12 @@ export const places = [
     address: 'Rua Almirante Barroso, 1240 - Centro',
     tags: ['jantar', 'contemporaneo', 'drinks', 'romantico'],
     image: '/rest_trapiche.jpg',
+    images: ['/rest_trapiche.jpg', '/rest_trapiche_2.jpg', '/rest_trapiche_3.jpg'],
     zone: 'Centro',
-    priceRange: '$$'
+    priceRange: '$$',
+    avgPrice: 95,
+    specialty: 'Culinária contemporânea com toques regionais',
+    differential: 'Boa seleção de drinks autorais em ambiente aconchegante'
   },
   {
     id: 'miyako-japanese-restaurant',
@@ -256,8 +303,12 @@ export const places = [
     address: 'Rua Parigot de Souza, 258 - Vila Yolanda',
     tags: ['comida', 'almoco', 'jantar', 'japonesa', 'sushi', 'familia'],
     image: '/rest_miyako.jpg',
+    images: ['/rest_miyako.jpg', '/rest_miyako_2.jpg', '/rest_miyako_3.jpg'],
     zone: 'Vila Yolanda',
-    priceRange: '$$'
+    priceRange: '$$',
+    avgPrice: 85,
+    specialty: 'Sushi, sashimi e pratos quentes japoneses',
+    differential: 'Referência tradicional em culinária japonesa na cidade'
   },
 
   // ==================== BARES ====================
