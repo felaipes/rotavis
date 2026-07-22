@@ -122,6 +122,49 @@ a {
   padding: 0 20px;
 }
 
+img,
+video {
+  max-width: 100%;
+}
+
+/* Header navigation: nav completa no desktop, botão hamburguer no mobile */
+.nav-desktop {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--green-dark);
+  padding: 4px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .nav-desktop {
+    display: none;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+  }
+}
+
+/* background-attachment: fixed é lento/instável em navegadores mobile */
+.hero-bg {
+  background-attachment: fixed;
+}
+
+@media (max-width: 768px) {
+  .hero-bg {
+    background-attachment: scroll;
+  }
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

@@ -27,14 +27,13 @@ const Home = () => {
   return (
     <div>
       {/* Hero Section */}
-      <section style={{
+      <section className="hero-bg" style={{
         position: 'relative',
-        padding: '100px 20px',
+        padding: 'clamp(60px, 14vw, 100px) 20px',
         textAlign: 'center',
         backgroundImage: 'url(/hero_cataratas.jpg)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
         minHeight: '60vh',
         display: 'flex',
         flexDirection: 'column',
@@ -47,7 +46,7 @@ const Home = () => {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            style={{ fontSize: '4rem', fontWeight: 800, marginBottom: '20px', lineHeight: 1.1, color: '#ffffff', textShadow: '0 2px 12px rgba(0, 0, 0, 0.5)' }}
+            style={{ fontSize: 'clamp(2.1rem, 8vw, 4rem)', fontWeight: 800, marginBottom: '20px', lineHeight: 1.15, color: '#ffffff', textShadow: '0 2px 12px rgba(0, 0, 0, 0.5)' }}
           >
             Descubra a <span style={{ color: 'var(--accent-gold)' }}>Terra das Cataratas</span>
           </motion.h1>
@@ -55,7 +54,7 @@ const Home = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            style={{ fontSize: '1.25rem', color: '#f0ece2', textShadow: '0 1px 8px rgba(0, 0, 0, 0.5)', marginBottom: '40px' }}
+            style={{ fontSize: 'clamp(1rem, 3.6vw, 1.25rem)', color: '#f0ece2', textShadow: '0 1px 8px rgba(0, 0, 0, 0.5)', marginBottom: '40px' }}
           >
             Cataratas monumentais, cultura de três países e gastronomia única aguardam você em Foz do Iguaçu.
           </motion.p>
@@ -126,7 +125,7 @@ const Home = () => {
 
           <motion.div layout style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(320px, 100%), 1fr))',
             gap: '30px'
           }}>
             <AnimatePresence>

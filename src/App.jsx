@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Map, Menu, X, User, LogOut, LogIn } from 'lucide-react';
 import Home from './pages/Home';
 import RouteGenerator from './pages/RouteGenerator';
@@ -15,22 +15,28 @@ const Header = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
 
+  const closeMenu = () => setIsOpen(false);
+
+  useEffect(() => {
+    closeMenu();
+  }, [location.pathname]);
+
   return (
     <header className="liquid-glass-header" style={{ position: 'sticky', top: 0, zIndex: 50, padding: '15px 0' }}>
       <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Link to="/" style={{ display: 'flex', alignItems: 'center' }}>
+        <Link to="/" style={{ display: 'flex', alignItems: 'center' }} onClick={closeMenu}>
           <img src="/logo.png" alt="RotaVis" style={{ height: '58px', mixBlendMode: 'multiply' }} />
         </Link>
-        
-        <nav style={{ display: 'flex', gap: '20px', alignItems: 'center' }} className="nav-desktop">
+
+        <nav className="nav-desktop">
           <Link to="/" className={`btn-glass ${location.pathname === '/' ? 'active' : ''}`}>Explorar</Link>
           <Link to="/rota" className={`btn-glass ${location.pathname === '/rota' ? 'active' : ''}`}>
             <Map size={18} style={{ display: 'inline', marginRight: '5px' }} />
             Gerar Rota
           </Link>
-          
+
           <div style={{ width: '1px', height: '24px', background: 'var(--card-border)', margin: '0 5px' }}></div>
-          
+
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--green-dark)' }}>
@@ -39,8 +45,8 @@ const Header = () => {
                 </div>
                 <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user.name.split(' ')[0]}</span>
               </div>
-              <button 
-                onClick={logout} 
+              <button
+                onClick={logout}
                 style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem', fontWeight: 500 }}
               >
                 <LogOut size={16} />
@@ -54,7 +60,61 @@ const Header = () => {
             </Link>
           )}
         </nav>
+
+        <button
+          className="mobile-menu-btn"
+          onClick={() => setIsOpen(o => !o)}
+          aria-label={isOpen ? 'Fechar menu' : 'Abrir menu'}
+        >
+          {isOpen ? <X size={26} /> : <Menu size={26} />}
+        </button>
       </div>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            style={{ overflow: 'hidden', borderTop: '1px solid var(--card-border)' }}
+            className="mobile-menu"
+          >
+            <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px 20px' }}>
+              <Link to="/" onClick={closeMenu} className={`btn-glass ${location.pathname === '/' ? 'active' : ''}`} style={{ textAlign: 'center' }}>
+                Explorar
+              </Link>
+              <Link to="/rota" onClick={closeMenu} className={`btn-glass ${location.pathname === '/rota' ? 'active' : ''}`} style={{ textAlign: 'center' }}>
+                <Map size={18} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'text-bottom' }} />
+                Gerar Rota
+              </Link>
+
+              {user ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 5px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--green-dark)' }}>
+                    <div style={{ background: 'var(--card-border)', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <User size={18} />
+                    </div>
+                    <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user.name.split(' ')[0]}</span>
+                  </div>
+                  <button
+                    onClick={() => { logout(); closeMenu(); }}
+                    style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem', fontWeight: 500 }}
+                  >
+                    <LogOut size={16} />
+                    Sair
+                  </button>
+                </div>
+              ) : (
+                <Link to="/login" onClick={closeMenu} className="btn-gold" style={{ justifyContent: 'center' }}>
+                  <LogIn size={16} style={{ marginRight: '8px' }} />
+                  Entrar
+                </Link>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };
