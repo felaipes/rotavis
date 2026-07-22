@@ -189,6 +189,39 @@ export const places = [
     specialty: 'Travessia para o comércio paraguaio',
     differential: 'Principal ligação rodoviária entre Brasil e Paraguai, símbolo da integração da tríplice fronteira'
   },
+  {
+    id: 'macuco-safari',
+    name: 'Macuco Safari',
+    category: 'passeios',
+    description: 'Passeio pela selva do Parque Nacional em veículo elétrico por trilha na mata, seguido de emocionante passeio de barco até bem perto da base das Cataratas.',
+    address: 'BR-469 (Rodovia das Cataratas), Km 18 - Parque Nacional do Iguaçu',
+    time: '09:00 às 17:00',
+    tags: ['natureza', 'passeio', 'turismo', 'aventura', 'cataratas', 'radical', 'familia'],
+    image: '/macuco_safari.jpg',
+    images: ['/macuco_safari.jpg', '/macuco_safari_2.jpg', '/macuco_safari_3.jpg'],
+    zone: 'Parque Nacional',
+    priceRange: '$$$',
+    entryFee: 380,
+    specialty: 'Passeio de barco até a base das Cataratas, com trilha de selva em veículo elétrico',
+    differential: 'Única forma de sentir a força das quedas bem de perto, molhando-se na espuma das águas'
+  },
+  {
+    id: 'ecomuseu-de-itaipu',
+    name: 'Ecomuseu de Itaipu',
+    category: 'passeios',
+    description: 'Museu da Itaipu Binacional com acervo sobre a história, arqueologia, fauna e flora da região antes e depois da formação do reservatório.',
+    address: 'Av. Tancredo Neves, 6001 - Jardim Itaipu',
+    time: '08:30 às 16:00',
+    daysOpen: [0, 1, 3, 4, 5, 6],
+    tags: ['passeio', 'cultura', 'historico', 'museu', 'familia', 'gratis'],
+    image: '/ecomuseu_itaipu.webp',
+    images: ['/ecomuseu_itaipu.webp', '/ecomuseu_itaipu_2.webp', '/ecomuseu_itaipu_3.webp'],
+    zone: 'Itaipu',
+    priceRange: '$',
+    entryFee: 'Gratuito',
+    specialty: 'Acervo histórico, arqueológico e ambiental da região do reservatório',
+    differential: 'Coleção botânica e histórica reunida desde antes da formação do lago de Itaipu, entrada gratuita'
+  },
 
   // ==================== RESTAURANTES ====================
   {
@@ -343,6 +376,38 @@ export const places = [
     specialty: 'Sushi, sashimi e pratos quentes japoneses',
     differential: 'Referência tradicional em culinária japonesa na cidade'
   },
+  {
+    id: 'bona-trattoria',
+    name: 'Bona - Gastronomia Italiana',
+    category: 'restaurantes',
+    description: 'Cozinha italiana autoral assinada pelo chef Salvatore Loi, com massas artesanais, burrata e uma carta de vinhos premiada.',
+    address: 'Rua Almirante Barroso, 883 - Centro',
+    tags: ['jantar', 'italiana', 'massas', 'vinho', 'romantico', 'sofisticado'],
+    image: '/rest_bona_1.jpg',
+    images: ['/rest_bona_1.jpg', '/rest_bona_2.jpg', '/rest_bona_3.jpg'],
+    zone: 'Centro',
+    priceRange: '$$$',
+    avgPrice: 150,
+    specialty: 'Massas artesanais e burrata, assinadas pelo chef Salvatore Loi',
+    differential: 'Uma das melhores avaliações gastronômicas da cidade (#14 de mais de 2 mil restaurantes)'
+  },
+  {
+    id: 'la-caverna',
+    name: 'Restaurante La Caverna',
+    category: 'restaurantes',
+    description: 'Parrilla uruguaia com carnes na brasa, massas e frutos do mar, em ambiente rústico e aconchegante no Centro.',
+    address: 'Rua Jorge Sanwais, 1167 - Centro',
+    time: '18:00 às 23:00',
+    daysOpen: [1, 2, 3, 4, 5, 6],
+    tags: ['jantar', 'carne', 'parrilla', 'uruguaia', 'massas', 'romantico'],
+    image: '/rest_lacaverna_1.jpg',
+    images: ['/rest_lacaverna_1.jpg', '/rest_lacaverna_2.jpg', '/rest_lacaverna_3.jpg'],
+    zone: 'Centro',
+    priceRange: '$$',
+    avgPrice: 110,
+    specialty: 'Carnes grelhadas na parrilla uruguaia tradicional',
+    differential: 'Receitas e atendimento com raízes uruguaias, parrilla à vista dos clientes'
+  },
 
   // ==================== BARES ====================
   {
@@ -412,6 +477,20 @@ export const places = [
     priceRange: '$$$',
     specialty: 'Drinks autorais com vista panorâmica',
     differential: 'Único rooftop da cidade, no 17º andar com piscina de borda infinita'
+  },
+  {
+    id: 'zeppelin-old-bar',
+    name: 'Zeppelin Old Bar',
+    category: 'bares',
+    description: 'Casa de shows e bar de rock, com apresentações de bandas ao vivo e tributos, sempre animado nos fins de semana.',
+    address: 'Rua Major Raul de Matos, 222 - Vila Yolanda',
+    time: '20:00 às 02:00',
+    tags: ['bebidas', 'rock', 'shows', 'musica ao vivo', 'noite', 'amigos'],
+    image: '/bar_zeppelin.jpg',
+    zone: 'Vila Yolanda',
+    priceRange: '$$',
+    specialty: 'Shows de rock ao vivo com bandas e tributos',
+    differential: 'Point tradicional do rock em Foz do Iguaçu, com line-up de shows quase todo fim de semana'
   },
 
   // ==================== CAFÉ DA MANHÃ ====================
@@ -509,6 +588,19 @@ export const places = [
     priceRange: '$$',
     specialty: 'Cafés especiais em ambiente de coworking',
     differential: 'Une cafeteria, agência de viagens e espaço de trabalho compartilhado em um só lugar'
+  },
+  {
+    id: 'bella-foz-cafe',
+    name: 'Bella Foz Café, Padaria e Cafeteria',
+    category: 'cafeterias_docerias',
+    description: 'Padaria e cafeteria de bairro com pães fresquinhos, salgados e um cardápio completo de cafés, no Centro da cidade.',
+    address: 'Rua Jorge Sanwais, 1239 - Centro',
+    tags: ['cafe', 'padaria', 'doce', 'salgados', 'manha', 'tarde'],
+    image: '/cafe_bellafoz.jpg',
+    zone: 'Centro',
+    priceRange: '$',
+    specialty: 'Pães e salgados fresquinhos com cardápio completo de cafés',
+    differential: 'Padaria de bairro querida pela vizinhança, com ambiente simples e acolhedor'
   },
 
   // ==================== ACOMODAÇÕES ====================
