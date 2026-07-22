@@ -6,7 +6,6 @@ import Home from './pages/Home';
 import RouteGenerator from './pages/RouteGenerator';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import LoadingScreen from './components/LoadingScreen';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './index.css';
 
@@ -120,13 +119,8 @@ const Header = () => {
 };
 
 function App() {
-  const [loading, setLoading] = useState(true);
-
   return (
     <AuthProvider>
-      <AnimatePresence>
-        {loading && <LoadingScreen onFinish={() => setLoading(false)} />}
-      </AnimatePresence>
       <Router>
         <div className="app-container">
           <Header />
