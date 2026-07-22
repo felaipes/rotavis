@@ -73,7 +73,7 @@ const PlaceCard = ({ place }) => {
           {place.category.replace('_', ' ')}
         </div>
 
-        {place.avgPrice && (
+        {(place.avgPrice || place.entryFee !== undefined) && (
           <div style={{
             position: 'absolute',
             top: '10px',
@@ -91,7 +91,9 @@ const PlaceCard = ({ place }) => {
             gap: '4px'
           }}>
             <Wallet size={13} />
-            ~R$ {place.avgPrice} / pessoa
+            {place.avgPrice
+              ? `~R$ ${place.avgPrice} / pessoa`
+              : (place.entryFee === 'Gratuito' ? 'Entrada Gratuita' : `R$ ${place.entryFee} / ingresso`)}
           </div>
         )}
 

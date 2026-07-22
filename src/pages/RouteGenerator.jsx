@@ -1,14 +1,16 @@
 import React, { useState, useRef } from 'react';
 import { places } from '../data';
-import { Calendar, CheckCircle2, ChevronRight, Sun, Sunset, Moon, Briefcase, Map as MapIcon, Wallet, Star, Coffee, Tent, History, Utensils, GlassWater, Car, Footprints, Download, X, Activity, Rocket } from 'lucide-react';
+import { Calendar, CheckCircle2, ChevronRight, Sun, Sunset, Moon, Briefcase, Map as MapIcon, Wallet, Star, Coffee, Tent, History, Utensils, GlassWater, Car, Footprints, Download, X, Activity, Rocket, Clock } from 'lucide-react';
 
 import { jsPDF } from 'jspdf';
 import PlaceCard from '../components/PlaceCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { scorePlaces } from '../services/recommendationService';
+import { WEEKDAY_LABELS, WEEKDAY_SHORT, isPlaceAvailable, isOpenOnDay } from '../services/availabilityService';
 
 const RouteGenerator = () => {
   const [days, setDays] = useState(1);
+  const [startDay, setStartDay] = useState(new Date().getDay());
   const [route, setRoute] = useState(null);
   const [step, setStep] = useState(1);
   const [modalStage, setModalStage] = useState(null);
@@ -62,7 +64,8 @@ const RouteGenerator = () => {
             pdf.setFont('helvetica', 'bold');
             pdf.setFontSize(16);
             pdf.setTextColor(245, 158, 11); // Laranja/Ouro
-            pdf.text(`Dia ${dayPlan.day}`, 20, yOffset);
+            const weekdayLabel = WEEKDAY_LABELS[dayPlan.weekday] || '';
+            pdf.text(`Dia ${dayPlan.day} - ${weekdayLabel}`, 20, yOffset);
             yOffset += 10;
 
             const periods = [
@@ -143,49 +146,71 @@ const RouteGenerator = () => {
 
     let generatedDays = [];
     let usedIds = new Set();
-    
-    const getNextPlace = (pool, preferredZone = null, isFoot = false) => {
+
+    // Filtra o grupo de locais pelos que estão abertos no período/dia-da-semana pedidos.
+    // Se ninguém do grupo estiver disponível (caso raro), relaxa a exigência em vez de deixar o dia vazio.
+    const filterAvailable = (pool, periodKey, dayIndex) => {
+      const openNow = pool.filter(p => isPlaceAvailable(p, periodKey, dayIndex));
+      if (openNow.length > 0) return openNow;
+      const openToday = pool.filter(p => isOpenOnDay(p, dayIndex));
+      return openToday.length > 0 ? openToday : pool;
+    };
+
+    const getNextPlace = (pool, { preferredZone = null, periodKey = null, dayIndex = null, isFoot = false, strictProximity = false } = {}) => {
       let available = pool.filter(p => !usedIds.has(p.id));
       if (available.length === 0) return null;
-      
+
+      // 1. Só considera locais abertos no horário/dia planejados
+      if (periodKey && dayIndex !== null) {
+        available = filterAvailable(available, periodKey, dayIndex);
+      }
+
+      // 2. Prioriza proximidade (mesma zona do local anterior no roteiro)
       if (preferredZone) {
         let match = available.find(p => p.zone === preferredZone);
         if (match) {
           usedIds.add(match.id);
           return match;
         }
-        if (isFoot) {
-           let centro = available.find(p => p.zone === 'Centro');
-           if (centro) {
-             usedIds.add(centro.id);
-             return centro;
-           }
+        // Restaurantes sempre tentam um "hub" central antes de ignorar a proximidade;
+        // as demais categorias só fazem isso quando o deslocamento é a pé.
+        if (strictProximity || isFoot) {
+          let centro = available.find(p => p.zone === 'Centro');
+          if (centro) {
+            usedIds.add(centro.id);
+            return centro;
+          }
         }
       }
-      
+
       let selected = available[0];
       usedIds.add(selected.id);
       return selected;
     };
-    
+
     for (let i = 0; i < days; i++) {
       let isFoot = profile.transport === 'ape';
-      let mCafe = getNextPlace(cafes);
-      let mPasseio = getNextPlace(passeios, mCafe?.zone, isFoot);
-      
+      let dayIndex = (startDay + i) % 7;
+
+      let mCafe = getNextPlace(cafes, { periodKey: 'manha', dayIndex });
+      let mPasseio = getNextPlace(passeios, { preferredZone: mCafe?.zone, periodKey: 'manha', dayIndex, isFoot });
+
       let primaryZone = mPasseio?.zone || mCafe?.zone;
-      
-      let tRest = getNextPlace(restaurantes, primaryZone, isFoot);
-      let tPasseio = getNextPlace(passeios, tRest?.zone || primaryZone, isFoot) || getNextPlace(cafeterias, tRest?.zone || primaryZone, isFoot);
-      
+
+      // Restaurantes seguem preço (já aplicado pelo score) + proximidade do local anterior, sempre.
+      let tRest = getNextPlace(restaurantes, { preferredZone: primaryZone, periodKey: 'tarde', dayIndex, isFoot, strictProximity: true });
+      let tPasseio = getNextPlace(passeios, { preferredZone: tRest?.zone || primaryZone, periodKey: 'tarde', dayIndex, isFoot })
+        || getNextPlace(cafeterias, { preferredZone: tRest?.zone || primaryZone, periodKey: 'tarde', dayIndex, isFoot });
+
       let newPrimaryZone = tPasseio?.zone || tRest?.zone || primaryZone;
-      
-      let nLugar = (i % 2 === 0 && bares.filter(p => !usedIds.has(p.id)).length > 0) 
-        ? getNextPlace(bares, newPrimaryZone, isFoot) 
-        : getNextPlace(restaurantes, newPrimaryZone, isFoot);
-        
+
+      let nLugar = (i % 2 === 0 && bares.filter(p => !usedIds.has(p.id)).length > 0)
+        ? getNextPlace(bares, { preferredZone: newPrimaryZone, periodKey: 'noite', dayIndex, isFoot })
+        : getNextPlace(restaurantes, { preferredZone: newPrimaryZone, periodKey: 'noite', dayIndex, isFoot, strictProximity: true });
+
       generatedDays.push({
         day: i + 1,
+        weekday: dayIndex,
         manha: [mCafe, mPasseio].filter(Boolean),
         tarde: [tRest, tPasseio].filter(Boolean),
         noite: [nLugar].filter(Boolean)
@@ -193,7 +218,7 @@ const RouteGenerator = () => {
     }
 
     setRoute(generatedDays);
-    setStep(6);
+    setStep(8);
   };
 
   return (
@@ -330,15 +355,44 @@ const RouteGenerator = () => {
           )}
 
           {step === 5 && (
-            <motion.div 
-              key="step5"
+            <motion.div
+              key="step5_weekday"
+              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              className="liquid-glass" style={{ padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
+            >
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Em que dia da semana você chega?</h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '-15px', textAlign: 'center' }}>
+                Usamos isso para só recomendar lugares abertos em cada dia do seu roteiro.
+              </p>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {WEEKDAY_SHORT.map((label, idx) => (
+                  <button
+                    key={label}
+                    onClick={() => setStartDay(idx)}
+                    className={`btn-glass ${startDay === idx ? 'active' : ''}`}
+                    style={{ width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 'bold' }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
+                <button onClick={() => setStep(4)} className="btn-glass">Voltar</button>
+                <button onClick={() => setStep(6)} className="btn-gold" style={{ padding: '15px 30px' }}>Próximo <ChevronRight size={18} /></button>
+              </div>
+            </motion.div>
+          )}
+
+          {step === 6 && (
+            <motion.div
+              key="step6_days"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               className="liquid-glass" style={{ padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Quantos dias você ficará em Foz do Iguaçu?</h2>
               <div style={{ display: 'flex', gap: '15px' }}>
                 {[1, 2, 3, 4, 5].map(num => (
-                  <button 
+                  <button
                     key={num}
                     onClick={() => setDays(num)}
                     className={`btn-glass ${days === num ? 'active' : ''}`}
@@ -349,7 +403,7 @@ const RouteGenerator = () => {
                 ))}
               </div>
               <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
-                <button onClick={() => setStep(4)} className="btn-glass">Voltar</button>
+                <button onClick={() => setStep(5)} className="btn-glass">Voltar</button>
                 <button onClick={generateRoute} className="btn-gold" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
                   <Calendar style={{ marginRight: '10px' }} />
                   Gerar Meu Roteiro
@@ -360,7 +414,7 @@ const RouteGenerator = () => {
         </AnimatePresence>
       </div>
 
-      {step === 6 && route && (
+      {step === 8 && route && (
         <motion.div 
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -392,9 +446,12 @@ const RouteGenerator = () => {
                 </div>
               </div>
 
-              <h2 style={{ fontSize: '2rem', marginBottom: '30px' }} className="gold-gradient">
+              <h2 style={{ fontSize: '2rem', marginBottom: '5px' }} className="gold-gradient">
                 Dia {dayPlan.day}
               </h2>
+              <p style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '25px' }}>
+                <Clock size={15} /> {WEEKDAY_LABELS[dayPlan.weekday]}
+              </p>
 
               {/* Manhã */}
               <div style={{ marginBottom: '40px' }}>

@@ -26,7 +26,8 @@ export const places = [
     image: '/cataratas.jpg',
     images: ['/cataratas.jpg', '/cataratas_2.jpg', '/cataratas_3.jpg'],
     zone: 'Parque Nacional',
-    priceRange: '$$'
+    priceRange: '$$',
+    entryFee: 121
   },
   {
     id: 'parque-das-aves',
@@ -39,7 +40,8 @@ export const places = [
     image: '/parque_das_aves.jpg',
     images: ['/parque_das_aves.jpg', '/parque_das_aves_2.jpg', '/parque_das_aves_3.jpg'],
     zone: 'Avenida das Cataratas',
-    priceRange: '$$'
+    priceRange: '$$',
+    entryFee: 110
   },
   {
     id: 'itaipu-tour-panoramico',
@@ -52,7 +54,8 @@ export const places = [
     image: '/itaipu.jpg',
     images: ['/itaipu.jpg', '/itaipu_2.jpg', '/itaipu_3.jpg'],
     zone: 'Itaipu',
-    priceRange: '$'
+    priceRange: '$',
+    entryFee: 48
   },
   {
     id: 'iguassu-iluminado',
@@ -65,7 +68,8 @@ export const places = [
     image: '/itaipu_noite.jpg',
     images: ['/itaipu_noite.jpg', '/itaipu_noite_2.jpg', '/itaipu_noite_3.jpg'],
     zone: 'Itaipu',
-    priceRange: '$$'
+    priceRange: '$$',
+    entryFee: 192
   },
   {
     id: 'marco-tres-fronteiras',
@@ -78,7 +82,8 @@ export const places = [
     image: '/marco_tres_fronteiras.jpg',
     images: ['/marco_tres_fronteiras.jpg', '/marco_tres_fronteiras_2.jpg', '/marco_tres_fronteiras_3.jpg'],
     zone: 'Porto Meira',
-    priceRange: '$'
+    priceRange: '$',
+    entryFee: 'Gratuito'
   },
   {
     id: 'templo-budista-chen-tien',
@@ -91,7 +96,8 @@ export const places = [
     image: '/templo_budista.jpg',
     images: ['/templo_budista.jpg', '/templo_budista_2.jpg', '/templo_budista_3.jpg'],
     zone: 'Loteamento Sant\'Ana',
-    priceRange: '$'
+    priceRange: '$',
+    entryFee: 'Gratuito'
   },
   {
     id: 'mesquita-omar-ibn-al-khattab',
@@ -103,7 +109,8 @@ export const places = [
     image: '/mesquita.jpg',
     images: ['/mesquita.jpg', '/mesquita_2.jpg', '/mesquita_3.jpg'],
     zone: 'Centro',
-    priceRange: '$'
+    priceRange: '$',
+    entryFee: 'Gratuito'
   },
   {
     id: 'refugio-biologico-bela-vista',
@@ -116,7 +123,8 @@ export const places = [
     image: '/refugio_biologico.jpg',
     images: ['/refugio_biologico.jpg', '/refugio_biologico_2.jpg', '/refugio_biologico_3.jpg'],
     zone: 'Rodovia das Cataratas',
-    priceRange: '$'
+    priceRange: '$',
+    entryFee: 45
   },
   {
     id: 'dreamland-museu-de-cera',
@@ -129,7 +137,8 @@ export const places = [
     image: '/dreamland.jpg',
     images: ['/dreamland.jpg', '/dreamland_2.jpg', '/dreamland_3.jpg'],
     zone: 'Avenida das Cataratas',
-    priceRange: '$$'
+    priceRange: '$$',
+    entryFee: 99
   },
   {
     id: 'vale-dos-dinossauros',
@@ -142,7 +151,8 @@ export const places = [
     image: '/vale_dinossauros.jpg',
     images: ['/vale_dinossauros.jpg', '/vale_dinossauros_2.jpg', '/vale_dinossauros_3.jpg'],
     zone: 'Avenida das Cataratas',
-    priceRange: '$$'
+    priceRange: '$$',
+    entryFee: 94
   },
   {
     id: 'ponte-da-amizade-ciudad-del-este',
@@ -154,7 +164,8 @@ export const places = [
     image: '/ponte_amizade.jpg',
     images: ['/ponte_amizade.jpg', '/ponte_amizade_2.jpg', '/ponte_amizade_3.jpg'],
     zone: 'Fronteira',
-    priceRange: '$'
+    priceRange: '$',
+    entryFee: 'Gratuito'
   },
 
   // ==================== RESTAURANTES ====================
