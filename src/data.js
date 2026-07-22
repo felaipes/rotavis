@@ -27,7 +27,9 @@ export const places = [
     images: ['/cataratas.jpg', '/cataratas_2.jpg', '/cataratas_3.jpg'],
     zone: 'Parque Nacional',
     priceRange: '$$',
-    entryFee: 121
+    entryFee: 121,
+    specialty: 'Trilha de passarelas com vista da Garganta do Diabo',
+    differential: 'Eleito uma das Sete Maravilhas Naturais do Mundo, com 275 quedas d\'água'
   },
   {
     id: 'parque-das-aves',
@@ -41,7 +43,9 @@ export const places = [
     images: ['/parque_das_aves.jpg', '/parque_das_aves_2.jpg', '/parque_das_aves_3.jpg'],
     zone: 'Avenida das Cataratas',
     priceRange: '$$',
-    entryFee: 110
+    entryFee: 110,
+    specialty: 'Viveiros imersivos com araras e tucanos em voo livre',
+    differential: 'Um dos maiores parques de aves da América Latina, referência mundial em conservação'
   },
   {
     id: 'itaipu-tour-panoramico',
@@ -55,7 +59,9 @@ export const places = [
     images: ['/itaipu.jpg', '/itaipu_2.jpg', '/itaipu_3.jpg'],
     zone: 'Itaipu',
     priceRange: '$',
-    entryFee: 48
+    entryFee: 48,
+    specialty: 'Visita guiada à estrutura externa da represa',
+    differential: 'Uma das maiores usinas hidrelétricas do mundo em geração de energia'
   },
   {
     id: 'iguassu-iluminado',
@@ -69,7 +75,9 @@ export const places = [
     images: ['/itaipu_noite.jpg', '/itaipu_noite_2.jpg', '/itaipu_noite_3.jpg'],
     zone: 'Itaipu',
     priceRange: '$$',
-    entryFee: 192
+    entryFee: 192,
+    specialty: 'Show de luzes e projeções sincronizadas com trilha sonora',
+    differential: '747 refletores iluminam a barragem em um espetáculo único no país'
   },
   {
     id: 'marco-tres-fronteiras',
@@ -83,7 +91,9 @@ export const places = [
     images: ['/marco_tres_fronteiras.jpg', '/marco_tres_fronteiras_2.jpg', '/marco_tres_fronteiras_3.jpg'],
     zone: 'Porto Meira',
     priceRange: '$',
-    entryFee: 'Gratuito'
+    entryFee: 'Gratuito',
+    specialty: 'Vista do encontro dos rios Paraná e Iguaçu',
+    differential: 'Único ponto onde se avista Brasil, Argentina e Paraguai ao mesmo tempo'
   },
   {
     id: 'templo-budista-chen-tien',
@@ -97,7 +107,9 @@ export const places = [
     images: ['/templo_budista.jpg', '/templo_budista_2.jpg', '/templo_budista_3.jpg'],
     zone: 'Loteamento Sant\'Ana',
     priceRange: '$',
-    entryFee: 'Gratuito'
+    entryFee: 'Gratuito',
+    specialty: 'Arquitetura chinesa tradicional e Buda de bronze de 5,5m',
+    differential: 'Maior templo budista da América Latina'
   },
   {
     id: 'mesquita-omar-ibn-al-khattab',
@@ -110,7 +122,9 @@ export const places = [
     images: ['/mesquita.jpg', '/mesquita_2.jpg', '/mesquita_3.jpg'],
     zone: 'Centro',
     priceRange: '$',
-    entryFee: 'Gratuito'
+    entryFee: 'Gratuito',
+    specialty: 'Arquitetura árabe com cúpulas e minarete',
+    differential: 'Maior mesquita muçulmana da América do Sul'
   },
   {
     id: 'refugio-biologico-bela-vista',
@@ -124,7 +138,9 @@ export const places = [
     images: ['/refugio_biologico.jpg', '/refugio_biologico_2.jpg', '/refugio_biologico_3.jpg'],
     zone: 'Rodovia das Cataratas',
     priceRange: '$',
-    entryFee: 45
+    entryFee: 45,
+    specialty: 'Trilha guiada por mata nativa com observação de fauna resgatada',
+    differential: 'Criado pela Itaipu para reabilitar espécies desalojadas pela construção da represa'
   },
   {
     id: 'dreamland-museu-de-cera',
@@ -138,7 +154,9 @@ export const places = [
     images: ['/dreamland.jpg', '/dreamland_2.jpg', '/dreamland_3.jpg'],
     zone: 'Avenida das Cataratas',
     priceRange: '$$',
-    entryFee: 99
+    entryFee: 99,
+    specialty: 'Estátuas de cera hiper-realistas de personalidades',
+    differential: 'Cenários temáticos interativos para fotos com celebridades e personagens'
   },
   {
     id: 'vale-dos-dinossauros',
@@ -152,7 +170,9 @@ export const places = [
     images: ['/vale_dinossauros.jpg', '/vale_dinossauros_2.jpg', '/vale_dinossauros_3.jpg'],
     zone: 'Avenida das Cataratas',
     priceRange: '$$',
-    entryFee: 94
+    entryFee: 94,
+    specialty: 'Réplicas animatrônicas de dinossauros em tamanho real',
+    differential: 'Mais de 30 espécies, incluindo um Giganotossauro de 14 metros de altura'
   },
   {
     id: 'ponte-da-amizade-ciudad-del-este',
@@ -165,7 +185,9 @@ export const places = [
     images: ['/ponte_amizade.jpg', '/ponte_amizade_2.jpg', '/ponte_amizade_3.jpg'],
     zone: 'Fronteira',
     priceRange: '$',
-    entryFee: 'Gratuito'
+    entryFee: 'Gratuito',
+    specialty: 'Travessia para o comércio paraguaio',
+    differential: 'Principal ligação rodoviária entre Brasil e Paraguai, símbolo da integração da tríplice fronteira'
   },
 
   // ==================== RESTAURANTES ====================
@@ -333,7 +355,9 @@ export const places = [
     tags: ['bebidas', 'petiscos', 'centro', 'amigos', 'chope', 'cerveja', 'comidinhas'],
     image: '/bar_capitao.jpg',
     zone: 'Centro',
-    priceRange: '$$'
+    priceRange: '$$',
+    specialty: 'Picanha grelhada e nachos mexicanos',
+    differential: 'Ponto de encontro tradicional do Centro desde 1999, com música ao vivo'
   },
   {
     id: '277-craft-beer',
@@ -345,7 +369,9 @@ export const places = [
     tags: ['bebidas', 'cerveja artesanal', 'petiscos', 'amigos', 'noite'],
     image: '/bar_277craft.jpg',
     zone: 'Centro',
-    priceRange: '$$'
+    priceRange: '$$',
+    specialty: 'Cervejas artesanais de produção própria',
+    differential: 'Fábrica de cerveja funcionando no próprio local, com rótulos exclusivos'
   },
   {
     id: 'eden-steak-garden',
@@ -356,7 +382,9 @@ export const places = [
     tags: ['bebidas', 'chopp', 'petiscos', 'familia', 'noite'],
     image: '/bar_eden.jpg',
     zone: 'Avenida das Cataratas',
-    priceRange: '$$'
+    priceRange: '$$',
+    specialty: 'Chopps da casa e carnes grelhadas com salsichas',
+    differential: 'Beer garden ao ar livre com mesas comunais, inspirado nos biergartens alemães'
   },
   {
     id: 'bendito-bar-restaurante',
@@ -367,7 +395,9 @@ export const places = [
     tags: ['bebidas', 'petiscos', 'comidinhas', 'descontraido', 'noite'],
     image: '/bar_bendito.jpg',
     zone: 'Centro',
-    priceRange: '$$'
+    priceRange: '$$',
+    specialty: 'Bolinhos autorais (mandioca com costela, abóbora com carne seca)',
+    differential: 'Drinks autorais e releitura contemporânea da gastronomia brasileira'
   },
   {
     id: 'sky-bar-viale-tower',
@@ -379,7 +409,9 @@ export const places = [
     tags: ['bebidas', 'sofisticado', 'drinks', 'vista', 'romantico', 'elegante', 'luxo'],
     image: '/bar_skybar.webp',
     zone: 'Centro',
-    priceRange: '$$$'
+    priceRange: '$$$',
+    specialty: 'Drinks autorais com vista panorâmica',
+    differential: 'Único rooftop da cidade, no 17º andar com piscina de borda infinita'
   },
 
   // ==================== CAFÉ DA MANHÃ ====================
@@ -392,7 +424,9 @@ export const places = [
     tags: ['cafe', 'manha', 'pao', 'tradicional', 'comidinhas', 'salgados'],
     image: '/cafe_roma.jpg',
     zone: 'Centro',
-    priceRange: '$'
+    priceRange: '$',
+    specialty: 'Pães artesanais e café da manhã completo',
+    differential: 'Quase 50 anos de tradição no Centro de Foz do Iguaçu'
   },
   {
     id: 'famiglia-maran',
@@ -404,7 +438,9 @@ export const places = [
     tags: ['cafe', 'manha', 'colonial', 'familia', 'comida tipica', 'comidinhas'],
     image: '/cafe_maran.jpg',
     zone: 'Centro',
-    priceRange: '$$'
+    priceRange: '$$',
+    specialty: 'Pães frescos e buffet a qualquer hora',
+    differential: 'Funciona 24 horas por dia, todos os dias da semana'
   },
   {
     id: 'jauense-confeitaria',
@@ -416,7 +452,9 @@ export const places = [
     tags: ['cafe', 'manha', 'pao', 'tradicional', 'comidinhas'],
     image: '/cafe_jauense.jpg',
     zone: 'Centro',
-    priceRange: '$'
+    priceRange: '$',
+    specialty: 'Coxinha considerada a melhor da cidade',
+    differential: 'Tradição desde 1979, com mais de 45 anos de história'
   },
 
   // ==================== CAFETERIAS E DOCERIAS ====================
@@ -429,7 +467,9 @@ export const places = [
     tags: ['cafe', 'doce', 'bolo', 'sobremesa', 'tarde', 'romantico'],
     image: '/cafe_coar.jpg',
     zone: 'Centro',
-    priceRange: '$$'
+    priceRange: '$$',
+    specialty: 'Cafés especiais e bolos artesanais',
+    differential: 'Ambiente aconchegante pensado para tardes tranquilas de trabalho ou leitura'
   },
   {
     id: 'chocolato',
@@ -440,7 +480,9 @@ export const places = [
     tags: ['doce', 'chocolate', 'presente', 'sobremesa', 'comidinhas'],
     image: '/cafe_chocolato.jpg',
     zone: 'Centro',
-    priceRange: '$$'
+    priceRange: '$$',
+    specialty: 'Bombons e chocolate belga artesanal',
+    differential: 'A única chocolateria de Foz do Iguaçu'
   },
   {
     id: 'oficina-do-sorvete',
@@ -451,7 +493,9 @@ export const places = [
     tags: ['doce', 'sorvete', 'familia', 'kids', 'comidinhas'],
     image: '/cafe_oficinasorvete.png',
     zone: 'Centro',
-    priceRange: '$'
+    priceRange: '$',
+    specialty: 'Sorvetes de frutas nativas da Mata Atlântica',
+    differential: 'Mais de 30 anos de tradição, vencedora do Prêmio Nacional de Inovação em Sustentabilidade'
   },
   {
     id: 'cafe-com-passagem',
@@ -462,7 +506,9 @@ export const places = [
     tags: ['cafe', 'trabalho', 'cultura', 'tarde', 'comidinhas'],
     image: '/cafe_compassagem.jpg',
     zone: 'Centro',
-    priceRange: '$$'
+    priceRange: '$$',
+    specialty: 'Cafés especiais em ambiente de coworking',
+    differential: 'Une cafeteria, agência de viagens e espaço de trabalho compartilhado em um só lugar'
   },
 
   // ==================== ACOMODAÇÕES ====================
