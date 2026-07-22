@@ -63,7 +63,7 @@ const Home = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4 }}
-            className="liquid-glass"
+            className="liquid-glass search-field-wrapper"
             style={{ display: 'flex', padding: '8px', maxWidth: '600px', margin: '0 auto' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', padding: '0 15px' }}>

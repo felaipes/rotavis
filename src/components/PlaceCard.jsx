@@ -2,16 +2,22 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Clock, Wallet, ChefHat, Sparkles } from 'lucide-react';
 
 const PlaceCard = ({ place }) => {
+  // Hover cobre o mouse; tapped cobre toque/teclado, já que hover sozinho não é
+  // confiável em dispositivos móveis (regra "Hover vs Tap" da skill ui-ux-pro-max).
   const [isHovering, setIsHovering] = useState(false);
+  const [tapped, setTapped] = useState(false);
   const [imgIndex, setImgIndex] = useState(0);
   const intervalRef = useRef(null);
+
+  const active = isHovering || tapped;
 
   const gallery = place.images && place.images.length > 0 ? place.images : [place.image || '/foz_do_iguacu.jpg'];
   const hasCarousel = gallery.length > 1;
   const hasExtraInfo = Boolean(place.specialty || place.differential);
+  const isInteractive = hasCarousel || hasExtraInfo;
 
   useEffect(() => {
-    if (isHovering && hasCarousel) {
+    if (active && hasCarousel) {
       intervalRef.current = setInterval(() => {
         setImgIndex(i => (i + 1) % gallery.length);
       }, 1400);
@@ -19,24 +25,36 @@ const PlaceCard = ({ place }) => {
       setImgIndex(0);
     }
     return () => clearInterval(intervalRef.current);
-  }, [isHovering, hasCarousel, gallery.length]);
+  }, [active, hasCarousel, gallery.length]);
 
   return (
     <div
       className="liquid-glass"
+      role={isInteractive ? 'button' : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      aria-expanded={isInteractive ? active : undefined}
+      aria-label={isInteractive ? `${place.name}, toque para ver mais fotos e detalhes` : undefined}
       style={{
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
         position: 'relative',
-        zIndex: isHovering ? 10 : 1,
-        transform: isHovering ? 'scale(1.08) translateY(-6px)' : 'scale(1) translateY(0)',
-        boxShadow: isHovering ? '0 24px 48px rgba(7, 11, 20, 0.28)' : 'var(--card-shadow)',
-        transition: 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease'
+        zIndex: active ? 10 : 1,
+        transform: active ? 'scale(1.08) translateY(-6px)' : 'scale(1) translateY(0)',
+        boxShadow: active ? '0 24px 48px rgba(7, 11, 20, 0.28)' : 'var(--card-shadow)',
+        transition: 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease',
+        cursor: isInteractive ? 'pointer' : 'default'
       }}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
+      onClick={() => isInteractive && setTapped(v => !v)}
+      onKeyDown={(e) => {
+        if (isInteractive && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          setTapped(v => !v);
+        }
+      }}
     >
       <div style={{ position: 'relative', height: '200px', width: '100%', overflow: 'hidden' }}>
         {gallery.map((src, idx) => (
@@ -156,11 +174,11 @@ const PlaceCard = ({ place }) => {
             display: 'flex',
             flexDirection: 'column',
             gap: '10px',
-            maxHeight: isHovering ? '160px' : '0px',
-            opacity: isHovering ? 1 : 0,
-            marginTop: isHovering ? '15px' : '0px',
-            paddingTop: isHovering ? '14px' : '0px',
-            borderTop: isHovering ? '1px solid var(--card-border)' : '1px solid transparent',
+            maxHeight: active ? '160px' : '0px',
+            opacity: active ? 1 : 0,
+            marginTop: active ? '15px' : '0px',
+            paddingTop: active ? '14px' : '0px',
+            borderTop: active ? '1px solid var(--card-border)' : '1px solid transparent',
             overflow: 'hidden',
             transition: 'max-height 0.35s ease, opacity 0.3s ease, margin-top 0.35s ease, padding-top 0.35s ease, border-color 0.35s ease'
           }}>

@@ -459,8 +459,8 @@ const RouteGenerator = () => {
                   <Sun size={24} /> Manhã
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '20px' }}>
-                  {dayPlan.manha.map((place, idx) => place && (
-                    <PlaceCard key={`m-${idx}`} place={place} />
+                  {dayPlan.manha.map(place => place && (
+                    <PlaceCard key={place.id} place={place} />
                   ))}
                 </div>
               </div>
@@ -471,8 +471,8 @@ const RouteGenerator = () => {
                   <Sunset size={24} /> Tarde
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '20px' }}>
-                  {dayPlan.tarde.map((place, idx) => place && (
-                    <PlaceCard key={`t-${idx}`} place={place} />
+                  {dayPlan.tarde.map(place => place && (
+                    <PlaceCard key={place.id} place={place} />
                   ))}
                 </div>
               </div>
@@ -483,8 +483,8 @@ const RouteGenerator = () => {
                   <Moon size={24} /> Noite
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '20px' }}>
-                  {dayPlan.noite.map((place, idx) => place && (
-                    <PlaceCard key={`n-${idx}`} place={place} />
+                  {dayPlan.noite.map(place => place && (
+                    <PlaceCard key={place.id} place={place} />
                   ))}
                 </div>
               </div>
@@ -519,9 +519,11 @@ const RouteGenerator = () => {
             >
               {modalStage === 'confirm' && (
                 <>
-                  <button 
-                    onClick={() => setModalStage(null)} 
-                    style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                  <button
+                    onClick={() => setModalStage(null)}
+                    className="icon-btn"
+                    aria-label="Fechar"
+                    style={{ position: 'absolute', top: '8px', right: '8px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
                   >
                     <X size={24} />
                   </button>

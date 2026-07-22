@@ -10,6 +10,9 @@ dist-ssr/
 .env.local
 .env.*.local
 
+# Claude Code local skill tooling (dev aid, not part of the app)
+.claude/skills/
+
 # Editor/OS
 .vscode/*
 !.vscode/extensions.json

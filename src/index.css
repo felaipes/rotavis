@@ -127,6 +127,38 @@ video {
   max-width: 100%;
 }
 
+/* Campos de formulário: borda + anel de foco visíveis para navegação por teclado */
+.input-field {
+  border: 1px solid var(--card-border);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px var(--accent-gold-glow);
+}
+
+/* Contêineres com input sem borda própria: mostra o anel de foco no contêiner */
+.search-field-wrapper {
+  border: 1px solid transparent;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-field-wrapper:focus-within {
+  border-color: var(--green) !important;
+  box-shadow: 0 0 0 3px var(--accent-gold-glow);
+}
+
+/* Botões só-ícone: alvo de toque mínimo de 44x44px (WCAG / mobile UX) */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+}
+
 /* Header navigation: nav completa no desktop, botão hamburguer no mobile */
 .nav-desktop {
   display: flex;
@@ -140,8 +172,10 @@ video {
   border: none;
   cursor: pointer;
   color: var(--green-dark);
-  padding: 4px;
   align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 @media (max-width: 768px) {

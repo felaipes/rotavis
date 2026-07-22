@@ -59,7 +59,8 @@ const Login = () => {
                 required 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', border: '1px solid var(--card-border)', borderRadius: '8px', color: 'var(--text-main)', outline: 'none' }}
+                className="input-field"
+                style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', borderRadius: '8px', color: 'var(--text-main)' }}
                 placeholder="exemplo@email.com"
               />
             </div>
@@ -74,7 +75,8 @@ const Login = () => {
                 required 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', border: '1px solid var(--card-border)', borderRadius: '8px', color: 'var(--text-main)', outline: 'none' }}
+                className="input-field"
+                style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', borderRadius: '8px', color: 'var(--text-main)' }}
                 placeholder="••••••••"
               />
             </div>
