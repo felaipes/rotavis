@@ -15,6 +15,7 @@ const PlaceCard = ({ place }) => {
   const hasCarousel = gallery.length > 1;
   const hasExtraInfo = Boolean(place.specialty || place.differential);
   const isInteractive = hasCarousel || hasExtraInfo;
+  const differentialLabel = place.category === 'passeios' ? 'Curiosidade' : 'Informações Adicionais';
 
   useEffect(() => {
     if (active && hasCarousel) {
@@ -200,7 +201,7 @@ const PlaceCard = ({ place }) => {
                 padding: '10px 12px'
               }}>
                 <Sparkles size={16} color="#b8860b" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <span><strong>Diferencial:</strong> {place.differential}</span>
+                <span><strong>{differentialLabel}:</strong> {place.differential}</span>
               </div>
             )}
           </div>
