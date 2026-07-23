@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { places } from '../data';
-import { Calendar, CheckCircle2, ChevronRight, Sun, Sunset, Moon, Briefcase, Map as MapIcon, Wallet, Star, Coffee, Tent, History, Utensils, GlassWater, Car, Footprints, Download, X, Activity, Rocket, Clock } from 'lucide-react';
+import { Calendar, CheckCircle2, ChevronRight, Sun, Sunset, Moon, Briefcase, Map as MapIcon, Wallet, Star, Coffee, Tent, History, Utensils, GlassWater, Car, Footprints, Download, X, Activity, Rocket, Clock, Timer, Hourglass } from 'lucide-react';
 
 import { jsPDF } from 'jspdf';
 import PlaceCard from '../components/PlaceCard';
@@ -8,10 +8,41 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { scorePlaces } from '../services/recommendationService';
 import { WEEKDAY_LABELS, WEEKDAY_SHORT, isPlaceAvailable, isOpenOnDay } from '../services/availabilityService';
 
+// Filtra o grupo de locais pelos que estão abertos no período/dia-da-semana pedidos.
+// Se ninguém do grupo estiver disponível (caso raro), relaxa a exigência em vez de deixar o resultado vazio.
+const filterAvailable = (pool, periodKey, dayIndex) => {
+  const openNow = pool.filter(p => isPlaceAvailable(p, periodKey, dayIndex));
+  if (openNow.length > 0) return openNow;
+  const openToday = pool.filter(p => isOpenOnDay(p, dayIndex));
+  return openToday.length > 0 ? openToday : pool;
+};
+
+// Quantas paradas cabem no tempo livre informado para o roteiro de quem está a trabalho.
+const WORK_STOPS = { ate2h: 1, '2a4h': 2, mais4h: 3 };
+const WORK_DURATION_OPTIONS = [
+  { id: 'ate2h', label: 'Até 2 horas', icon: Clock },
+  { id: '2a4h', label: '2 a 4 horas', icon: Timer },
+  { id: 'mais4h', label: 'Mais de 4 horas', icon: Hourglass }
+];
+const WORK_PERIOD_OPTIONS = [
+  { id: 'manha', label: 'Manhã', icon: Sun },
+  { id: 'tarde', label: 'Tarde', icon: Sunset },
+  { id: 'noite', label: 'Noite', icon: Moon }
+];
+// Categorias que fazem sentido oferecer em cada horário livre entre compromissos de trabalho.
+const WORK_POOL_BY_PERIOD = {
+  manha: ['cafe_da_manha', 'passeios'],
+  tarde: ['passeios', 'restaurantes', 'cafeterias_docerias'],
+  noite: ['restaurantes', 'bares']
+};
+const PERIOD_LABELS = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' };
+const DURATION_LABELS = { ate2h: 'até 2 horas', '2a4h': '2 a 4 horas', mais4h: 'mais de 4 horas' };
+
 const RouteGenerator = () => {
   const [days, setDays] = useState(1);
   const [startDay, setStartDay] = useState(new Date().getDay());
   const [route, setRoute] = useState(null);
+  const [workRoute, setWorkRoute] = useState(null);
   const [step, setStep] = useState(1);
   const [modalStage, setModalStage] = useState(null);
   const routeRef = useRef(null);
@@ -19,7 +50,9 @@ const RouteGenerator = () => {
     reason: '',
     budget: '',
     transport: '',
-    preferences: []
+    preferences: [],
+    timeAvailable: '',
+    period: ''
   });
 
   const handlePreferenceToggle = (pref) => {
@@ -147,15 +180,6 @@ const RouteGenerator = () => {
     let generatedDays = [];
     let usedIds = new Set();
 
-    // Filtra o grupo de locais pelos que estão abertos no período/dia-da-semana pedidos.
-    // Se ninguém do grupo estiver disponível (caso raro), relaxa a exigência em vez de deixar o dia vazio.
-    const filterAvailable = (pool, periodKey, dayIndex) => {
-      const openNow = pool.filter(p => isPlaceAvailable(p, periodKey, dayIndex));
-      if (openNow.length > 0) return openNow;
-      const openToday = pool.filter(p => isOpenOnDay(p, dayIndex));
-      return openToday.length > 0 ? openToday : pool;
-    };
-
     const getNextPlace = (pool, { preferredZone = null, periodKey = null, dayIndex = null, isFoot = false, strictProximity = false } = {}) => {
       let available = pool.filter(p => !usedIds.has(p.id));
       if (available.length === 0) return null;
@@ -221,6 +245,35 @@ const RouteGenerator = () => {
     setStep(8);
   };
 
+  // Gera 2 alternativas de roteiro curto para o horário livre de quem está em viagem de trabalho.
+  const generateWorkRoute = (period, timeAvailable) => {
+    const scoredPlaces = scorePlaces(places, profile);
+    const cats = WORK_POOL_BY_PERIOD[period];
+    const pool = filterAvailable(scoredPlaces.filter(p => cats.includes(p.category)), period, startDay);
+    const stops = WORK_STOPS[timeAvailable] || 1;
+    const usedIds = new Set();
+
+    const pickChain = () => {
+      const chain = [];
+      let preferredZone = null;
+      for (let k = 0; k < stops; k++) {
+        const candidates = pool.filter(p => !usedIds.has(p.id));
+        if (candidates.length === 0) break;
+        const pick = (preferredZone && candidates.find(p => p.zone === preferredZone)) || candidates[0];
+        usedIds.add(pick.id);
+        preferredZone = pick.zone;
+        chain.push(pick);
+      }
+      return chain;
+    };
+
+    const optionA = pickChain();
+    const optionB = pickChain();
+
+    setWorkRoute({ period, timeAvailable, optionA, optionB });
+    setStep(9);
+  };
+
   return (
     <div className="container" style={{ padding: '60px 20px', minHeight: '80vh' }}>
       <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 40px' }}>
@@ -240,7 +293,7 @@ const RouteGenerator = () => {
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Qual o motivo da sua viagem?</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', width: '100%' }}>
-                <button 
+                <button
                   onClick={() => { setProfile({...profile, reason: 'trabalho'}); setStep(2); }}
                   className={`btn-glass ${profile.reason === 'trabalho' ? 'active' : ''}`}
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '30px' }}
@@ -383,7 +436,34 @@ const RouteGenerator = () => {
             </motion.div>
           )}
 
-          {step === 6 && (
+          {step === 6 && profile.reason === 'trabalho' && (
+            <motion.div
+              key="step6_work_duration"
+              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              className="liquid-glass" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
+            >
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Quanto tempo livre você tem por dia para passear?</h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '-15px', textAlign: 'center' }}>
+                Usamos isso para montar um roteiro curto que cabe entre os seus compromissos.
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', width: '100%' }}>
+                {WORK_DURATION_OPTIONS.map(d => (
+                  <button
+                    key={d.id}
+                    onClick={() => { setProfile({ ...profile, timeAvailable: d.id }); setStep(7); }}
+                    className={`btn-glass ${profile.timeAvailable === d.id ? 'active' : ''}`}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '25px' }}
+                  >
+                    <d.icon size={28} color="var(--green)" />
+                    <span style={{ fontSize: '1.1rem', fontWeight: 500 }}>{d.label}</span>
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => setStep(5)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+            </motion.div>
+          )}
+
+          {step === 6 && profile.reason !== 'trabalho' && (
             <motion.div
               key="step6_days"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
@@ -409,6 +489,30 @@ const RouteGenerator = () => {
                   Gerar Meu Roteiro
                 </button>
               </div>
+            </motion.div>
+          )}
+
+          {step === 7 && (
+            <motion.div
+              key="step7_period"
+              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              className="liquid-glass" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
+            >
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Qual horário do dia você costuma ter livre?</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '20px', width: '100%' }}>
+                {WORK_PERIOD_OPTIONS.map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => { setProfile({ ...profile, period: p.id }); generateWorkRoute(p.id, profile.timeAvailable); }}
+                    className={`btn-glass ${profile.period === p.id ? 'active' : ''}`}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '25px' }}
+                  >
+                    <p.icon size={28} color="var(--green)" />
+                    <span style={{ fontSize: '1.1rem', fontWeight: 500 }}>{p.label}</span>
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => setStep(6)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -499,6 +603,51 @@ const RouteGenerator = () => {
             <button onClick={handleSaveRoute} className="btn-gold" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
               <Download style={{ marginRight: '10px' }} />
               Salvar Meu Roteiro
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {step === 9 && workRoute && (
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}
+        >
+          <div style={{ textAlign: 'center' }}>
+            <h2 style={{ fontSize: 'clamp(1.6rem, 5vw, 2rem)', marginBottom: '10px' }} className="gold-gradient">
+              2 opções de roteiro para a sua {PERIOD_LABELS[workRoute.period]}
+            </h2>
+            <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '1rem' }}>
+              <Clock size={16} /> Pensado para {DURATION_LABELS[workRoute.timeAvailable]} livres, na {WEEKDAY_LABELS[startDay]}
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(340px, 100%), 1fr))', gap: '30px' }}>
+            {[
+              { label: 'Opção A', places: workRoute.optionA },
+              { label: 'Opção B', places: workRoute.optionB }
+            ].map(opt => (
+              <div key={opt.label} className="liquid-glass" style={{ padding: 'clamp(18px, 4vw, 25px)' }}>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '20px' }} className="text-gradient">
+                  {opt.label}
+                </h3>
+                {opt.places.length === 0 ? (
+                  <p style={{ color: 'var(--text-muted)' }}>Nenhum local disponível para esse horário no momento.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    {opt.places.map(place => (
+                      <PlaceCard key={place.id} place={place} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ textAlign: 'center' }}>
+            <button onClick={() => setStep(1)} className="btn-glass" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
+              Refazer Perfil
             </button>
           </div>
         </motion.div>
