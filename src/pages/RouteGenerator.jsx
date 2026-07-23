@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { places } from '../data';
-import { Calendar, CheckCircle2, ChevronRight, Sun, Sunset, Moon, Briefcase, Map as MapIcon, Wallet, Star, Coffee, Tent, History, Utensils, GlassWater, Car, Footprints, Download, X, Activity, Rocket, Clock, MapPinned, Users, Heart } from 'lucide-react';
+import { Calendar, CheckCircle2, ChevronRight, Sun, Sunset, Moon, Briefcase, Map as MapIcon, Wallet, Star, Coffee, Tent, History, Utensils, GlassWater, Car, Footprints, Download, X, Activity, Rocket, Clock, Timer, Hourglass } from 'lucide-react';
 
 import { jsPDF } from 'jspdf';
 import PlaceCard from '../components/PlaceCard';
@@ -9,10 +9,69 @@ import { scorePlaces } from '../services/recommendationService';
 import { trackRouteGenerated, trackNps } from '../services/analyticsService';
 import { WEEKDAY_LABELS, WEEKDAY_SHORT, isPlaceAvailable, isOpenOnDay } from '../services/availabilityService';
 
+// Filtra o grupo de locais pelos que estão abertos no período/dia-da-semana pedidos.
+// Se ninguém do grupo estiver disponível (caso raro), relaxa a exigência em vez de deixar o resultado vazio.
+const filterAvailable = (pool, periodKey, dayIndex) => {
+  const openNow = pool.filter(p => isPlaceAvailable(p, periodKey, dayIndex));
+  if (openNow.length > 0) return openNow;
+  const openToday = pool.filter(p => isOpenOnDay(p, dayIndex));
+  return openToday.length > 0 ? openToday : pool;
+};
+
+// Quantas paradas cabem no tempo livre informado para o roteiro de quem está a trabalho.
+const WORK_STOPS = { ate2h: 1, '2a4h': 2, mais4h: 3 };
+const WORK_DURATION_OPTIONS = [
+  { id: 'ate2h', label: 'Até 2 horas', icon: Clock },
+  { id: '2a4h', label: '2 a 4 horas', icon: Timer },
+  { id: 'mais4h', label: 'Mais de 4 horas', icon: Hourglass }
+];
+const WORK_PERIOD_OPTIONS = [
+  { id: 'manha', label: 'Manhã', icon: Sun },
+  { id: 'tarde', label: 'Tarde', icon: Sunset },
+  { id: 'noite', label: 'Noite', icon: Moon }
+];
+// Categorias que fazem sentido oferecer em cada horário livre entre compromissos de trabalho.
+const WORK_POOL_BY_PERIOD = {
+  manha: ['cafe_da_manha', 'passeios'],
+  tarde: ['passeios', 'restaurantes', 'cafeterias_docerias'],
+  noite: ['restaurantes', 'bares']
+};
+const PERIOD_LABELS = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' };
+const DURATION_LABELS = { ate2h: 'até 2 horas', '2a4h': '2 a 4 horas', mais4h: 'mais de 4 horas' };
+
+const INTEREST_OPTIONS = [
+  { id: 'cafe', label: 'Café', icon: Coffee },
+  { id: 'natureza', label: 'Natureza', icon: Tent },
+  { id: 'historico', label: 'História', icon: History },
+  { id: 'comidinhas', label: 'Gastronomia', icon: Utensils },
+  { id: 'bebidas', label: 'Vida Noturna', icon: GlassWater },
+  { id: 'familia', label: 'Família', icon: Sun },
+  { id: 'religiao', label: 'Religioso', icon: Star },
+  { id: 'esporte', label: 'Aventura/Esportes', icon: Activity },
+  { id: 'compras', label: 'Compras/Fronteira', icon: Rocket }
+];
+// Subfiltros exibidos quando o interesse "pai" correspondente está ativo, para refinar a busca.
+const SUB_FILTERS = {
+  religiao: [
+    { id: 'budismo', label: 'Budismo' },
+    { id: 'islamismo', label: 'Islamismo' },
+    { id: 'catolicismo', label: 'Catolicismo' }
+  ],
+  comidinhas: [
+    { id: 'churrasco', label: 'Churrasco/Carnes' },
+    { id: 'frutos do mar', label: 'Frutos do Mar' },
+    { id: 'arabe', label: 'Árabe' },
+    { id: 'japonesa', label: 'Japonesa' },
+    { id: 'italiana', label: 'Italiana' },
+    { id: 'baiana', label: 'Nordestina' }
+  ]
+};
+
 const RouteGenerator = () => {
   const [days, setDays] = useState(1);
   const [startDay, setStartDay] = useState(new Date().getDay());
   const [route, setRoute] = useState(null);
+  const [workRoute, setWorkRoute] = useState(null);
   const [step, setStep] = useState(1);
   const [modalStage, setModalStage] = useState(null);
   const routeRef = useRef(null);
@@ -21,8 +80,9 @@ const RouteGenerator = () => {
     budget: '',
     transport: '',
     preferences: [],
-    origin: '',
-    groupType: ''
+    timeAvailable: '',
+    period: '',
+    totalBudget: null
   });
   const [showNps, setShowNps] = useState(false);
   const [npsScore, setNpsScore] = useState(null);
@@ -149,19 +209,14 @@ const RouteGenerator = () => {
     const bares = scoredPlaces.filter(p => p.category === 'bares');
     const cafeterias = scoredPlaces.filter(p => p.category === 'cafeterias_docerias');
 
+    // Orçamento total dividido igualmente entre os dias do roteiro (null = sem restrição de orçamento).
+    const dailyBudget = profile.totalBudget && days > 0 ? Number(profile.totalBudget) / days : null;
+    const priceOf = (p) => p?.avgPrice ?? (typeof p?.entryFee === 'number' ? p.entryFee : 0);
+
     let generatedDays = [];
     let usedIds = new Set();
 
-    // Filtra o grupo de locais pelos que estão abertos no período/dia-da-semana pedidos.
-    // Se ninguém do grupo estiver disponível (caso raro), relaxa a exigência em vez de deixar o dia vazio.
-    const filterAvailable = (pool, periodKey, dayIndex) => {
-      const openNow = pool.filter(p => isPlaceAvailable(p, periodKey, dayIndex));
-      if (openNow.length > 0) return openNow;
-      const openToday = pool.filter(p => isOpenOnDay(p, dayIndex));
-      return openToday.length > 0 ? openToday : pool;
-    };
-
-    const getNextPlace = (pool, { preferredZone = null, periodKey = null, dayIndex = null, isFoot = false, strictProximity = false } = {}) => {
+    const getNextPlace = (pool, { preferredZone = null, periodKey = null, dayIndex = null, isFoot = false, strictProximity = false, maxPrice = null } = {}) => {
       let available = pool.filter(p => !usedIds.has(p.id));
       if (available.length === 0) return null;
 
@@ -170,9 +225,13 @@ const RouteGenerator = () => {
         available = filterAvailable(available, periodKey, dayIndex);
       }
 
+      // Dentre os candidatos, prioriza os que cabem no orçamento restante do dia (quando há um definido).
+      const fitsBudget = (p) => maxPrice == null || priceOf(p) <= maxPrice;
+
       // 2. Prioriza proximidade (mesma zona do local anterior no roteiro)
       if (preferredZone) {
-        let match = available.find(p => p.zone === preferredZone);
+        let zoneMatches = available.filter(p => p.zone === preferredZone);
+        let match = zoneMatches.find(fitsBudget) || zoneMatches[0];
         if (match) {
           usedIds.add(match.id);
           return match;
@@ -180,7 +239,8 @@ const RouteGenerator = () => {
         // Restaurantes sempre tentam um "hub" central antes de ignorar a proximidade;
         // as demais categorias só fazem isso quando o deslocamento é a pé.
         if (strictProximity || isFoot) {
-          let centro = available.find(p => p.zone === 'Centro');
+          let centroMatches = available.filter(p => p.zone === 'Centro');
+          let centro = centroMatches.find(fitsBudget) || centroMatches[0];
           if (centro) {
             usedIds.add(centro.id);
             return centro;
@@ -188,7 +248,7 @@ const RouteGenerator = () => {
         }
       }
 
-      let selected = available[0];
+      let selected = available.find(fitsBudget) || available[0];
       usedIds.add(selected.id);
       return selected;
     };
@@ -196,29 +256,43 @@ const RouteGenerator = () => {
     for (let i = 0; i < days; i++) {
       let isFoot = profile.transport === 'ape';
       let dayIndex = (startDay + i) % 7;
+      let remainingBudget = dailyBudget;
+
+      const spend = (place) => {
+        if (remainingBudget != null && place) remainingBudget = Math.max(0, remainingBudget - priceOf(place));
+      };
 
       let mCafe = getNextPlace(cafes, { periodKey: 'manha', dayIndex });
-      let mPasseio = getNextPlace(passeios, { preferredZone: mCafe?.zone, periodKey: 'manha', dayIndex, isFoot });
+      let mPasseio = getNextPlace(passeios, { preferredZone: mCafe?.zone, periodKey: 'manha', dayIndex, isFoot, maxPrice: remainingBudget });
+      spend(mPasseio);
 
       let primaryZone = mPasseio?.zone || mCafe?.zone;
 
       // Restaurantes seguem preço (já aplicado pelo score) + proximidade do local anterior, sempre.
-      let tRest = getNextPlace(restaurantes, { preferredZone: primaryZone, periodKey: 'tarde', dayIndex, isFoot, strictProximity: true });
-      let tPasseio = getNextPlace(passeios, { preferredZone: tRest?.zone || primaryZone, periodKey: 'tarde', dayIndex, isFoot })
+      let tRest = getNextPlace(restaurantes, { preferredZone: primaryZone, periodKey: 'tarde', dayIndex, isFoot, strictProximity: true, maxPrice: remainingBudget });
+      spend(tRest);
+      let tPasseio = getNextPlace(passeios, { preferredZone: tRest?.zone || primaryZone, periodKey: 'tarde', dayIndex, isFoot, maxPrice: remainingBudget })
         || getNextPlace(cafeterias, { preferredZone: tRest?.zone || primaryZone, periodKey: 'tarde', dayIndex, isFoot });
+      spend(tPasseio);
 
       let newPrimaryZone = tPasseio?.zone || tRest?.zone || primaryZone;
 
       let nLugar = (i % 2 === 0 && bares.filter(p => !usedIds.has(p.id)).length > 0)
         ? getNextPlace(bares, { preferredZone: newPrimaryZone, periodKey: 'noite', dayIndex, isFoot })
-        : getNextPlace(restaurantes, { preferredZone: newPrimaryZone, periodKey: 'noite', dayIndex, isFoot, strictProximity: true });
+        : getNextPlace(restaurantes, { preferredZone: newPrimaryZone, periodKey: 'noite', dayIndex, isFoot, strictProximity: true, maxPrice: remainingBudget });
+      spend(nLugar);
+
+      const dayPlaces = [mCafe, mPasseio, tRest, tPasseio, nLugar].filter(Boolean);
+      const estimatedCost = dayPlaces.reduce((sum, p) => sum + priceOf(p), 0);
 
       generatedDays.push({
         day: i + 1,
         weekday: dayIndex,
         manha: [mCafe, mPasseio].filter(Boolean),
         tarde: [tRest, tPasseio].filter(Boolean),
-        noite: [nLugar].filter(Boolean)
+        noite: [nLugar].filter(Boolean),
+        dailyBudget,
+        estimatedCost
       });
     }
 
@@ -228,6 +302,35 @@ const RouteGenerator = () => {
     setStep(10);
     // Show NPS popup after 3 seconds
     setTimeout(() => setShowNps(true), 3000);
+  };
+
+  // Gera 2 alternativas de roteiro curto para o horário livre de quem está em viagem de trabalho.
+  const generateWorkRoute = (period, timeAvailable) => {
+    const scoredPlaces = scorePlaces(places, profile);
+    const cats = WORK_POOL_BY_PERIOD[period];
+    const pool = filterAvailable(scoredPlaces.filter(p => cats.includes(p.category)), period, startDay);
+    const stops = WORK_STOPS[timeAvailable] || 1;
+    const usedIds = new Set();
+
+    const pickChain = () => {
+      const chain = [];
+      let preferredZone = null;
+      for (let k = 0; k < stops; k++) {
+        const candidates = pool.filter(p => !usedIds.has(p.id));
+        if (candidates.length === 0) break;
+        const pick = (preferredZone && candidates.find(p => p.zone === preferredZone)) || candidates[0];
+        usedIds.add(pick.id);
+        preferredZone = pick.zone;
+        chain.push(pick);
+      }
+      return chain;
+    };
+
+    const optionA = pickChain();
+    const optionB = pickChain();
+
+    setWorkRoute({ period, timeAvailable, optionA, optionB });
+    setStep(9);
   };
 
   return (
@@ -249,7 +352,7 @@ const RouteGenerator = () => {
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Qual o motivo da sua viagem?</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', width: '100%' }}>
-                <button 
+                <button
                   onClick={() => { setProfile({...profile, reason: 'trabalho'}); setStep(2); }}
                   className={`btn-glass ${profile.reason === 'trabalho' ? 'active' : ''}`}
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '30px' }}
@@ -390,18 +493,8 @@ const RouteGenerator = () => {
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Quais são os seus interesses? (Selecione vários)</h2>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', justifyContent: 'center' }}>
-                {[
-                  { id: 'cafe', label: 'Café', icon: Coffee },
-                  { id: 'natureza', label: 'Natureza', icon: Tent },
-                  { id: 'historico', label: 'História', icon: History },
-                  { id: 'comidinhas', label: 'Gastronomia', icon: Utensils },
-                  { id: 'bebidas', label: 'Vida Noturna', icon: GlassWater },
-                  { id: 'familia', label: 'Família', icon: Sun },
-                  { id: 'religiao', label: 'Religioso', icon: Star },
-                  { id: 'esporte', label: 'Aventura/Esportes', icon: Activity },
-                  { id: 'compras', label: 'Compras/Fronteira', icon: Rocket }
-                ].map(pref => (
-                  <button 
+                {INTEREST_OPTIONS.map(pref => (
+                  <button
                     key={pref.id}
                     onClick={() => handlePreferenceToggle(pref.id)}
                     className={`btn-glass ${profile.preferences.includes(pref.id) ? 'active' : ''}`}
@@ -412,6 +505,36 @@ const RouteGenerator = () => {
                   </button>
                 ))}
               </div>
+
+              {Object.keys(SUB_FILTERS).filter(parentId => profile.preferences.includes(parentId)).map(parentId => (
+                <div key={parentId} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', marginTop: '-15px' }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                    Refine {INTEREST_OPTIONS.find(p => p.id === parentId)?.label}:
+                  </span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
+                    {parentId === 'religiao' && (
+                      <button
+                        onClick={() => setProfile(prev => ({ ...prev, preferences: prev.preferences.filter(p => !SUB_FILTERS.religiao.some(s => s.id === p)) }))}
+                        className={`btn-glass ${SUB_FILTERS.religiao.every(sub => !profile.preferences.includes(sub.id)) ? 'active' : ''}`}
+                        style={{ padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem' }}
+                      >
+                        Ver todas
+                      </button>
+                    )}
+                    {SUB_FILTERS[parentId].map(sub => (
+                      <button
+                        key={sub.id}
+                        onClick={() => handlePreferenceToggle(sub.id)}
+                        className={`btn-glass ${profile.preferences.includes(sub.id) ? 'active' : ''}`}
+                        style={{ padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem' }}
+                      >
+                        {sub.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
               <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
                 <button onClick={() => setStep(5)} className="btn-glass">Voltar</button>
                 <button onClick={() => setStep(7)} className="btn-gold" style={{ padding: '15px 30px' }}>Próximo <ChevronRight size={18} /></button>
@@ -448,7 +571,34 @@ const RouteGenerator = () => {
             </motion.div>
           )}
 
-          {step === 8 && (
+          {step === 6 && profile.reason === 'trabalho' && (
+            <motion.div
+              key="step6_work_duration"
+              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              className="liquid-glass" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
+            >
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Quanto tempo livre você tem por dia para passear?</h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '-15px', textAlign: 'center' }}>
+                Usamos isso para montar um roteiro curto que cabe entre os seus compromissos.
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', width: '100%' }}>
+                {WORK_DURATION_OPTIONS.map(d => (
+                  <button
+                    key={d.id}
+                    onClick={() => { setProfile({ ...profile, timeAvailable: d.id }); setStep(7); }}
+                    className={`btn-glass ${profile.timeAvailable === d.id ? 'active' : ''}`}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '25px' }}
+                  >
+                    <d.icon size={28} color="var(--green)" />
+                    <span style={{ fontSize: '1.1rem', fontWeight: 500 }}>{d.label}</span>
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => setStep(5)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+            </motion.div>
+          )}
+
+          {step === 6 && profile.reason !== 'trabalho' && (
             <motion.div
               key="step8_days"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
@@ -468,7 +618,78 @@ const RouteGenerator = () => {
                 ))}
               </div>
               <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
-                <button onClick={() => setStep(7)} className="btn-glass">Voltar</button>
+                <button onClick={() => setStep(5)} className="btn-glass">Voltar</button>
+                <button onClick={() => setStep(7)} className="btn-gold" style={{ padding: '15px 30px' }}>Próximo <ChevronRight size={18} /></button>
+              </div>
+            </motion.div>
+          )}
+
+          {step === 7 && profile.reason === 'trabalho' && (
+            <motion.div
+              key="step7_period"
+              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              className="liquid-glass" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
+            >
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Qual horário do dia você costuma ter livre?</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '20px', width: '100%' }}>
+                {WORK_PERIOD_OPTIONS.map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => { setProfile({ ...profile, period: p.id }); generateWorkRoute(p.id, profile.timeAvailable); }}
+                    className={`btn-glass ${profile.period === p.id ? 'active' : ''}`}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '25px' }}
+                  >
+                    <p.icon size={28} color="var(--green)" />
+                    <span style={{ fontSize: '1.1rem', fontWeight: 500 }}>{p.label}</span>
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => setStep(6)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+            </motion.div>
+          )}
+
+          {step === 7 && profile.reason !== 'trabalho' && (
+            <motion.div
+              key="step7_budget"
+              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              className="liquid-glass" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
+            >
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Qual o orçamento total da sua viagem?</h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '-15px', textAlign: 'center' }}>
+                Dividimos esse valor entre os {days} {days === 1 ? 'dia' : 'dias'} do seu roteiro para sugerir lugares que cabem no bolso.
+              </p>
+              <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {[500, 1000, 2000, 3500].map(val => (
+                  <button
+                    key={val}
+                    onClick={() => setProfile({ ...profile, totalBudget: val })}
+                    className={`btn-glass ${profile.totalBudget === val ? 'active' : ''}`}
+                    style={{ padding: '15px 20px', fontWeight: 500 }}
+                  >
+                    R$ {val.toLocaleString('pt-BR')}
+                  </button>
+                ))}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Ou informe um valor:</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="50"
+                  placeholder="R$"
+                  className="input-field"
+                  value={profile.totalBudget ?? ''}
+                  onChange={(e) => setProfile({ ...profile, totalBudget: e.target.value === '' ? null : Number(e.target.value) })}
+                  style={{ width: '140px', padding: '10px 12px', borderRadius: '8px', fontSize: '1rem' }}
+                />
+              </div>
+              {profile.totalBudget > 0 && (
+                <p style={{ color: 'var(--green-dark)', fontWeight: 600 }}>
+                  ≈ R$ {Math.round(profile.totalBudget / days).toLocaleString('pt-BR')} por dia
+                </p>
+              )}
+              <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
+                <button onClick={() => setStep(6)} className="btn-glass">Voltar</button>
                 <button onClick={generateRoute} className="btn-gold" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
                   <Calendar style={{ marginRight: '10px' }} />
                   Gerar Meu Roteiro
@@ -514,9 +735,21 @@ const RouteGenerator = () => {
               <h2 style={{ fontSize: '2rem', marginBottom: '5px' }} className="gold-gradient">
                 Dia {dayPlan.day}
               </h2>
-              <p style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '25px' }}>
+              <p style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: dayPlan.dailyBudget ? '10px' : '25px' }}>
                 <Clock size={15} /> {WEEKDAY_LABELS[dayPlan.weekday]}
               </p>
+
+              {dayPlan.dailyBudget != null && (
+                <p style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', fontWeight: 600,
+                  marginBottom: '25px', padding: '6px 14px', borderRadius: '99px',
+                  background: dayPlan.estimatedCost > dayPlan.dailyBudget ? 'rgba(220, 38, 38, 0.1)' : 'var(--accent-gold-glow)',
+                  color: dayPlan.estimatedCost > dayPlan.dailyBudget ? '#dc2626' : 'var(--green-dark)'
+                }}>
+                  <Wallet size={15} />
+                  Orçamento do dia: ~R$ {Math.round(dayPlan.estimatedCost).toLocaleString('pt-BR')} de R$ {Math.round(dayPlan.dailyBudget).toLocaleString('pt-BR')}
+                </p>
+              )}
 
               {/* Manhã */}
               <div style={{ marginBottom: '40px' }}>
@@ -564,6 +797,51 @@ const RouteGenerator = () => {
             <button onClick={handleSaveRoute} className="btn-gold" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
               <Download style={{ marginRight: '10px' }} />
               Salvar Meu Roteiro
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {step === 9 && workRoute && (
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}
+        >
+          <div style={{ textAlign: 'center' }}>
+            <h2 style={{ fontSize: 'clamp(1.6rem, 5vw, 2rem)', marginBottom: '10px' }} className="gold-gradient">
+              2 opções de roteiro para a sua {PERIOD_LABELS[workRoute.period]}
+            </h2>
+            <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '1rem' }}>
+              <Clock size={16} /> Pensado para {DURATION_LABELS[workRoute.timeAvailable]} livres, na {WEEKDAY_LABELS[startDay]}
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(340px, 100%), 1fr))', gap: '30px' }}>
+            {[
+              { label: 'Opção A', places: workRoute.optionA },
+              { label: 'Opção B', places: workRoute.optionB }
+            ].map(opt => (
+              <div key={opt.label} className="liquid-glass" style={{ padding: 'clamp(18px, 4vw, 25px)' }}>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '20px' }} className="text-gradient">
+                  {opt.label}
+                </h3>
+                {opt.places.length === 0 ? (
+                  <p style={{ color: 'var(--text-muted)' }}>Nenhum local disponível para esse horário no momento.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    {opt.places.map(place => (
+                      <PlaceCard key={place.id} place={place} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ textAlign: 'center' }}>
+            <button onClick={() => setStep(1)} className="btn-glass" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
+              Refazer Perfil
             </button>
           </div>
         </motion.div>

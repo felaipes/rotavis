@@ -102,7 +102,7 @@ export const places = [
     description: 'Maior templo budista da América Latina, com arquitetura chinesa tradicional, jardins e um Buda de bronze de 5,5 metros.',
     address: 'Rua Um, s/n - Loteamento Sant\'Ana',
     time: '08:00 às 18:00',
-    tags: ['passeio', 'cultura', 'religiao', 'fotos', 'gratis', 'historico'],
+    tags: ['passeio', 'cultura', 'religiao', 'budismo', 'fotos', 'gratis', 'historico'],
     image: '/templo_budista.jpg',
     images: ['/templo_budista.jpg', '/templo_budista_2.jpg', '/templo_budista_3.jpg'],
     zone: 'Loteamento Sant\'Ana',
@@ -117,7 +117,7 @@ export const places = [
     category: 'passeios',
     description: 'A maior mesquita muçulmana da América do Sul, reflexo da forte comunidade árabe da tríplice fronteira. Visitas guiadas disponíveis.',
     address: 'Av. Ipiranga, esquina com Muhammad Ali - Centro',
-    tags: ['passeio', 'cultura', 'religiao', 'historico', 'gratis'],
+    tags: ['passeio', 'cultura', 'religiao', 'islamismo', 'historico', 'gratis'],
     image: '/mesquita.jpg',
     images: ['/mesquita.jpg', '/mesquita_2.jpg', '/mesquita_3.jpg'],
     zone: 'Centro',
@@ -221,6 +221,22 @@ export const places = [
     entryFee: 'Gratuito',
     specialty: 'Acervo histórico, arqueológico e ambiental da região do reservatório',
     differential: 'Coleção botânica e histórica reunida desde antes da formação do lago de Itaipu, entrada gratuita'
+  },
+  {
+    id: 'catedral-sao-joao-batista',
+    name: 'Catedral São João Batista',
+    category: 'passeios',
+    description: 'A igreja mais antiga de Foz do Iguaçu, com torre-sineira histórica no coração do Centro. Foi a Catedral oficial da Diocese até 2007.',
+    address: 'Av. Jorge Schimmelpfeng, 70 - Centro',
+    time: '08:00 às 18:00',
+    tags: ['passeio', 'cultura', 'religiao', 'catolicismo', 'historico', 'gratis', 'fotos'],
+    image: '/catedral_sao_joao_batista.jpg',
+    images: ['/catedral_sao_joao_batista.jpg', '/catedral_sao_joao_batista_2.jpg', '/catedral_sao_joao_batista_3.jpg'],
+    zone: 'Centro',
+    priceRange: '$',
+    entryFee: 'Gratuito',
+    specialty: 'Igreja mais antiga da cidade, erguida na década de 1920',
+    differential: 'Foi a Catedral oficial da Diocese de Foz do Iguaçu até 2007, completando 100 anos em 2024'
   },
 
   // ==================== RESTAURANTES ====================
