@@ -53,7 +53,8 @@ const INTEREST_OPTIONS = [
 const SUB_FILTERS = {
   religiao: [
     { id: 'budismo', label: 'Budismo' },
-    { id: 'islamismo', label: 'Islamismo' }
+    { id: 'islamismo', label: 'Islamismo' },
+    { id: 'catolicismo', label: 'Catolicismo' }
   ],
   comidinhas: [
     { id: 'churrasco', label: 'Churrasco/Carnes' },
@@ -448,6 +449,15 @@ const RouteGenerator = () => {
                     Refine {INTEREST_OPTIONS.find(p => p.id === parentId)?.label}:
                   </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
+                    {parentId === 'religiao' && (
+                      <button
+                        onClick={() => setProfile(prev => ({ ...prev, preferences: prev.preferences.filter(p => !SUB_FILTERS.religiao.some(s => s.id === p)) }))}
+                        className={`btn-glass ${SUB_FILTERS.religiao.every(sub => !profile.preferences.includes(sub.id)) ? 'active' : ''}`}
+                        style={{ padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem' }}
+                      >
+                        Ver todas
+                      </button>
+                    )}
                     {SUB_FILTERS[parentId].map(sub => (
                       <button
                         key={sub.id}

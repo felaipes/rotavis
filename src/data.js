@@ -222,6 +222,22 @@ export const places = [
     specialty: 'Acervo histórico, arqueológico e ambiental da região do reservatório',
     differential: 'Coleção botânica e histórica reunida desde antes da formação do lago de Itaipu, entrada gratuita'
   },
+  {
+    id: 'catedral-sao-joao-batista',
+    name: 'Catedral São João Batista',
+    category: 'passeios',
+    description: 'A igreja mais antiga de Foz do Iguaçu, com torre-sineira histórica no coração do Centro. Foi a Catedral oficial da Diocese até 2007.',
+    address: 'Av. Jorge Schimmelpfeng, 70 - Centro',
+    time: '08:00 às 18:00',
+    tags: ['passeio', 'cultura', 'religiao', 'catolicismo', 'historico', 'gratis', 'fotos'],
+    image: '/catedral_sao_joao_batista.jpg',
+    images: ['/catedral_sao_joao_batista.jpg', '/catedral_sao_joao_batista_2.jpg', '/catedral_sao_joao_batista_3.jpg'],
+    zone: 'Centro',
+    priceRange: '$',
+    entryFee: 'Gratuito',
+    specialty: 'Igreja mais antiga da cidade, erguida na década de 1920',
+    differential: 'Foi a Catedral oficial da Diocese de Foz do Iguaçu até 2007, completando 100 anos em 2024'
+  },
 
   // ==================== RESTAURANTES ====================
   {
