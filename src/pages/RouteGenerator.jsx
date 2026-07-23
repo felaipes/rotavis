@@ -1,11 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { places } from '../data';
-import { Calendar, CheckCircle2, ChevronRight, Sun, Sunset, Moon, Briefcase, Map as MapIcon, Wallet, Star, Coffee, Tent, History, Utensils, GlassWater, Car, Footprints, Download, X, Activity, Rocket, Clock } from 'lucide-react';
+import { Calendar, CheckCircle2, ChevronRight, Sun, Sunset, Moon, Briefcase, Map as MapIcon, Wallet, Star, Coffee, Tent, History, Utensils, GlassWater, Car, Footprints, Download, X, Activity, Rocket, Clock, MapPinned, Users, Heart } from 'lucide-react';
 
 import { jsPDF } from 'jspdf';
 import PlaceCard from '../components/PlaceCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { scorePlaces } from '../services/recommendationService';
+import { trackRouteGenerated, trackNps } from '../services/analyticsService';
 import { WEEKDAY_LABELS, WEEKDAY_SHORT, isPlaceAvailable, isOpenOnDay } from '../services/availabilityService';
 
 const RouteGenerator = () => {
@@ -19,8 +20,12 @@ const RouteGenerator = () => {
     reason: '',
     budget: '',
     transport: '',
-    preferences: []
+    preferences: [],
+    origin: '',
+    groupType: ''
   });
+  const [showNps, setShowNps] = useState(false);
+  const [npsScore, setNpsScore] = useState(null);
 
   const handlePreferenceToggle = (pref) => {
     setProfile(prev => {
@@ -218,7 +223,11 @@ const RouteGenerator = () => {
     }
 
     setRoute(generatedDays);
-    setStep(8);
+    // Track the generated route for the admin observatory
+    trackRouteGenerated(profile, generatedDays, days, startDay);
+    setStep(10);
+    // Show NPS popup after 3 seconds
+    setTimeout(() => setShowNps(true), 3000);
   };
 
   return (
@@ -262,7 +271,63 @@ const RouteGenerator = () => {
 
           {step === 2 && (
             <motion.div 
-              key="step2"
+              key="step2_origin"
+              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              className="liquid-glass" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
+            >
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}><MapPinned size={24} style={{ marginRight: '8px', verticalAlign: 'middle' }} />De onde você vem?</h2>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center', maxWidth: '600px' }}>
+                {[
+                  'SP', 'PR', 'SC', 'RS', 'MG', 'RJ', 'GO', 'MS', 'BA', 'MT',
+                  'Paraguai', 'Argentina', 'Outros'
+                ].map(o => (
+                  <button
+                    key={o}
+                    onClick={() => { setProfile({...profile, origin: o}); setStep(3); }}
+                    className={`btn-glass ${profile.origin === o ? 'active' : ''}`}
+                    style={{ padding: '12px 22px', borderRadius: '30px', fontSize: '0.95rem', fontWeight: 500 }}
+                  >
+                    {o}
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => setStep(1)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+            </motion.div>
+          )}
+
+          {step === 3 && (
+            <motion.div 
+              key="step3_group"
+              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              className="liquid-glass" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
+            >
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}><Users size={24} style={{ marginRight: '8px', verticalAlign: 'middle' }} />Com quem você viaja?</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '15px', width: '100%' }}>
+                {[
+                  { id: 'familia', label: 'Família', icon: Users },
+                  { id: 'casal', label: 'Casal', icon: Heart },
+                  { id: 'solo', label: 'Sozinho(a)', icon: MapIcon },
+                  { id: 'amigos', label: 'Amigos', icon: Star },
+                  { id: 'corporativo', label: 'Corporativo', icon: Briefcase }
+                ].map(g => (
+                  <button
+                    key={g.id}
+                    onClick={() => { setProfile({...profile, groupType: g.id}); setStep(4); }}
+                    className={`btn-glass ${profile.groupType === g.id ? 'active' : ''}`}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '25px' }}
+                  >
+                    <g.icon size={28} color="var(--green)" />
+                    <span style={{ fontSize: '1rem', fontWeight: 500 }}>{g.label}</span>
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => setStep(2)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+            </motion.div>
+          )}
+
+          {step === 4 && (
+            <motion.div 
+              key="step4"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               className="liquid-glass" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
@@ -275,7 +340,7 @@ const RouteGenerator = () => {
                 ].map(b => (
                   <button 
                     key={b.id}
-                    onClick={() => { setProfile({...profile, budget: b.id}); setStep(3); }}
+                    onClick={() => { setProfile({...profile, budget: b.id}); setStep(5); }}
                     className={`btn-glass ${profile.budget === b.id ? 'active' : ''}`}
                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '25px' }}
                   >
@@ -284,20 +349,20 @@ const RouteGenerator = () => {
                   </button>
                 ))}
               </div>
-              <button onClick={() => setStep(1)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+              <button onClick={() => setStep(3)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
             </motion.div>
           )}
 
-          {step === 3 && (
+          {step === 5 && (
             <motion.div 
-              key="step3_transport"
+              key="step5_transport"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               className="liquid-glass" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Como você vai se locomover?</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', width: '100%' }}>
                 <button 
-                  onClick={() => { setProfile({...profile, transport: 'carro'}); setStep(4); }}
+                  onClick={() => { setProfile({...profile, transport: 'carro'}); setStep(6); }}
                   className={`btn-glass ${profile.transport === 'carro' ? 'active' : ''}`}
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '30px' }}
                 >
@@ -305,7 +370,7 @@ const RouteGenerator = () => {
                   <span style={{ fontSize: '1.2rem', fontWeight: 500 }}>Carro Próprio</span>
                 </button>
                 <button 
-                  onClick={() => { setProfile({...profile, transport: 'ape'}); setStep(4); }}
+                  onClick={() => { setProfile({...profile, transport: 'ape'}); setStep(6); }}
                   className={`btn-glass ${profile.transport === 'ape' ? 'active' : ''}`}
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '30px' }}
                 >
@@ -313,13 +378,13 @@ const RouteGenerator = () => {
                   <span style={{ fontSize: '1.2rem', fontWeight: 500 }}>A pé / App</span>
                 </button>
               </div>
-              <button onClick={() => setStep(2)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+              <button onClick={() => setStep(4)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
             </motion.div>
           )}
 
-          {step === 4 && (
+          {step === 6 && (
             <motion.div 
-              key="step4"
+              key="step6"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               className="liquid-glass" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
@@ -348,15 +413,15 @@ const RouteGenerator = () => {
                 ))}
               </div>
               <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
-                <button onClick={() => setStep(3)} className="btn-glass">Voltar</button>
-                <button onClick={() => setStep(5)} className="btn-gold" style={{ padding: '15px 30px' }}>Próximo <ChevronRight size={18} /></button>
+                <button onClick={() => setStep(5)} className="btn-glass">Voltar</button>
+                <button onClick={() => setStep(7)} className="btn-gold" style={{ padding: '15px 30px' }}>Próximo <ChevronRight size={18} /></button>
               </div>
             </motion.div>
           )}
 
-          {step === 5 && (
+          {step === 7 && (
             <motion.div
-              key="step5_weekday"
+              key="step7_weekday"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               className="liquid-glass" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
@@ -377,15 +442,15 @@ const RouteGenerator = () => {
                 ))}
               </div>
               <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
-                <button onClick={() => setStep(4)} className="btn-glass">Voltar</button>
-                <button onClick={() => setStep(6)} className="btn-gold" style={{ padding: '15px 30px' }}>Próximo <ChevronRight size={18} /></button>
+                <button onClick={() => setStep(6)} className="btn-glass">Voltar</button>
+                <button onClick={() => setStep(8)} className="btn-gold" style={{ padding: '15px 30px' }}>Próximo <ChevronRight size={18} /></button>
               </div>
             </motion.div>
           )}
 
-          {step === 6 && (
+          {step === 8 && (
             <motion.div
-              key="step6_days"
+              key="step8_days"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               className="liquid-glass" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
@@ -403,7 +468,7 @@ const RouteGenerator = () => {
                 ))}
               </div>
               <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
-                <button onClick={() => setStep(5)} className="btn-glass">Voltar</button>
+                <button onClick={() => setStep(7)} className="btn-glass">Voltar</button>
                 <button onClick={generateRoute} className="btn-gold" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
                   <Calendar style={{ marginRight: '10px' }} />
                   Gerar Meu Roteiro
@@ -414,7 +479,7 @@ const RouteGenerator = () => {
         </AnimatePresence>
       </div>
 
-      {step === 8 && route && (
+      {step === 10 && route && (
         <motion.div 
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -551,6 +616,75 @@ const RouteGenerator = () => {
               )}
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* NPS Popup - Non-blocking */}
+      <AnimatePresence>
+        {showNps && npsScore === null && (
+          <motion.div
+            initial={{ opacity: 0, y: 60 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 60 }}
+            style={{
+              position: 'fixed', bottom: '24px', right: '24px', zIndex: 999,
+              maxWidth: '340px', width: '100%',
+            }}
+          >
+            <div className="liquid-glass" style={{ padding: '24px', position: 'relative' }}>
+              <button
+                onClick={() => setShowNps(false)}
+                style={{ position: 'absolute', top: '8px', right: '8px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+              >
+                <X size={18} />
+              </button>
+              <p style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '8px' }}>
+                💬 Avalie sua experiência
+              </p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '16px' }}>
+                De 0 a 10, o quanto você recomendaria Foz do Iguaçu para amigos e familiares?
+              </p>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {[0,1,2,3,4,5,6,7,8,9,10].map(n => (
+                  <button
+                    key={n}
+                    onClick={() => {
+                      trackNps(n);
+                      setNpsScore(n);
+                      setTimeout(() => setShowNps(false), 2000);
+                    }}
+                    className="btn-glass"
+                    style={{
+                      width: '36px', height: '36px', padding: 0,
+                      fontSize: '0.85rem', fontWeight: 600, borderRadius: '10px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: n >= 9 ? 'rgba(31, 80, 57, 0.2)' : n >= 7 ? 'rgba(210, 172, 52, 0.15)' : 'rgba(244, 63, 94, 0.1)',
+                      color: n >= 9 ? 'var(--green)' : n >= 7 ? '#d2ac34' : '#f43f5e'
+                    }}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+        {showNps && npsScore !== null && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, y: 60 }}
+            style={{
+              position: 'fixed', bottom: '24px', right: '24px', zIndex: 999,
+              maxWidth: '340px', width: '100%',
+            }}
+          >
+            <div className="liquid-glass" style={{ padding: '24px', textAlign: 'center' }}>
+              <CheckCircle2 size={32} color="var(--green)" style={{ marginBottom: '8px' }} />
+              <p style={{ fontWeight: 600, fontSize: '1rem' }}>Obrigado pela avaliação! 🎉</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Sua nota: <strong>{npsScore}/10</strong></p>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
