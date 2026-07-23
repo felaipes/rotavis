@@ -38,6 +38,33 @@ const WORK_POOL_BY_PERIOD = {
 const PERIOD_LABELS = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' };
 const DURATION_LABELS = { ate2h: 'até 2 horas', '2a4h': '2 a 4 horas', mais4h: 'mais de 4 horas' };
 
+const INTEREST_OPTIONS = [
+  { id: 'cafe', label: 'Café', icon: Coffee },
+  { id: 'natureza', label: 'Natureza', icon: Tent },
+  { id: 'historico', label: 'História', icon: History },
+  { id: 'comidinhas', label: 'Gastronomia', icon: Utensils },
+  { id: 'bebidas', label: 'Vida Noturna', icon: GlassWater },
+  { id: 'familia', label: 'Família', icon: Sun },
+  { id: 'religiao', label: 'Religioso', icon: Star },
+  { id: 'esporte', label: 'Aventura/Esportes', icon: Activity },
+  { id: 'compras', label: 'Compras/Fronteira', icon: Rocket }
+];
+// Subfiltros exibidos quando o interesse "pai" correspondente está ativo, para refinar a busca.
+const SUB_FILTERS = {
+  religiao: [
+    { id: 'budismo', label: 'Budismo' },
+    { id: 'islamismo', label: 'Islamismo' }
+  ],
+  comidinhas: [
+    { id: 'churrasco', label: 'Churrasco/Carnes' },
+    { id: 'frutos do mar', label: 'Frutos do Mar' },
+    { id: 'arabe', label: 'Árabe' },
+    { id: 'japonesa', label: 'Japonesa' },
+    { id: 'italiana', label: 'Italiana' },
+    { id: 'baiana', label: 'Nordestina' }
+  ]
+};
+
 const RouteGenerator = () => {
   const [days, setDays] = useState(1);
   const [startDay, setStartDay] = useState(new Date().getDay());
@@ -52,7 +79,8 @@ const RouteGenerator = () => {
     transport: '',
     preferences: [],
     timeAvailable: '',
-    period: ''
+    period: '',
+    totalBudget: null
   });
 
   const handlePreferenceToggle = (pref) => {
@@ -177,10 +205,14 @@ const RouteGenerator = () => {
     const bares = scoredPlaces.filter(p => p.category === 'bares');
     const cafeterias = scoredPlaces.filter(p => p.category === 'cafeterias_docerias');
 
+    // Orçamento total dividido igualmente entre os dias do roteiro (null = sem restrição de orçamento).
+    const dailyBudget = profile.totalBudget && days > 0 ? Number(profile.totalBudget) / days : null;
+    const priceOf = (p) => p?.avgPrice ?? (typeof p?.entryFee === 'number' ? p.entryFee : 0);
+
     let generatedDays = [];
     let usedIds = new Set();
 
-    const getNextPlace = (pool, { preferredZone = null, periodKey = null, dayIndex = null, isFoot = false, strictProximity = false } = {}) => {
+    const getNextPlace = (pool, { preferredZone = null, periodKey = null, dayIndex = null, isFoot = false, strictProximity = false, maxPrice = null } = {}) => {
       let available = pool.filter(p => !usedIds.has(p.id));
       if (available.length === 0) return null;
 
@@ -189,9 +221,13 @@ const RouteGenerator = () => {
         available = filterAvailable(available, periodKey, dayIndex);
       }
 
+      // Dentre os candidatos, prioriza os que cabem no orçamento restante do dia (quando há um definido).
+      const fitsBudget = (p) => maxPrice == null || priceOf(p) <= maxPrice;
+
       // 2. Prioriza proximidade (mesma zona do local anterior no roteiro)
       if (preferredZone) {
-        let match = available.find(p => p.zone === preferredZone);
+        let zoneMatches = available.filter(p => p.zone === preferredZone);
+        let match = zoneMatches.find(fitsBudget) || zoneMatches[0];
         if (match) {
           usedIds.add(match.id);
           return match;
@@ -199,7 +235,8 @@ const RouteGenerator = () => {
         // Restaurantes sempre tentam um "hub" central antes de ignorar a proximidade;
         // as demais categorias só fazem isso quando o deslocamento é a pé.
         if (strictProximity || isFoot) {
-          let centro = available.find(p => p.zone === 'Centro');
+          let centroMatches = available.filter(p => p.zone === 'Centro');
+          let centro = centroMatches.find(fitsBudget) || centroMatches[0];
           if (centro) {
             usedIds.add(centro.id);
             return centro;
@@ -207,7 +244,7 @@ const RouteGenerator = () => {
         }
       }
 
-      let selected = available[0];
+      let selected = available.find(fitsBudget) || available[0];
       usedIds.add(selected.id);
       return selected;
     };
@@ -215,29 +252,43 @@ const RouteGenerator = () => {
     for (let i = 0; i < days; i++) {
       let isFoot = profile.transport === 'ape';
       let dayIndex = (startDay + i) % 7;
+      let remainingBudget = dailyBudget;
+
+      const spend = (place) => {
+        if (remainingBudget != null && place) remainingBudget = Math.max(0, remainingBudget - priceOf(place));
+      };
 
       let mCafe = getNextPlace(cafes, { periodKey: 'manha', dayIndex });
-      let mPasseio = getNextPlace(passeios, { preferredZone: mCafe?.zone, periodKey: 'manha', dayIndex, isFoot });
+      let mPasseio = getNextPlace(passeios, { preferredZone: mCafe?.zone, periodKey: 'manha', dayIndex, isFoot, maxPrice: remainingBudget });
+      spend(mPasseio);
 
       let primaryZone = mPasseio?.zone || mCafe?.zone;
 
       // Restaurantes seguem preço (já aplicado pelo score) + proximidade do local anterior, sempre.
-      let tRest = getNextPlace(restaurantes, { preferredZone: primaryZone, periodKey: 'tarde', dayIndex, isFoot, strictProximity: true });
-      let tPasseio = getNextPlace(passeios, { preferredZone: tRest?.zone || primaryZone, periodKey: 'tarde', dayIndex, isFoot })
+      let tRest = getNextPlace(restaurantes, { preferredZone: primaryZone, periodKey: 'tarde', dayIndex, isFoot, strictProximity: true, maxPrice: remainingBudget });
+      spend(tRest);
+      let tPasseio = getNextPlace(passeios, { preferredZone: tRest?.zone || primaryZone, periodKey: 'tarde', dayIndex, isFoot, maxPrice: remainingBudget })
         || getNextPlace(cafeterias, { preferredZone: tRest?.zone || primaryZone, periodKey: 'tarde', dayIndex, isFoot });
+      spend(tPasseio);
 
       let newPrimaryZone = tPasseio?.zone || tRest?.zone || primaryZone;
 
       let nLugar = (i % 2 === 0 && bares.filter(p => !usedIds.has(p.id)).length > 0)
         ? getNextPlace(bares, { preferredZone: newPrimaryZone, periodKey: 'noite', dayIndex, isFoot })
-        : getNextPlace(restaurantes, { preferredZone: newPrimaryZone, periodKey: 'noite', dayIndex, isFoot, strictProximity: true });
+        : getNextPlace(restaurantes, { preferredZone: newPrimaryZone, periodKey: 'noite', dayIndex, isFoot, strictProximity: true, maxPrice: remainingBudget });
+      spend(nLugar);
+
+      const dayPlaces = [mCafe, mPasseio, tRest, tPasseio, nLugar].filter(Boolean);
+      const estimatedCost = dayPlaces.reduce((sum, p) => sum + priceOf(p), 0);
 
       generatedDays.push({
         day: i + 1,
         weekday: dayIndex,
         manha: [mCafe, mPasseio].filter(Boolean),
         tarde: [tRest, tPasseio].filter(Boolean),
-        noite: [nLugar].filter(Boolean)
+        noite: [nLugar].filter(Boolean),
+        dailyBudget,
+        estimatedCost
       });
     }
 
@@ -378,18 +429,8 @@ const RouteGenerator = () => {
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Quais são os seus interesses? (Selecione vários)</h2>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', justifyContent: 'center' }}>
-                {[
-                  { id: 'cafe', label: 'Café', icon: Coffee },
-                  { id: 'natureza', label: 'Natureza', icon: Tent },
-                  { id: 'historico', label: 'História', icon: History },
-                  { id: 'comidinhas', label: 'Gastronomia', icon: Utensils },
-                  { id: 'bebidas', label: 'Vida Noturna', icon: GlassWater },
-                  { id: 'familia', label: 'Família', icon: Sun },
-                  { id: 'religiao', label: 'Religioso', icon: Star },
-                  { id: 'esporte', label: 'Aventura/Esportes', icon: Activity },
-                  { id: 'compras', label: 'Compras/Fronteira', icon: Rocket }
-                ].map(pref => (
-                  <button 
+                {INTEREST_OPTIONS.map(pref => (
+                  <button
                     key={pref.id}
                     onClick={() => handlePreferenceToggle(pref.id)}
                     className={`btn-glass ${profile.preferences.includes(pref.id) ? 'active' : ''}`}
@@ -400,6 +441,27 @@ const RouteGenerator = () => {
                   </button>
                 ))}
               </div>
+
+              {Object.keys(SUB_FILTERS).filter(parentId => profile.preferences.includes(parentId)).map(parentId => (
+                <div key={parentId} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', marginTop: '-15px' }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                    Refine {INTEREST_OPTIONS.find(p => p.id === parentId)?.label}:
+                  </span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
+                    {SUB_FILTERS[parentId].map(sub => (
+                      <button
+                        key={sub.id}
+                        onClick={() => handlePreferenceToggle(sub.id)}
+                        className={`btn-glass ${profile.preferences.includes(sub.id) ? 'active' : ''}`}
+                        style={{ padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem' }}
+                      >
+                        {sub.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
               <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
                 <button onClick={() => setStep(3)} className="btn-glass">Voltar</button>
                 <button onClick={() => setStep(5)} className="btn-gold" style={{ padding: '15px 30px' }}>Próximo <ChevronRight size={18} /></button>
@@ -484,15 +546,12 @@ const RouteGenerator = () => {
               </div>
               <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
                 <button onClick={() => setStep(5)} className="btn-glass">Voltar</button>
-                <button onClick={generateRoute} className="btn-gold" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
-                  <Calendar style={{ marginRight: '10px' }} />
-                  Gerar Meu Roteiro
-                </button>
+                <button onClick={() => setStep(7)} className="btn-gold" style={{ padding: '15px 30px' }}>Próximo <ChevronRight size={18} /></button>
               </div>
             </motion.div>
           )}
 
-          {step === 7 && (
+          {step === 7 && profile.reason === 'trabalho' && (
             <motion.div
               key="step7_period"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
@@ -513,6 +572,56 @@ const RouteGenerator = () => {
                 ))}
               </div>
               <button onClick={() => setStep(6)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+            </motion.div>
+          )}
+
+          {step === 7 && profile.reason !== 'trabalho' && (
+            <motion.div
+              key="step7_budget"
+              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              className="liquid-glass" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
+            >
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Qual o orçamento total da sua viagem?</h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '-15px', textAlign: 'center' }}>
+                Dividimos esse valor entre os {days} {days === 1 ? 'dia' : 'dias'} do seu roteiro para sugerir lugares que cabem no bolso.
+              </p>
+              <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {[500, 1000, 2000, 3500].map(val => (
+                  <button
+                    key={val}
+                    onClick={() => setProfile({ ...profile, totalBudget: val })}
+                    className={`btn-glass ${profile.totalBudget === val ? 'active' : ''}`}
+                    style={{ padding: '15px 20px', fontWeight: 500 }}
+                  >
+                    R$ {val.toLocaleString('pt-BR')}
+                  </button>
+                ))}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Ou informe um valor:</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="50"
+                  placeholder="R$"
+                  className="input-field"
+                  value={profile.totalBudget ?? ''}
+                  onChange={(e) => setProfile({ ...profile, totalBudget: e.target.value === '' ? null : Number(e.target.value) })}
+                  style={{ width: '140px', padding: '10px 12px', borderRadius: '8px', fontSize: '1rem' }}
+                />
+              </div>
+              {profile.totalBudget > 0 && (
+                <p style={{ color: 'var(--green-dark)', fontWeight: 600 }}>
+                  ≈ R$ {Math.round(profile.totalBudget / days).toLocaleString('pt-BR')} por dia
+                </p>
+              )}
+              <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
+                <button onClick={() => setStep(6)} className="btn-glass">Voltar</button>
+                <button onClick={generateRoute} className="btn-gold" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
+                  <Calendar style={{ marginRight: '10px' }} />
+                  Gerar Meu Roteiro
+                </button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -553,9 +662,21 @@ const RouteGenerator = () => {
               <h2 style={{ fontSize: '2rem', marginBottom: '5px' }} className="gold-gradient">
                 Dia {dayPlan.day}
               </h2>
-              <p style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '25px' }}>
+              <p style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: dayPlan.dailyBudget ? '10px' : '25px' }}>
                 <Clock size={15} /> {WEEKDAY_LABELS[dayPlan.weekday]}
               </p>
+
+              {dayPlan.dailyBudget != null && (
+                <p style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', fontWeight: 600,
+                  marginBottom: '25px', padding: '6px 14px', borderRadius: '99px',
+                  background: dayPlan.estimatedCost > dayPlan.dailyBudget ? 'rgba(220, 38, 38, 0.1)' : 'var(--accent-gold-glow)',
+                  color: dayPlan.estimatedCost > dayPlan.dailyBudget ? '#dc2626' : 'var(--green-dark)'
+                }}>
+                  <Wallet size={15} />
+                  Orçamento do dia: ~R$ {Math.round(dayPlan.estimatedCost).toLocaleString('pt-BR')} de R$ {Math.round(dayPlan.dailyBudget).toLocaleString('pt-BR')}
+                </p>
+              )}
 
               {/* Manhã */}
               <div style={{ marginBottom: '40px' }}>
