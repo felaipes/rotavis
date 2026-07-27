@@ -29,11 +29,11 @@ const Header = () => {
         </Link>
 
         <nav className="nav-desktop">
-          <Link to="/catalogo" className={`btn-glass ${location.pathname === '/catalogo' ? 'active' : ''}`}>Catálogo</Link>
           <Link to="/rota" className={`btn-glass ${location.pathname === '/rota' ? 'active' : ''}`}>
             <Map size={18} style={{ display: 'inline', marginRight: '5px' }} />
             Gerar Rota
           </Link>
+          <Link to="/catalogo" className={`btn-glass ${location.pathname === '/catalogo' ? 'active' : ''}`}>Catálogo</Link>
 
           <div style={{ width: '1px', height: '24px', background: 'var(--card-border)', margin: '0 5px' }}></div>
 
@@ -81,12 +81,12 @@ const Header = () => {
             className="mobile-menu"
           >
             <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px 20px' }}>
-              <Link to="/catalogo" onClick={closeMenu} className={`btn-glass ${location.pathname === '/catalogo' ? 'active' : ''}`} style={{ textAlign: 'center' }}>
-                Catálogo
-              </Link>
               <Link to="/rota" onClick={closeMenu} className={`btn-glass ${location.pathname === '/rota' ? 'active' : ''}`} style={{ textAlign: 'center' }}>
                 <Map size={18} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'text-bottom' }} />
                 Gerar Rota
+              </Link>
+              <Link to="/catalogo" onClick={closeMenu} className={`btn-glass ${location.pathname === '/catalogo' ? 'active' : ''}`} style={{ textAlign: 'center' }}>
+                Catálogo
               </Link>
 
               {user ? (
