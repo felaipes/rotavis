@@ -60,15 +60,7 @@ const Header = () => {
             </Link>
           )}
 
-          <a
-            href="/admin/"
-            title="Acesso Prefeitura"
-            style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', fontSize: '0.8rem', opacity: 0.5, transition: 'opacity 0.2s' }}
-            onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-            onMouseLeave={e => e.currentTarget.style.opacity = '0.5'}
-          >
-            <Shield size={14} />
-          </a>
+
         </nav>
 
         <button
@@ -122,10 +114,7 @@ const Header = () => {
                 </Link>
               )}
 
-              <a href="/admin/" onClick={closeMenu} className="btn-glass" style={{ textAlign: 'center', fontSize: '0.85rem', opacity: 0.7, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                <Shield size={14} />
-                Acesso Prefeitura
-              </a>
+
             </div>
           </motion.div>
         )}
