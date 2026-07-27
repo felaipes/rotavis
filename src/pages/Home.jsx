@@ -1,12 +1,18 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Filter } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Search, Filter, Sun, Sunset, Moon, Sparkles, ArrowRight } from 'lucide-react';
 import { categories, places } from '../data';
 import PlaceCard from '../components/PlaceCard';
 import { motion, AnimatePresence } from 'framer-motion';
+import { buildExampleDay } from '../services/routeBuilderService';
+import { WEEKDAY_LABELS } from '../services/availabilityService';
 
 const Home = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
+
+  // Roteiro de exemplo gerado assim que a pessoa entra no site, sem precisar passar pelo assistente.
+  const exampleDay = useMemo(() => buildExampleDay(places), []);
 
   // Semantic search simulation (keywords match tags, description, name)
   const filteredPlaces = useMemo(() => {
@@ -89,6 +95,46 @@ const Home = () => {
               }}
             />
           </motion.div>
+        </div>
+      </section>
+
+      {/* Roteiro de exemplo: mostra o valor do gerador de rotas assim que a pessoa entra no site */}
+      <section style={{ background: 'var(--card-highlight)', borderBottom: '1px solid var(--card-border)' }}>
+        <div className="container" style={{ padding: '50px 20px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '16px', marginBottom: '30px' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-gold)', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '8px' }}>
+                <Sparkles size={16} />
+                Roteiro pronto para você
+              </div>
+              <h2 style={{ fontSize: '1.6rem', fontWeight: 700 }}>
+                Um dia de {WEEKDAY_LABELS[exampleDay.weekday]} em Foz do Iguaçu
+              </h2>
+            </div>
+            <Link to="/rota" className="btn-gold">
+              Personalizar meu roteiro
+              <ArrowRight size={18} />
+            </Link>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: '20px' }}>
+            {[
+              { label: 'Manhã', icon: Sun, color: 'var(--blue)', items: exampleDay.manha },
+              { label: 'Tarde', icon: Sunset, color: '#d97706', items: exampleDay.tarde },
+              { label: 'Noite', icon: Moon, color: '#4f46e5', items: exampleDay.noite }
+            ].map(period => (
+              <div key={period.label}>
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', marginBottom: '14px', color: period.color }}>
+                  <period.icon size={18} /> {period.label}
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {period.items.map(place => (
+                    <PlaceCard key={place.id} place={place} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
