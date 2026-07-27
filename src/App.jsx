@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Map, Menu, X, User, LogOut, LogIn, Shield } from 'lucide-react';
+import { Map, Menu, X, User, LogOut, LogIn } from 'lucide-react';
 import Home from './pages/Home';
 import RoteiroAutomatico from './pages/RoteiroAutomatico';
 import RouteGenerator from './pages/RouteGenerator';
@@ -59,8 +59,6 @@ const Header = () => {
               Entrar
             </Link>
           )}
-
-
         </nav>
 
         <button
@@ -113,8 +111,6 @@ const Header = () => {
                   Entrar
                 </Link>
               )}
-
-
             </div>
           </motion.div>
         )}
