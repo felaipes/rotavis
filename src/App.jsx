@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import { motion, AnimatePresence } from 'framer-motion';
 import { Map, Menu, X, User, LogOut, LogIn } from 'lucide-react';
 import Home from './pages/Home';
-import RoteiroAutomatico from './pages/RoteiroAutomatico';
 import RouteGenerator from './pages/RouteGenerator';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -29,7 +28,7 @@ const Header = () => {
         </Link>
 
         <nav className="nav-desktop">
-          <Link to="/rota" className={`btn-glass ${location.pathname === '/rota' ? 'active' : ''}`}>
+          <Link to="/rota" className={`btn-glass ${(location.pathname === '/rota' || location.pathname === '/') ? 'active' : ''}`}>
             <Map size={18} style={{ display: 'inline', marginRight: '5px' }} />
             Gerar Rota
           </Link>
@@ -81,7 +80,7 @@ const Header = () => {
             className="mobile-menu"
           >
             <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px 20px' }}>
-              <Link to="/rota" onClick={closeMenu} className={`btn-glass ${location.pathname === '/rota' ? 'active' : ''}`} style={{ textAlign: 'center' }}>
+              <Link to="/rota" onClick={closeMenu} className={`btn-glass ${(location.pathname === '/rota' || location.pathname === '/') ? 'active' : ''}`} style={{ textAlign: 'center' }}>
                 <Map size={18} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'text-bottom' }} />
                 Gerar Rota
               </Link>
@@ -127,7 +126,7 @@ function App() {
           <Header />
           <main>
             <Routes>
-              <Route path="/" element={<RoteiroAutomatico />} />
+              <Route path="/" element={<RouteGenerator />} />
               <Route path="/catalogo" element={<Home />} />
               <Route path="/rota" element={<RouteGenerator />} />
               <Route path="/login" element={<Login />} />
