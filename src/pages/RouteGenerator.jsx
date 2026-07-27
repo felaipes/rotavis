@@ -38,6 +38,47 @@ const WORK_POOL_BY_PERIOD = {
 };
 const PERIOD_LABELS = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' };
 const DURATION_LABELS = { ate2h: 'até 2 horas', '2a4h': '2 a 4 horas', mais4h: 'mais de 4 horas' };
+const TOTAL_INPUT_STEPS = 9;
+
+// Textura decorativa de fundo: uma linha de rota pontilhada com marcadores, evocando um mapa.
+// Fixa (não rola com a página), atrás de todo o conteúdo, sem capturar cliques.
+const MapBackground = () => (
+  <svg aria-hidden="true" style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none' }}>
+    <defs>
+      <pattern id="rotavisMapPattern" width="420" height="420" patternUnits="userSpaceOnUse">
+        <path d="M10,400 C90,360 110,260 190,240 C270,220 290,140 410,70" fill="none" stroke="var(--green)" strokeWidth="2" strokeDasharray="6 10" opacity="0.3" />
+        <path d="M420,300 C360,320 340,220 260,210" fill="none" stroke="var(--blue)" strokeWidth="2" strokeDasharray="6 10" opacity="0.22" />
+        <circle cx="10" cy="400" r="5" fill="var(--blue)" opacity="0.35" />
+        <circle cx="190" cy="240" r="5" fill="var(--accent-gold)" opacity="0.4" />
+        <circle cx="410" cy="70" r="5" fill="var(--green)" opacity="0.35" />
+        <circle cx="260" cy="210" r="4" fill="var(--blue)" opacity="0.3" />
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#rotavisMapPattern)" />
+  </svg>
+);
+
+// Indicador de progresso do questionário (não aparece na tela de resultado).
+const WizardProgress = ({ step }) => {
+  if (step > TOTAL_INPUT_STEPS) return null;
+  const percent = Math.round((step / TOTAL_INPUT_STEPS) * 100);
+  return (
+    <div style={{ maxWidth: '420px', margin: '0 auto 30px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+        <span>Passo {step} de {TOTAL_INPUT_STEPS}</span>
+        <span>{percent}%</span>
+      </div>
+      <div style={{ height: '6px', background: 'var(--card-border)', borderRadius: '99px', overflow: 'hidden' }}>
+        <motion.div
+          initial={false}
+          animate={{ width: `${percent}%` }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          style={{ height: '100%', background: 'linear-gradient(90deg, var(--blue), var(--green), var(--accent-gold))', borderRadius: '99px' }}
+        />
+      </div>
+    </div>
+  );
+};
 
 const INTEREST_OPTIONS = [
   { id: 'cafe', label: 'Café', icon: Coffee },
@@ -330,22 +371,25 @@ const RouteGenerator = () => {
     const optionB = pickChain();
 
     setWorkRoute({ period, timeAvailable, optionA, optionB });
-    setStep(9);
+    setStep(10);
   };
 
   return (
-    <div className="container" style={{ padding: '60px 20px', minHeight: '80vh' }}>
-      <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 40px' }}>
+    <div className="container" style={{ padding: '60px 20px', minHeight: '80vh', position: 'relative' }}>
+      <MapBackground />
+      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: '800px', margin: '0 auto 40px' }}>
         <h1 style={{ fontSize: 'clamp(1.9rem, 7vw, 3rem)', fontWeight: 800, marginBottom: '20px' }} className="text-gradient">
           Sua <span className="gold-gradient">Rota Perfeita</span>
         </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', marginBottom: '40px' }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', marginBottom: '30px' }}>
           Conte-nos um pouco sobre você e criaremos um roteiro sob medida para a sua experiência em Foz do Iguaçu.
         </p>
 
+        <WizardProgress step={step} />
+
         <AnimatePresence mode="wait">
           {step === 1 && (
-            <motion.div 
+            <motion.div
               key="step1"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               className="liquid-glass" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
@@ -354,15 +398,15 @@ const RouteGenerator = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', width: '100%' }}>
                 <button
                   onClick={() => { setProfile({...profile, reason: 'trabalho'}); setStep(2); }}
-                  className={`btn-glass ${profile.reason === 'trabalho' ? 'active' : ''}`}
+                  className={`btn-glass wizard-option ${profile.reason === 'trabalho' ? 'active' : ''}`}
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '30px' }}
                 >
                   <Briefcase size={32} color="var(--green)" />
                   <span style={{ fontSize: '1.2rem', fontWeight: 500 }}>Trabalho</span>
                 </button>
-                <button 
+                <button
                   onClick={() => { setProfile({...profile, reason: 'passeio'}); setStep(2); }}
-                  className={`btn-glass ${profile.reason === 'passeio' ? 'active' : ''}`}
+                  className={`btn-glass wizard-option ${profile.reason === 'passeio' ? 'active' : ''}`}
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '30px' }}
                 >
                   <MapIcon size={32} color="var(--green)" />
@@ -373,7 +417,7 @@ const RouteGenerator = () => {
           )}
 
           {step === 2 && (
-            <motion.div 
+            <motion.div
               key="step2_origin"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               className="liquid-glass" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
@@ -387,7 +431,7 @@ const RouteGenerator = () => {
                   <button
                     key={o}
                     onClick={() => { setProfile({...profile, origin: o}); setStep(3); }}
-                    className={`btn-glass ${profile.origin === o ? 'active' : ''}`}
+                    className={`btn-glass wizard-option ${profile.origin === o ? 'active' : ''}`}
                     style={{ padding: '12px 22px', borderRadius: '30px', fontSize: '0.95rem', fontWeight: 500 }}
                   >
                     {o}
@@ -416,7 +460,7 @@ const RouteGenerator = () => {
                   <button
                     key={g.id}
                     onClick={() => { setProfile({...profile, groupType: g.id}); setStep(4); }}
-                    className={`btn-glass ${profile.groupType === g.id ? 'active' : ''}`}
+                    className={`btn-glass wizard-option ${profile.groupType === g.id ? 'active' : ''}`}
                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '25px' }}
                   >
                     <g.icon size={28} color="var(--green)" />
@@ -444,7 +488,7 @@ const RouteGenerator = () => {
                   <button 
                     key={b.id}
                     onClick={() => { setProfile({...profile, budget: b.id}); setStep(5); }}
-                    className={`btn-glass ${profile.budget === b.id ? 'active' : ''}`}
+                    className={`btn-glass wizard-option ${profile.budget === b.id ? 'active' : ''}`}
                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '25px' }}
                   >
                     <b.icon size={28} color="var(--green)" />
@@ -466,7 +510,7 @@ const RouteGenerator = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', width: '100%' }}>
                 <button 
                   onClick={() => { setProfile({...profile, transport: 'carro'}); setStep(6); }}
-                  className={`btn-glass ${profile.transport === 'carro' ? 'active' : ''}`}
+                  className={`btn-glass wizard-option ${profile.transport === 'carro' ? 'active' : ''}`}
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '30px' }}
                 >
                   <Car size={32} color="var(--green)" />
@@ -474,7 +518,7 @@ const RouteGenerator = () => {
                 </button>
                 <button 
                   onClick={() => { setProfile({...profile, transport: 'ape'}); setStep(6); }}
-                  className={`btn-glass ${profile.transport === 'ape' ? 'active' : ''}`}
+                  className={`btn-glass wizard-option ${profile.transport === 'ape' ? 'active' : ''}`}
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '30px' }}
                 >
                   <Footprints size={32} color="var(--green)" />
@@ -497,7 +541,7 @@ const RouteGenerator = () => {
                   <button
                     key={pref.id}
                     onClick={() => handlePreferenceToggle(pref.id)}
-                    className={`btn-glass ${profile.preferences.includes(pref.id) ? 'active' : ''}`}
+                    className={`btn-glass wizard-option ${profile.preferences.includes(pref.id) ? 'active' : ''}`}
                     style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 25px', borderRadius: '30px' }}
                   >
                     <pref.icon size={18} color="var(--green)" />
@@ -557,7 +601,7 @@ const RouteGenerator = () => {
                   <button
                     key={label}
                     onClick={() => setStartDay(idx)}
-                    className={`btn-glass ${startDay === idx ? 'active' : ''}`}
+                    className={`btn-glass wizard-option ${startDay === idx ? 'active' : ''}`}
                     style={{ width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 'bold' }}
                   >
                     {label}
@@ -571,9 +615,9 @@ const RouteGenerator = () => {
             </motion.div>
           )}
 
-          {step === 6 && profile.reason === 'trabalho' && (
+          {step === 8 && profile.reason === 'trabalho' && (
             <motion.div
-              key="step6_work_duration"
+              key="step8_work_duration"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               className="liquid-glass" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
@@ -585,8 +629,8 @@ const RouteGenerator = () => {
                 {WORK_DURATION_OPTIONS.map(d => (
                   <button
                     key={d.id}
-                    onClick={() => { setProfile({ ...profile, timeAvailable: d.id }); setStep(7); }}
-                    className={`btn-glass ${profile.timeAvailable === d.id ? 'active' : ''}`}
+                    onClick={() => { setProfile({ ...profile, timeAvailable: d.id }); setStep(9); }}
+                    className={`btn-glass wizard-option ${profile.timeAvailable === d.id ? 'active' : ''}`}
                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '25px' }}
                   >
                     <d.icon size={28} color="var(--green)" />
@@ -594,11 +638,11 @@ const RouteGenerator = () => {
                   </button>
                 ))}
               </div>
-              <button onClick={() => setStep(5)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+              <button onClick={() => setStep(7)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
             </motion.div>
           )}
 
-          {step === 6 && profile.reason !== 'trabalho' && (
+          {step === 8 && profile.reason !== 'trabalho' && (
             <motion.div
               key="step8_days"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
@@ -610,7 +654,7 @@ const RouteGenerator = () => {
                   <button
                     key={num}
                     onClick={() => setDays(num)}
-                    className={`btn-glass ${days === num ? 'active' : ''}`}
+                    className={`btn-glass wizard-option ${days === num ? 'active' : ''}`}
                     style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', fontWeight: 'bold' }}
                   >
                     {num}
@@ -618,15 +662,15 @@ const RouteGenerator = () => {
                 ))}
               </div>
               <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
-                <button onClick={() => setStep(5)} className="btn-glass">Voltar</button>
-                <button onClick={() => setStep(7)} className="btn-gold" style={{ padding: '15px 30px' }}>Próximo <ChevronRight size={18} /></button>
+                <button onClick={() => setStep(7)} className="btn-glass">Voltar</button>
+                <button onClick={() => setStep(9)} className="btn-gold" style={{ padding: '15px 30px' }}>Próximo <ChevronRight size={18} /></button>
               </div>
             </motion.div>
           )}
 
-          {step === 7 && profile.reason === 'trabalho' && (
+          {step === 9 && profile.reason === 'trabalho' && (
             <motion.div
-              key="step7_period"
+              key="step9_period"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               className="liquid-glass" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
@@ -636,7 +680,7 @@ const RouteGenerator = () => {
                   <button
                     key={p.id}
                     onClick={() => { setProfile({ ...profile, period: p.id }); generateWorkRoute(p.id, profile.timeAvailable); }}
-                    className={`btn-glass ${profile.period === p.id ? 'active' : ''}`}
+                    className={`btn-glass wizard-option ${profile.period === p.id ? 'active' : ''}`}
                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '25px' }}
                   >
                     <p.icon size={28} color="var(--green)" />
@@ -644,13 +688,13 @@ const RouteGenerator = () => {
                   </button>
                 ))}
               </div>
-              <button onClick={() => setStep(6)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+              <button onClick={() => setStep(8)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
             </motion.div>
           )}
 
-          {step === 7 && profile.reason !== 'trabalho' && (
+          {step === 9 && profile.reason !== 'trabalho' && (
             <motion.div
-              key="step7_budget"
+              key="step9_budget"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               className="liquid-glass" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
@@ -663,7 +707,7 @@ const RouteGenerator = () => {
                   <button
                     key={val}
                     onClick={() => setProfile({ ...profile, totalBudget: val })}
-                    className={`btn-glass ${profile.totalBudget === val ? 'active' : ''}`}
+                    className={`btn-glass wizard-option ${profile.totalBudget === val ? 'active' : ''}`}
                     style={{ padding: '15px 20px', fontWeight: 500 }}
                   >
                     R$ {val.toLocaleString('pt-BR')}
@@ -689,7 +733,7 @@ const RouteGenerator = () => {
                 </p>
               )}
               <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
-                <button onClick={() => setStep(6)} className="btn-glass">Voltar</button>
+                <button onClick={() => setStep(8)} className="btn-glass">Voltar</button>
                 <button onClick={generateRoute} className="btn-gold" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
                   <Calendar style={{ marginRight: '10px' }} />
                   Gerar Meu Roteiro
@@ -701,10 +745,10 @@ const RouteGenerator = () => {
       </div>
 
       {step === 10 && route && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          style={{ display: 'flex', flexDirection: 'column', gap: '60px' }}
+          style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '60px' }}
         >
           <div ref={routeRef} style={{ background: 'var(--primary-dark)', padding: '20px', borderRadius: '20px' }}>
             {route.map((dayPlan, index) => (
@@ -802,11 +846,11 @@ const RouteGenerator = () => {
         </motion.div>
       )}
 
-      {step === 9 && workRoute && (
+      {step === 10 && workRoute && (
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}
+          style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '40px' }}
         >
           <div style={{ textAlign: 'center' }}>
             <h2 style={{ fontSize: 'clamp(1.6rem, 5vw, 2rem)', marginBottom: '10px' }} className="gold-gradient">
