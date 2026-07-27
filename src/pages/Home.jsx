@@ -40,7 +40,11 @@ const Home = () => {
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(10, 26, 16, 0.45) 0%, rgba(10, 26, 16, 0.35) 70%, #faf7ef 100%)' }}></div>
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'radial-gradient(ellipse 60% 50% at 30% 20%, rgba(242, 183, 10, 0.16) 0%, transparent 60%), linear-gradient(to bottom, rgba(10, 31, 23, 0.55) 0%, rgba(10, 31, 23, 0.4) 65%, #faf7ef 100%)'
+        }}></div>
 
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '800px' }}>
           <motion.h1

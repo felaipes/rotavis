@@ -109,7 +109,7 @@ a {
 }
 
 .gold-gradient {
-  background: linear-gradient(90deg, var(--blue), #43a047);
+  background: linear-gradient(90deg, var(--blue), var(--green), var(--accent-gold));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
