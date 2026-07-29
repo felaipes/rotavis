@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, MapPinned } from 'lucide-react';
 import { categories, places } from '../data';
 import PlaceCard from '../components/PlaceCard';
+import InteractiveMap from '../components/InteractiveMap';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Home = () => {
@@ -91,6 +92,14 @@ const Home = () => {
           </motion.div>
         </div>
       </section>
+
+      <div className="container" style={{ padding: '50px 20px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+          <MapPinned color="var(--green-dark)" size={20} />
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Mapa das regiões turísticas e restaurantes</h2>
+        </div>
+        <InteractiveMap places={places} categories={categories} />
+      </div>
 
       <div className="container" style={{ padding: '60px 20px' }}>
         {/* Categories */}

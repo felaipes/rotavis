@@ -193,6 +193,21 @@ video {
   box-shadow: 0 0 0 3px var(--accent-gold-glow);
 }
 
+/* Mapa interativo + painel da rota: lado a lado no desktop, empilhados no mobile
+   (a coluna do painel tem largura mínima fixa e espremia o mapa a 0px em telas estreitas). */
+.interactive-map-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .interactive-map-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Botões só-ícone: alvo de toque mínimo de 44x44px (WCAG / mobile UX) */
 .icon-btn {
   display: inline-flex;
