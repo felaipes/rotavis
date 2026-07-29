@@ -4,8 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Mail, Lock, Eye, EyeOff, MapPin, Calendar,
-  Edit3, Check, X, LogOut, Route, ChevronRight, Shield, Sparkles
+  Edit3, Check, X, LogOut, Route, Shield, Sparkles
 } from 'lucide-react';
+import SavedRouteCard from '../components/SavedRouteCard';
 
 const BRAZILIAN_STATES = [
   'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS',
@@ -310,41 +311,9 @@ const Profile = () => {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <AnimatePresence>
-                {savedRoutes.map((route, i) => (
-                  <motion.div
-                    key={route.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.08 }}
-                    style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '16px 18px', background: 'var(--card-highlight)',
-                      borderRadius: '10px', border: '1px solid var(--card-border)',
-                      cursor: 'pointer', transition: 'all 0.2s ease'
-                    }}
-                    whileHover={{ scale: 1.01, boxShadow: '0 4px 12px rgba(27,94,60,0.1)' }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <div style={{
-                        width: '40px', height: '40px', borderRadius: '10px',
-                        background: 'linear-gradient(135deg, var(--green-dark), var(--green))',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff',
-                        flexShrink: 0
-                      }}>
-                        <Route size={18} />
-                      </div>
-                      <div>
-                        <p style={{ fontWeight: 600, fontSize: '0.95rem' }}>{route.name}</p>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                          {new Date(route.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronRight size={18} style={{ color: 'var(--text-muted)' }} />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+              {savedRoutes.map((route, i) => (
+                <SavedRouteCard key={route.id} route={route} index={i} />
+              ))}
             </div>
           )}
         </motion.div>

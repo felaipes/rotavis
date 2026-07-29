@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { scorePlaces } from '../services/recommendationService';
 import { trackRouteGenerated, trackNps } from '../services/analyticsService';
 import { WEEKDAY_LABELS, WEEKDAY_SHORT, isPlaceAvailable, isOpenOnDay } from '../services/availabilityService';
+import { useAuth } from '../context/AuthContext';
 
 // Filtra o grupo de locais pelos que estão abertos no período/dia-da-semana pedidos.
 // Se ninguém do grupo estiver disponível (caso raro), relaxa a exigência em vez de deixar o resultado vazio.
@@ -109,6 +110,7 @@ const SUB_FILTERS = {
 };
 
 const RouteGenerator = () => {
+  const { user, updateProfile } = useAuth();
   const [days, setDays] = useState(1);
   const [startDay, setStartDay] = useState(new Date().getDay());
   const [route, setRoute] = useState(null);
@@ -143,6 +145,27 @@ const RouteGenerator = () => {
 
   const handleConfirmSave = async () => {
     setModalStage('thankyou');
+
+    if (user && route) {
+      try {
+        const newRoute = {
+          id: Date.now(),
+          name: profile.reason === 'trabalho' ? 'Roteiro Curto de Trabalho' : `Roteiro em Foz (${days} dias)`,
+          date: new Date().toISOString().split('T')[0],
+          days: route.map(dayPlan => ({
+            day: dayPlan.day,
+            weekday: dayPlan.weekday,
+            manha: (dayPlan.manha || []).map(p => ({ id: p.id, name: p.name, category: p.category, address: p.address, zone: p.zone, image: p.image, avgPrice: p.avgPrice, entryFee: p.entryFee, icon: p.icon })),
+            tarde: (dayPlan.tarde || []).map(p => ({ id: p.id, name: p.name, category: p.category, address: p.address, zone: p.zone, image: p.image, avgPrice: p.avgPrice, entryFee: p.entryFee, icon: p.icon })),
+            noite: (dayPlan.noite || []).map(p => ({ id: p.id, name: p.name, category: p.category, address: p.address, zone: p.zone, image: p.image, avgPrice: p.avgPrice, entryFee: p.entryFee, icon: p.icon })),
+          }))
+        };
+        const currentSaved = user.savedRoutes || [];
+        await updateProfile({ savedRoutes: [newRoute, ...currentSaved] });
+      } catch (err) {
+        console.error('Erro ao salvar rota no perfil:', err);
+      }
+    }
     
     // Pequeno atraso para garantir que a interface atualize para 'thankyou' antes do processamento pesado
     setTimeout(() => {

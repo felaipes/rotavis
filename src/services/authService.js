@@ -8,11 +8,11 @@ const CURRENT_USER_KEY = 'site_tur_current_user';
 // Usuário mockado padrão – é inserido no localStorage se ainda não existir
 const MOCK_USER = {
   id: 'mock-001',
-  name: 'Usuário Teste',
-  email: 'teste@rotavis.com',
-  password: '123456',
-  age: '28',
-  state: 'PR',
+  name: 'Lucas Ferreira',
+  email: 'lucas.ferreira@rotavis.com',
+  password: 'senha_segura',
+  age: '32',
+  state: 'SP',
   savedRoutes: [
     { id: 1, name: 'Cataratas + Parque das Aves', date: '2026-07-15' },
     { id: 2, name: 'Marco das Três Fronteiras', date: '2026-07-20' },
@@ -119,6 +119,7 @@ export const authService = {
         if (updates.name !== undefined) users[idx].name = updates.name;
         if (updates.age !== undefined) users[idx].age = updates.age;
         if (updates.state !== undefined) users[idx].state = updates.state;
+        if (updates.savedRoutes !== undefined) users[idx].savedRoutes = updates.savedRoutes;
 
         localStorage.setItem(USERS_KEY, JSON.stringify(users));
 
