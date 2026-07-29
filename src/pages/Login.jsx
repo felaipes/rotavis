@@ -42,6 +42,8 @@ const Login = () => {
           <p style={{ color: 'var(--text-muted)', marginTop: '10px' }}>Entre para salvar suas rotas preferidas.</p>
         </div>
 
+
+
         {error && (
           <div style={{ background: '#ef444422', border: '1px solid #ef4444', color: '#ef4444', padding: '12px', borderRadius: '8px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <AlertCircle size={18} />
