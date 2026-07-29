@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Map, Menu, X, User, LogOut, LogIn } from 'lucide-react';
+import { Map, MapPinned, Menu, X, User, LogOut, LogIn } from 'lucide-react';
 import Home from './pages/Home';
+import Mapa from './pages/Mapa';
 import RouteGenerator from './pages/RouteGenerator';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -33,6 +34,10 @@ const Header = () => {
             Gerar Rota
           </Link>
           <Link to="/catalogo" className={`btn-glass ${location.pathname === '/catalogo' ? 'active' : ''}`}>Catálogo</Link>
+          <Link to="/mapa" className={`btn-glass ${location.pathname === '/mapa' ? 'active' : ''}`}>
+            <MapPinned size={18} style={{ display: 'inline', marginRight: '5px' }} />
+            Mapa
+          </Link>
 
           <div style={{ width: '1px', height: '24px', background: 'var(--card-border)', margin: '0 5px' }}></div>
 
@@ -87,6 +92,10 @@ const Header = () => {
               <Link to="/catalogo" onClick={closeMenu} className={`btn-glass ${location.pathname === '/catalogo' ? 'active' : ''}`} style={{ textAlign: 'center' }}>
                 Catálogo
               </Link>
+              <Link to="/mapa" onClick={closeMenu} className={`btn-glass ${location.pathname === '/mapa' ? 'active' : ''}`} style={{ textAlign: 'center' }}>
+                <MapPinned size={18} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'text-bottom' }} />
+                Mapa
+              </Link>
 
               {user ? (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 5px' }}>
@@ -128,6 +137,7 @@ function App() {
             <Routes>
               <Route path="/" element={<RouteGenerator />} />
               <Route path="/catalogo" element={<Home />} />
+              <Route path="/mapa" element={<Mapa />} />
               <Route path="/rota" element={<RouteGenerator />} />
               <Route path="/login" element={<Login />} />
               <Route path="/cadastro" element={<Register />} />
