@@ -31,6 +31,15 @@ const CATEGORY_COLORS = {
 
 const DEFAULT_ACTIVE_CATEGORIES = ['passeios', 'restaurantes'];
 
+// Clareia uma cor hex (#rrggbb) para dar um leve degradê ao pino, em vez de cor chapada.
+const lightenHex = (hex, percent) => {
+  const num = parseInt(hex.replace('#', ''), 16);
+  const r = Math.min(255, (num >> 16) + Math.round(255 * percent / 100));
+  const g = Math.min(255, ((num >> 8) & 0xff) + Math.round(255 * percent / 100));
+  const b = Math.min(255, (num & 0xff) + Math.round(255 * percent / 100));
+  return `rgb(${r}, ${g}, ${b})`;
+};
+
 // Monta um ícone de mapa (pino redondo colorido + ícone da categoria, igual aos usados
 // nos filtros do catálogo) usando L.divIcon, já que CircleMarker não aceita ícone dentro.
 const iconCache = new Map();
@@ -41,17 +50,22 @@ const buildCategoryIcon = (category, color, selected) => {
   const IconComp = CATEGORY_ICON_COMPONENTS[category] || MapPin;
   const iconSvg = renderToStaticMarkup(<IconComp size={selected ? 17 : 14} color="#ffffff" strokeWidth={2.5} />);
   const size = selected ? 34 : 26;
+  const shadowW = Math.round(size * 0.55);
 
   const icon = L.divIcon({
-    html: `<div style="
-      width:${size}px; height:${size}px; border-radius:50% 50% 50% 0;
-      background:${color}; transform: rotate(-45deg);
-      border:${selected ? 3 : 2}px solid ${selected ? '#1e88e5' : '#ffffff'};
-      box-shadow:0 2px 6px rgba(7,11,20,0.35);
-      display:flex; align-items:center; justify-content:center;
-    "><div style="transform: rotate(45deg);">${iconSvg}</div></div>`,
+    html: `
+      <div style="position:relative; width:${size}px; height:${size + 8}px;">
+        <div style="position:absolute; top:${size - 3}px; left:${(size - shadowW) / 2}px; width:${shadowW}px; height:7px; border-radius:50%; background:rgba(7,11,20,0.32); filter:blur(1.5px);"></div>
+        <div style="
+          position:absolute; top:0; left:0; width:${size}px; height:${size}px; border-radius:50% 50% 50% 0;
+          background: linear-gradient(135deg, ${lightenHex(color, 18)}, ${color}); transform: rotate(-45deg);
+          border:${selected ? 3 : 2}px solid ${selected ? '#1e88e5' : '#ffffff'};
+          box-shadow:0 3px 6px rgba(7,11,20,0.38);
+          display:flex; align-items:center; justify-content:center;
+        "><div style="transform: rotate(45deg);">${iconSvg}</div></div>
+      </div>`,
     className: 'rotavis-map-icon',
-    iconSize: [size, size],
+    iconSize: [size, size + 8],
     iconAnchor: [size / 2, size],
     popupAnchor: [0, -size],
     tooltipAnchor: [0, -size * 0.8]
@@ -116,10 +130,16 @@ const InteractiveMap = ({ places, categories }) => {
             />
 
             {routeLine.length > 1 && (
-              <Polyline
-                positions={routeLine}
-                pathOptions={{ color: '#1e88e5', weight: 4, opacity: 0.8, dashArray: '1 10', lineCap: 'round' }}
-              />
+              <>
+                <Polyline
+                  positions={routeLine}
+                  pathOptions={{ color: '#ffffff', weight: 7, opacity: 0.85, lineCap: 'round' }}
+                />
+                <Polyline
+                  positions={routeLine}
+                  pathOptions={{ color: '#1e88e5', weight: 4, opacity: 0.9, dashArray: '1 10', lineCap: 'round' }}
+                />
+              </>
             )}
 
             {mappablePlaces.map(place => {
