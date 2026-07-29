@@ -3,10 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { authService } from '../services/authService';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const mockCreds = authService.getMockCredentials();
+  const [email, setEmail] = useState(mockCreds.email);
+  const [password, setPassword] = useState(mockCreds.password);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -40,6 +42,20 @@ const Login = () => {
           </div>
           <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Bem-vindo de volta</h1>
           <p style={{ color: 'var(--text-muted)', marginTop: '10px' }}>Entre para salvar suas rotas preferidas.</p>
+        </div>
+
+        {/* Dica do usuário mockado */}
+        <div style={{
+          background: 'rgba(27, 94, 60, 0.06)',
+          border: '1px solid rgba(27, 94, 60, 0.15)',
+          color: 'var(--green-dark)',
+          padding: '12px 16px',
+          borderRadius: '8px',
+          marginBottom: '20px',
+          fontSize: '0.82rem',
+          lineHeight: 1.5
+        }}>
+          <strong>💡 Teste rápido:</strong> os campos já estão preenchidos com uma conta de demonstração. Basta clicar em <strong>Entrar</strong>!
         </div>
 
         {error && (

@@ -7,6 +7,7 @@ import Mapa from './pages/Mapa';
 import RouteGenerator from './pages/RouteGenerator';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Profile from './pages/Profile';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './index.css';
 
@@ -43,12 +44,28 @@ const Header = () => {
 
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--green-dark)' }}>
-                <div style={{ background: 'var(--card-border)', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <User size={18} />
+              <Link
+                to="/perfil"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  color: 'var(--green-dark)', textDecoration: 'none',
+                  padding: '6px 14px', borderRadius: '8px',
+                  transition: 'background 0.2s ease',
+                  background: location.pathname === '/perfil' ? '#ecf5ee' : 'transparent'
+                }}
+                onMouseEnter={(e) => { if (location.pathname !== '/perfil') e.currentTarget.style.background = '#ecf5ee'; }}
+                onMouseLeave={(e) => { if (location.pathname !== '/perfil') e.currentTarget.style.background = 'transparent'; }}
+              >
+                <div style={{
+                  background: 'linear-gradient(135deg, var(--green-dark), var(--green))',
+                  width: '32px', height: '32px', borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#fff', fontWeight: 700, fontSize: '0.8rem'
+                }}>
+                  {user.name?.charAt(0)?.toUpperCase() || <User size={16} />}
                 </div>
                 <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user.name.split(' ')[0]}</span>
-              </div>
+              </Link>
               <button
                 onClick={logout}
                 style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem', fontWeight: 500 }}
@@ -98,21 +115,37 @@ const Header = () => {
               </Link>
 
               {user ? (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 5px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--green-dark)' }}>
-                    <div style={{ background: 'var(--card-border)', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <User size={18} />
+                <>
+                  <Link
+                    to="/perfil"
+                    onClick={closeMenu}
+                    className={`btn-glass ${location.pathname === '/perfil' ? 'active' : ''}`}
+                    style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+                  >
+                    <div style={{
+                      background: 'linear-gradient(135deg, var(--green-dark), var(--green))',
+                      width: '28px', height: '28px', borderRadius: '50%',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: '#fff', fontWeight: 700, fontSize: '0.7rem', flexShrink: 0
+                    }}>
+                      {user.name?.charAt(0)?.toUpperCase() || 'U'}
                     </div>
-                    <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user.name.split(' ')[0]}</span>
-                  </div>
+                    Meu Perfil
+                  </Link>
                   <button
                     onClick={() => { logout(); closeMenu(); }}
-                    style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem', fontWeight: 500 }}
+                    style={{
+                      background: 'transparent', border: '1px solid #ef444444',
+                      color: '#ef4444', cursor: 'pointer', display: 'flex',
+                      alignItems: 'center', justifyContent: 'center', gap: '8px',
+                      fontSize: '0.9rem', fontWeight: 500, padding: '10px',
+                      borderRadius: '8px'
+                    }}
                   >
                     <LogOut size={16} />
                     Sair
                   </button>
-                </div>
+                </>
               ) : (
                 <Link to="/login" onClick={closeMenu} className="btn-gold" style={{ justifyContent: 'center' }}>
                   <LogIn size={16} style={{ marginRight: '8px' }} />
@@ -141,6 +174,7 @@ function App() {
               <Route path="/rota" element={<RouteGenerator />} />
               <Route path="/login" element={<Login />} />
               <Route path="/cadastro" element={<Register />} />
+              <Route path="/perfil" element={<Profile />} />
             </Routes>
           </main>
         </div>

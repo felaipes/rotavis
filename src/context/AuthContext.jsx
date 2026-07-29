@@ -19,10 +19,17 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
-  const register = async (name, email, password) => {
-    const userData = await authService.register(name, email, password);
+  const register = async (name, email, password, extraFields = {}) => {
+    const userData = await authService.register(name, email, password, extraFields);
     setUser(userData);
     return userData;
+  };
+
+  const updateProfile = async (updates) => {
+    if (!user) throw new Error('Nenhum usuário logado.');
+    const updatedUser = await authService.updateProfile(user.id, updates);
+    setUser(updatedUser);
+    return updatedUser;
   };
 
   const logout = async () => {
@@ -31,7 +38,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, register, updateProfile, logout, loading }}>
       {!loading && children}
     </AuthContext.Provider>
   );
