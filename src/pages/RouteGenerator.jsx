@@ -799,100 +799,87 @@ const RouteGenerator = () => {
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '60px' }}
+          style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '28px', maxWidth: '860px', margin: '0 auto' }}
         >
-          <div>
-            <h2 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: '16px' }} className="text-gradient">
+          <div className="liquid-glass" style={{ padding: 'clamp(16px, 3vw, 24px)', borderRadius: '20px' }}>
+            <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '16px' }}>
               Sua rota no mapa
             </h2>
             <RouteMapView route={route} mapRef={mapSnapshotRef} />
           </div>
 
-          <div ref={routeRef} style={{ background: 'var(--primary-dark)', padding: '20px', borderRadius: '20px' }}>
-            {route.map((dayPlan, index) => (
-            <div key={index} style={{ borderLeft: '2px dashed var(--glass-border)', paddingLeft: 'clamp(24px, 8vw, 40px)', position: 'relative' }}>
-              <div style={{ 
-                position: 'absolute', 
-                left: '-21px', 
-                top: 0, 
-                background: 'var(--primary-dark)',
-                padding: '10px'
-              }}>
-                <div style={{ 
-                  width: '40px', 
-                  height: '40px', 
-                  background: 'var(--accent-gold)', 
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'var(--green-dark)',
-                  fontWeight: 'bold',
-                  boxShadow: '0 0 15px var(--accent-gold-glow)'
-                }}>
-                  {dayPlan.day}
+          <div ref={routeRef} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {route.map((dayPlan, index) => {
+              const periods = [
+                { key: 'manha', label: 'Manhã', icon: Sun, color: 'var(--blue)', bg: 'rgba(30, 136, 229, 0.12)', places: dayPlan.manha },
+                { key: 'tarde', label: 'Tarde', icon: Sunset, color: '#d97706', bg: 'rgba(217, 119, 6, 0.12)', places: dayPlan.tarde },
+                { key: 'noite', label: 'Noite', icon: Moon, color: '#4f46e5', bg: 'rgba(79, 70, 229, 0.12)', places: dayPlan.noite }
+              ].filter(p => p.places.length > 0);
+
+              return (
+                <div key={index} style={{ background: '#ffffff', borderRadius: '20px', border: '1px solid var(--card-border)', boxShadow: '0 6px 24px rgba(27, 94, 60, 0.07)', padding: 'clamp(18px, 4vw, 28px)' }}>
+                  {/* Cabeçalho do dia, estilo recibo de viagem */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', paddingBottom: '18px', marginBottom: '22px', borderBottom: '1px solid var(--card-border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <div style={{
+                        width: '38px', height: '38px', borderRadius: '50%', background: 'var(--green-dark)', color: '#fff',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.95rem', flexShrink: 0
+                      }}>
+                        {dayPlan.day}
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: '1.1rem', lineHeight: 1.2 }}>Dia {dayPlan.day}</div>
+                        <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{WEEKDAY_LABELS[dayPlan.weekday]}</div>
+                      </div>
+                    </div>
+
+                    {dayPlan.dailyBudget != null && (
+                      <div style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600,
+                        padding: '6px 14px', borderRadius: '99px',
+                        background: dayPlan.estimatedCost > dayPlan.dailyBudget ? 'rgba(220, 38, 38, 0.1)' : 'var(--accent-gold-glow)',
+                        color: dayPlan.estimatedCost > dayPlan.dailyBudget ? '#dc2626' : 'var(--green-dark)'
+                      }}>
+                        <Wallet size={13} />
+                        ~R$ {Math.round(dayPlan.estimatedCost).toLocaleString('pt-BR')} de R$ {Math.round(dayPlan.dailyBudget).toLocaleString('pt-BR')}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Linha do tempo do dia: um ponto por período, conectados por uma linha fina */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+                    {periods.map((period, pIdx) => (
+                      <div key={period.key} style={{ display: 'flex', gap: '16px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                          <div style={{
+                            width: '32px', height: '32px', borderRadius: '50%', background: period.bg,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                          }}>
+                            <period.icon size={15} color={period.color} />
+                          </div>
+                          {pIdx < periods.length - 1 && (
+                            <div style={{ width: '2px', flex: 1, background: 'var(--card-border)', marginTop: '6px' }} />
+                          )}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0, paddingBottom: pIdx < periods.length - 1 ? '4px' : 0 }}>
+                          <div style={{ fontWeight: 700, fontSize: '0.9rem', color: period.color, marginBottom: '12px' }}>
+                            {period.label}
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: '16px' }}>
+                            {period.places.map(place => place && (
+                              <PlaceCard key={place.id} place={place} />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-
-              <h2 style={{ fontSize: '2rem', marginBottom: '5px' }} className="gold-gradient">
-                Dia {dayPlan.day}
-              </h2>
-              <p style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: dayPlan.dailyBudget ? '10px' : '25px' }}>
-                <Clock size={15} /> {WEEKDAY_LABELS[dayPlan.weekday]}
-              </p>
-
-              {dayPlan.dailyBudget != null && (
-                <p style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', fontWeight: 600,
-                  marginBottom: '25px', padding: '6px 14px', borderRadius: '99px',
-                  background: dayPlan.estimatedCost > dayPlan.dailyBudget ? 'rgba(220, 38, 38, 0.1)' : 'var(--accent-gold-glow)',
-                  color: dayPlan.estimatedCost > dayPlan.dailyBudget ? '#dc2626' : 'var(--green-dark)'
-                }}>
-                  <Wallet size={15} />
-                  Orçamento do dia: ~R$ {Math.round(dayPlan.estimatedCost).toLocaleString('pt-BR')} de R$ {Math.round(dayPlan.dailyBudget).toLocaleString('pt-BR')}
-                </p>
-              )}
-
-              {/* Manhã */}
-              <div style={{ marginBottom: '40px' }}>
-                <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.5rem', marginBottom: '20px', color: 'var(--blue)' }}>
-                  <Sun size={24} /> Manhã
-                </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '20px' }}>
-                  {dayPlan.manha.map(place => place && (
-                    <PlaceCard key={place.id} place={place} />
-                  ))}
-                </div>
-              </div>
-
-              {/* Tarde */}
-              <div style={{ marginBottom: '40px' }}>
-                <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.5rem', marginBottom: '20px', color: '#d97706' }}>
-                  <Sunset size={24} /> Tarde
-                </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '20px' }}>
-                  {dayPlan.tarde.map(place => place && (
-                    <PlaceCard key={place.id} place={place} />
-                  ))}
-                </div>
-              </div>
-
-              {/* Noite */}
-              <div style={{ marginBottom: '20px' }}>
-                <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.5rem', marginBottom: '20px', color: '#4f46e5' }}>
-                  <Moon size={24} /> Noite
-                </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '20px' }}>
-                  {dayPlan.noite.map(place => place && (
-                    <PlaceCard key={place.id} place={place} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
+              );
+            })}
           </div>
-          
-          <div style={{ textAlign: 'center', marginTop: '40px', display: 'flex', gap: '20px', justifyContent: 'center' }}>
+
+          <div style={{ textAlign: 'center', marginTop: '12px', display: 'flex', gap: '20px', justifyContent: 'center' }}>
             <button onClick={() => setStep(1)} className="btn-glass" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
               Refazer Perfil
             </button>
