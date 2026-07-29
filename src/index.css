@@ -146,6 +146,13 @@ a {
   pointer-events: none;
 }
 
+/* Remove o fundo branco/borda padrão que o Leaflet aplica a todo divIcon; o pino já
+   desenha seu próprio fundo colorido e borda no HTML do ícone. */
+.rotavis-map-icon {
+  background: transparent;
+  border: none;
+}
+
 /* Typography */
 .text-gradient {
   color: var(--green-dark);

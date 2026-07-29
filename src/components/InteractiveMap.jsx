@@ -1,10 +1,17 @@
 import React, { useMemo, useState } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup, Polyline, Tooltip } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip } from 'react-leaflet';
+import { renderToStaticMarkup } from 'react-dom/server';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Route, X, MapPin, Wallet } from 'lucide-react';
+import { Route, X, MapPin, Wallet, Map as MapIcon, Utensils, Beer, Coffee, CupSoda, Bed, Pizza, ShoppingCart, Store, Dumbbell } from 'lucide-react';
 import { getPlaceCoordinates } from '../data/zoneCoordinates';
 
 const FOZ_CENTER = [-25.5478, -54.5658];
+
+// Só os ícones realmente usados pelas categorias (ver icon: '...' em data.js), para não
+// empacotar a biblioteca lucide-react inteira no bundle. Renomeado "Map" -> "MapIcon" para
+// não colidir com o Map (Map/Set) nativo do JavaScript usado no cache abaixo.
+const CATEGORY_ICON_COMPONENTS = { Map: MapIcon, Utensils, Beer, Coffee, CupSoda, Bed, Pizza, ShoppingCart, Store, Dumbbell };
 
 // Cor do marcador por categoria, para diferenciar rapidamente passeios/restaurantes das demais.
 const CATEGORY_COLORS = {
@@ -24,9 +31,44 @@ const CATEGORY_COLORS = {
 
 const DEFAULT_ACTIVE_CATEGORIES = ['passeios', 'restaurantes'];
 
+// Monta um ícone de mapa (pino redondo colorido + ícone da categoria, igual aos usados
+// nos filtros do catálogo) usando L.divIcon, já que CircleMarker não aceita ícone dentro.
+const iconCache = new Map();
+const buildCategoryIcon = (category, color, selected) => {
+  const cacheKey = `${category}-${selected}`;
+  if (iconCache.has(cacheKey)) return iconCache.get(cacheKey);
+
+  const IconComp = CATEGORY_ICON_COMPONENTS[category] || MapPin;
+  const iconSvg = renderToStaticMarkup(<IconComp size={selected ? 17 : 14} color="#ffffff" strokeWidth={2.5} />);
+  const size = selected ? 34 : 26;
+
+  const icon = L.divIcon({
+    html: `<div style="
+      width:${size}px; height:${size}px; border-radius:50% 50% 50% 0;
+      background:${color}; transform: rotate(-45deg);
+      border:${selected ? 3 : 2}px solid ${selected ? '#1e88e5' : '#ffffff'};
+      box-shadow:0 2px 6px rgba(7,11,20,0.35);
+      display:flex; align-items:center; justify-content:center;
+    "><div style="transform: rotate(45deg);">${iconSvg}</div></div>`,
+    className: 'rotavis-map-icon',
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size],
+    popupAnchor: [0, -size],
+    tooltipAnchor: [0, -size * 0.8]
+  });
+  iconCache.set(cacheKey, icon);
+  return icon;
+};
+
 const InteractiveMap = ({ places, categories }) => {
   const [activeCategories, setActiveCategories] = useState(DEFAULT_ACTIVE_CATEGORIES);
   const [routeStops, setRouteStops] = useState([]);
+
+  const categoryIconName = useMemo(() => {
+    const map = {};
+    categories.forEach(c => { map[c.id] = c.icon; });
+    return map;
+  }, [categories]);
 
   const toggleCategory = (catId) => {
     setActiveCategories(prev =>
@@ -84,19 +126,21 @@ const InteractiveMap = ({ places, categories }) => {
               const coords = getPlaceCoordinates(place);
               const stopIndex = routeStops.findIndex(p => p.id === place.id);
               const inRoute = stopIndex !== -1;
+              const iconName = categoryIconName[place.category] || 'MapPin';
+              const color = CATEGORY_COLORS[place.category] || '#8a7a63';
+
               return (
-                <CircleMarker
-                  key={place.id}
-                  center={coords}
-                  radius={inRoute ? 10 : 7}
-                  pathOptions={{
-                    color: inRoute ? '#1e88e5' : '#ffffff',
-                    weight: inRoute ? 3 : 1.5,
-                    fillColor: CATEGORY_COLORS[place.category] || '#8a7a63',
-                    fillOpacity: 0.9
-                  }}
-                >
-                  <Tooltip direction="top" offset={[0, -6]}>{place.name}</Tooltip>
+                <Marker key={place.id} position={coords} icon={buildCategoryIcon(iconName, color, inRoute)}>
+                  <Tooltip direction="top" offset={[0, -4]} opacity={1}>
+                    <div style={{ textAlign: 'center' }}>
+                      <img
+                        src={place.image}
+                        alt={place.name}
+                        style={{ width: '150px', height: '95px', objectFit: 'cover', borderRadius: '8px', display: 'block', marginBottom: '6px' }}
+                      />
+                      <strong style={{ fontSize: '0.82rem' }}>{place.name}</strong>
+                    </div>
+                  </Tooltip>
                   <Popup>
                     <div style={{ minWidth: '180px' }}>
                       <strong>{place.name}</strong>
@@ -116,13 +160,13 @@ const InteractiveMap = ({ places, categories }) => {
                       </button>
                     </div>
                   </Popup>
-                </CircleMarker>
+                </Marker>
               );
             })}
           </MapContainer>
         </div>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '8px' }}>
-          Clique em um marcador para ver detalhes e adicionar à sua rota. As posições são aproximadas, dentro da região de cada local.
+          Passe o mouse sobre um marcador para ver a foto do local, ou clique para adicionar à sua rota. As posições são aproximadas, dentro da região de cada local.
         </p>
       </div>
 
