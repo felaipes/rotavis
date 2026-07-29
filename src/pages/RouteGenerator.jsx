@@ -3,7 +3,9 @@ import { places } from '../data';
 import { Calendar, CheckCircle2, ChevronRight, Sun, Sunset, Moon, Briefcase, Map as MapIcon, Wallet, Star, Coffee, Tent, History, Utensils, GlassWater, Car, Footprints, Download, X, Activity, Rocket, Clock, Timer, Hourglass, MapPinned, Users, Heart } from 'lucide-react';
 
 import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 import PlaceCard from '../components/PlaceCard';
+import RouteMapView, { DAY_COLORS } from '../components/RouteMapView';
 import { motion, AnimatePresence } from 'framer-motion';
 import { scorePlaces } from '../services/recommendationService';
 import { trackRouteGenerated, trackNps } from '../services/analyticsService';
@@ -16,6 +18,16 @@ const filterAvailable = (pool, periodKey, dayIndex) => {
   if (openNow.length > 0) return openNow;
   const openToday = pool.filter(p => isOpenOnDay(p, dayIndex));
   return openToday.length > 0 ? openToday : pool;
+};
+
+// Converte uma cor hex (#rrggbb) em {r,g,b} para usar em pdf.setFillColor/setTextColor.
+const hexToRgb = (hex) => {
+  const clean = hex.replace('#', '');
+  return {
+    r: parseInt(clean.slice(0, 2), 16),
+    g: parseInt(clean.slice(2, 4), 16),
+    b: parseInt(clean.slice(4, 6), 16)
+  };
 };
 
 // Quantas paradas cabem no tempo livre informado para o roteiro de quem está a trabalho.
@@ -116,6 +128,7 @@ const RouteGenerator = () => {
   const [step, setStep] = useState(1);
   const [modalStage, setModalStage] = useState(null);
   const routeRef = useRef(null);
+  const mapSnapshotRef = useRef(null);
   const [profile, setProfile] = useState({
     reason: '',
     budget: '',
@@ -143,14 +156,52 @@ const RouteGenerator = () => {
 
   const handleConfirmSave = async () => {
     setModalStage('thankyou');
-    
+
     // Pequeno atraso para garantir que a interface atualize para 'thankyou' antes do processamento pesado
-    setTimeout(() => {
+    setTimeout(async () => {
       if (route) {
         try {
           const pdf = new jsPDF('p', 'mm', 'a4');
+          const pageWidth = pdf.internal.pageSize.getWidth();
           const pageHeight = pdf.internal.pageSize.getHeight();
           let yOffset = 20;
+
+          // Capa: foto do mapa com o caminho de cada dia numa cor, + legenda dos dias
+          if (mapSnapshotRef.current) {
+            try {
+              const canvas = await html2canvas(mapSnapshotRef.current, { useCORS: true, scale: 2, logging: false });
+              const imgData = canvas.toDataURL('image/png');
+              const imgWidth = pageWidth - 30;
+              const imgHeight = (canvas.height / canvas.width) * imgWidth;
+
+              pdf.setFont('helvetica', 'bold');
+              pdf.setFontSize(22);
+              pdf.setTextColor(27, 94, 60);
+              pdf.text('Sua Rota Perfeita', pageWidth / 2, 20, { align: 'center' });
+              pdf.setFont('helvetica', 'normal');
+              pdf.setFontSize(12);
+              pdf.setTextColor(120, 120, 120);
+              pdf.text('Foz do Iguaçu - o caminho do seu roteiro, dia a dia', pageWidth / 2, 28, { align: 'center' });
+
+              pdf.addImage(imgData, 'PNG', 15, 36, imgWidth, imgHeight);
+
+              let legendY = 36 + imgHeight + 12;
+              pdf.setFontSize(11);
+              route.forEach((dayPlan, idx) => {
+                const { r, g, b } = hexToRgb(DAY_COLORS[idx % DAY_COLORS.length]);
+                pdf.setFillColor(r, g, b);
+                pdf.rect(17, legendY - 3.5, 8, 3, 'F');
+                pdf.setFont('helvetica', 'bold');
+                pdf.setTextColor(60, 60, 60);
+                pdf.text(`Dia ${dayPlan.day} - ${WEEKDAY_LABELS[dayPlan.weekday] || ''}`, 29, legendY);
+                legendY += 6;
+              });
+
+              pdf.addPage();
+            } catch (mapError) {
+              console.error('Error capturing route map for PDF cover:', mapError);
+            }
+          }
 
           // Título Principal
           pdf.setFont('helvetica', 'bold');
@@ -750,6 +801,13 @@ const RouteGenerator = () => {
           animate={{ opacity: 1, y: 0 }}
           style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '60px' }}
         >
+          <div>
+            <h2 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: '16px' }} className="text-gradient">
+              Sua rota no mapa
+            </h2>
+            <RouteMapView route={route} mapRef={mapSnapshotRef} />
+          </div>
+
           <div ref={routeRef} style={{ background: 'var(--primary-dark)', padding: '20px', borderRadius: '20px' }}>
             {route.map((dayPlan, index) => (
             <div key={index} style={{ borderLeft: '2px dashed var(--glass-border)', paddingLeft: 'clamp(24px, 8vw, 40px)', position: 'relative' }}>
