@@ -39,3 +39,28 @@ export const getPlaceCoordinates = (place) => {
     base[1] + Math.cos(angle) * radius
   ];
 };
+
+// Distância em linha reta (Haversine) entre dois pontos [lat, lng], em km.
+const EARTH_RADIUS_KM = 6371;
+const toRad = (deg) => deg * (Math.PI / 180);
+export const haversineDistanceKm = ([lat1, lng1], [lat2, lng2]) => {
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return EARTH_RADIUS_KM * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
+// Soma a distância de um trajeto inteiro, ponto a ponto, na ordem em que aparecem.
+export const totalRouteDistanceKm = (coordsList) => {
+  let total = 0;
+  for (let i = 1; i < coordsList.length; i++) {
+    total += haversineDistanceKm(coordsList[i - 1], coordsList[i]);
+  }
+  return total;
+};
+
+// Formata em km (vírgula decimal, padrão pt-BR) ou em metros quando for bem curto.
+export const formatDistanceKm = (km) => {
+  if (km < 1) return `${Math.round(km * 1000)} m`;
+  return `${km.toFixed(1).replace('.', ',')} km`;
+};

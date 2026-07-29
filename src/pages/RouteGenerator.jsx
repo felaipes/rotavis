@@ -1,11 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { places } from '../data';
-import { Calendar, CheckCircle2, ChevronRight, Sun, Sunset, Moon, Briefcase, Map as MapIcon, Wallet, Star, Coffee, Tent, History, Utensils, GlassWater, Car, Footprints, Download, X, Activity, Rocket, Clock, Timer, Hourglass, MapPinned, Users, Heart } from 'lucide-react';
+import { Calendar, CheckCircle2, ChevronRight, Sun, Sunset, Moon, Briefcase, Map as MapIcon, Wallet, Star, Coffee, Tent, History, Utensils, GlassWater, Car, Footprints, Download, X, Activity, Rocket, Clock, Timer, Hourglass, MapPinned, Users, Heart, Route } from 'lucide-react';
 
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import PlaceCard from '../components/PlaceCard';
-import RouteMapView, { DAY_COLORS } from '../components/RouteMapView';
+import RouteMapView, { DAY_COLORS, DayRouteMap } from '../components/RouteMapView';
+import { getPlaceCoordinates, totalRouteDistanceKm, formatDistanceKm } from '../data/zoneCoordinates';
 import { motion, AnimatePresence } from 'framer-motion';
 import { scorePlaces } from '../services/recommendationService';
 import { trackRouteGenerated, trackNps } from '../services/analyticsService';
@@ -839,6 +840,9 @@ const RouteGenerator = () => {
                 { key: 'noite', label: 'Noite', icon: Moon, color: '#4f46e5', bg: 'rgba(79, 70, 229, 0.12)', places: dayPlan.noite }
               ].filter(p => p.places.length > 0);
 
+              const dayStops = [...dayPlan.manha, ...dayPlan.tarde, ...dayPlan.noite].filter(Boolean);
+              const dayDistanceKm = totalRouteDistanceKm(dayStops.map(p => getPlaceCoordinates(p)));
+
               return (
                 <div key={index} style={{ background: '#ffffff', borderRadius: '20px', border: '1px solid var(--card-border)', boxShadow: '0 6px 24px rgba(27, 94, 60, 0.07)', padding: 'clamp(18px, 4vw, 28px)' }}>
                   {/* Cabeçalho do dia, estilo recibo de viagem */}
@@ -856,17 +860,29 @@ const RouteGenerator = () => {
                       </div>
                     </div>
 
-                    {dayPlan.dailyBudget != null && (
-                      <div style={{
-                        display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600,
-                        padding: '6px 14px', borderRadius: '99px',
-                        background: dayPlan.estimatedCost > dayPlan.dailyBudget ? 'rgba(220, 38, 38, 0.1)' : 'var(--accent-gold-glow)',
-                        color: dayPlan.estimatedCost > dayPlan.dailyBudget ? '#dc2626' : 'var(--green-dark)'
-                      }}>
-                        <Wallet size={13} />
-                        ~R$ {Math.round(dayPlan.estimatedCost).toLocaleString('pt-BR')} de R$ {Math.round(dayPlan.dailyBudget).toLocaleString('pt-BR')}
-                      </div>
-                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                      {dayStops.length > 1 && (
+                        <div style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600,
+                          padding: '6px 14px', borderRadius: '99px',
+                          background: 'var(--card-highlight)', color: 'var(--green-dark)'
+                        }}>
+                          <Route size={13} />
+                          {formatDistanceKm(dayDistanceKm)}
+                        </div>
+                      )}
+                      {dayPlan.dailyBudget != null && (
+                        <div style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600,
+                          padding: '6px 14px', borderRadius: '99px',
+                          background: dayPlan.estimatedCost > dayPlan.dailyBudget ? 'rgba(220, 38, 38, 0.1)' : 'var(--accent-gold-glow)',
+                          color: dayPlan.estimatedCost > dayPlan.dailyBudget ? '#dc2626' : 'var(--green-dark)'
+                        }}>
+                          <Wallet size={13} />
+                          ~R$ {Math.round(dayPlan.estimatedCost).toLocaleString('pt-BR')} de R$ {Math.round(dayPlan.dailyBudget).toLocaleString('pt-BR')}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Linha do tempo do dia: um ponto por período, conectados por uma linha fina */}
@@ -897,6 +913,15 @@ const RouteGenerator = () => {
                       </div>
                     ))}
                   </div>
+
+                  {dayStops.length > 1 && (
+                    <div style={{ marginTop: '22px', paddingTop: '20px', borderTop: '1px solid var(--card-border)' }}>
+                      <DayRouteMap stops={dayStops} color={DAY_COLORS[index % DAY_COLORS.length]} />
+                      <p style={{ textAlign: 'center', fontSize: '0.82rem', fontWeight: 600, color: 'var(--green-dark)', marginTop: '10px' }}>
+                        {formatDistanceKm(dayDistanceKm)} no trajeto do dia
+                      </p>
+                    </div>
+                  )}
                 </div>
               );
             })}

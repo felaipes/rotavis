@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Route, X, MapPin, Wallet, Map as MapIcon, Utensils, Beer, Coffee, CupSoda, Bed, Pizza, ShoppingCart, Store, Dumbbell } from 'lucide-react';
-import { getPlaceCoordinates } from '../data/zoneCoordinates';
+import { getPlaceCoordinates, totalRouteDistanceKm, formatDistanceKm } from '../data/zoneCoordinates';
 
 const FOZ_CENTER = [-25.5478, -54.5658];
 
@@ -104,6 +104,7 @@ const InteractiveMap = ({ places, categories }) => {
   };
 
   const routeLine = useMemo(() => routeStops.map(p => getPlaceCoordinates(p)), [routeStops]);
+  const totalDistanceKm = useMemo(() => totalRouteDistanceKm(routeLine), [routeLine]);
 
   return (
     <div className="interactive-map-layout">
@@ -201,6 +202,10 @@ const InteractiveMap = ({ places, categories }) => {
           </p>
         ) : (
           <>
+            <p style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, color: 'var(--green-dark)', marginBottom: '14px', paddingBottom: '14px', borderBottom: '1px solid var(--card-border)' }}>
+              {routeStops.length} {routeStops.length === 1 ? 'parada' : 'paradas'}
+              {routeStops.length > 1 && ` · ${formatDistanceKm(totalDistanceKm)} no total`}
+            </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
               {routeStops.map((place, idx) => (
                 <div key={place.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem' }}>

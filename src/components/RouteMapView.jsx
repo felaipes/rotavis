@@ -2,7 +2,8 @@ import React, { useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Polyline, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { getPlaceCoordinates } from '../data/zoneCoordinates';
+import { Route } from 'lucide-react';
+import { getPlaceCoordinates, totalRouteDistanceKm, formatDistanceKm } from '../data/zoneCoordinates';
 
 // Uma cor por dia (até 5 dias, que é o máximo do assistente), para o trajeto de cada
 // dia ficar visualmente distinto no mapa e na capa do PDF.
@@ -56,10 +57,12 @@ const RouteMapView = ({ route, mapRef }) => {
   const dayLines = useMemo(() => {
     return route.map((dayPlan, idx) => {
       const stops = [...dayPlan.manha, ...dayPlan.tarde, ...dayPlan.noite].filter(Boolean);
+      const stopCoords = stops.map(place => ({ place, coords: getPlaceCoordinates(place) }));
       return {
         day: dayPlan.day,
         color: DAY_COLORS[idx % DAY_COLORS.length],
-        stops: stops.map(place => ({ place, coords: getPlaceCoordinates(place) }))
+        stops: stopCoords,
+        distanceKm: totalRouteDistanceKm(stopCoords.map(s => s.coords))
       };
     });
   }, [route]);
@@ -69,17 +72,25 @@ const RouteMapView = ({ route, mapRef }) => {
     [dayLines]
   );
 
+  const totalKm = useMemo(() => dayLines.reduce((sum, d) => sum + d.distanceKm, 0), [dayLines]);
+
   if (allPositions.length === 0) return null;
 
   return (
     <div ref={mapRef}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', marginBottom: '12px' }}>
-        {dayLines.map(d => (
-          <div key={d.day} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600 }}>
-            <span style={{ width: '18px', height: '4px', borderRadius: '2px', background: d.color, display: 'inline-block' }} />
-            Dia {d.day}
-          </div>
-        ))}
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '10px 18px', marginBottom: '12px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px' }}>
+          {dayLines.map(d => (
+            <div key={d.day} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600 }}>
+              <span style={{ width: '18px', height: '4px', borderRadius: '2px', background: d.color, display: 'inline-block' }} />
+              Dia {d.day} · {formatDistanceKm(d.distanceKm)}
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 700, color: 'var(--green-dark)' }}>
+          <Route size={15} />
+          {formatDistanceKm(totalKm)} no total
+        </div>
       </div>
       <div style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--card-border)', boxShadow: 'var(--card-shadow)' }}>
         <MapContainer center={allPositions[0]} zoom={12} style={{ height: '420px', width: '100%' }} scrollWheelZoom={true}>
@@ -94,14 +105,14 @@ const RouteMapView = ({ route, mapRef }) => {
             <Polyline
               key={`${d.day}-casing`}
               positions={d.stops.map(s => s.coords)}
-              pathOptions={{ color: '#ffffff', weight: 7, opacity: 0.9, lineCap: 'round', lineJoin: 'round' }}
+              pathOptions={{ color: '#ffffff', weight: 8, opacity: 0.85, lineCap: 'round', lineJoin: 'round' }}
             />
           ))}
           {dayLines.map(d => (
             <Polyline
               key={d.day}
               positions={d.stops.map(s => s.coords)}
-              pathOptions={{ color: d.color, weight: 4, opacity: 0.95, lineCap: 'round', lineJoin: 'round' }}
+              pathOptions={{ color: d.color, weight: 5, opacity: 1, lineCap: 'round', lineJoin: 'round', dashArray: '1, 12' }}
             />
           ))}
 
@@ -112,6 +123,49 @@ const RouteMapView = ({ route, mapRef }) => {
           )))}
         </MapContainer>
       </div>
+    </div>
+  );
+};
+
+// Mini mapa somente do trajeto de um único dia, para encaixar no final do card de cada dia.
+// Sem controles de zoom/arraste: é um resumo visual, não uma ferramenta interativa (evita
+// "prender" o scroll da página quando o usuário passa o dedo/mouse por cima dele).
+export const DayRouteMap = ({ stops, color }) => {
+  const stopCoords = useMemo(
+    () => stops.map(place => ({ place, coords: getPlaceCoordinates(place) })),
+    [stops]
+  );
+  const positions = useMemo(() => stopCoords.map(s => s.coords), [stopCoords]);
+
+  if (positions.length === 0) return null;
+
+  return (
+    <div style={{ borderRadius: '14px', overflow: 'hidden', border: '1px solid var(--card-border)' }}>
+      <MapContainer
+        center={positions[0]}
+        zoom={13}
+        style={{ height: '220px', width: '100%' }}
+        scrollWheelZoom={false}
+        dragging={false}
+        touchZoom={false}
+        doubleClickZoom={false}
+        zoomControl={false}
+        attributionControl={false}
+      >
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <FitToStops positions={positions} />
+
+        {positions.length > 1 && (
+          <Polyline positions={positions} pathOptions={{ color: '#ffffff', weight: 8, opacity: 0.85, lineCap: 'round', lineJoin: 'round' }} />
+        )}
+        {positions.length > 1 && (
+          <Polyline positions={positions} pathOptions={{ color, weight: 5, opacity: 1, lineCap: 'round', lineJoin: 'round', dashArray: '1, 12' }} />
+        )}
+
+        {stopCoords.map((s, i) => (
+          <Marker key={s.place.id} position={s.coords} icon={buildStopIcon(color, i + 1)} />
+        ))}
+      </MapContainer>
     </div>
   );
 };
