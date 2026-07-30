@@ -12,6 +12,7 @@ import { scorePlaces } from '../services/recommendationService';
 import { trackRouteGenerated, trackNps } from '../services/analyticsService';
 import { WEEKDAY_LABELS, WEEKDAY_SHORT, isPlaceAvailable, isOpenOnDay } from '../services/availabilityService';
 import { useAuth } from '../context/AuthContext';
+import RouteLoadingScreen from '../components/RouteLoadingScreen';
 
 
 // Filtra o grupo de locais pelos que estão abertos no período/dia-da-semana pedidos.
@@ -146,6 +147,7 @@ const RouteGenerator = () => {
   });
   const [showNps, setShowNps] = useState(false);
   const [npsScore, setNpsScore] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handlePreferenceToggle = (pref) => {
     setProfile(prev => {
@@ -430,7 +432,8 @@ const RouteGenerator = () => {
       localStorage.setItem('rotavis_total_budget', totalEstimated.toString());
     }
     
-    setStep(10);
+    // Mostra o loading screen; ele chama onComplete quando terminar
+    setIsGenerating(true);
     // Show NPS popup after 3 seconds
     setTimeout(() => setShowNps(true), 3000);
   };
@@ -465,7 +468,20 @@ const RouteGenerator = () => {
   };
 
   return (
-    <div className="container" style={{ padding: '60px 20px', minHeight: '80vh', position: 'relative' }}>
+    <>
+      {/* Loading screen de IA — aparece quando a rota está sendo "gerada" */}
+      <AnimatePresence>
+        {isGenerating && (
+          <RouteLoadingScreen
+            onComplete={() => {
+              setIsGenerating(false);
+              setStep(10);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      <div className="container" style={{ padding: '60px 20px', minHeight: '80vh', position: 'relative' }}>
       <MapBackground />
       <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: '800px', margin: '0 auto 40px' }}>
         <h1 style={{ fontSize: 'clamp(1.9rem, 7vw, 3rem)', fontWeight: 800, marginBottom: '20px' }} className="text-gradient">
@@ -1196,6 +1212,7 @@ const RouteGenerator = () => {
       </AnimatePresence>
 
     </div>
+    </>
   );
 };
 
