@@ -1,18 +1,20 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Map, MapPinned, Menu, X, User, LogOut, LogIn } from 'lucide-react';
+import { Map, MapPinned, Menu, X, User, LogOut, LogIn, Wallet, Route as RouteIcon } from 'lucide-react';
 import Home from './pages/Home';
 import Mapa from './pages/Mapa';
 import RouteGenerator from './pages/RouteGenerator';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
+import SuaRota from './pages/SuaRota';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './index.css';
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuth();
 
@@ -35,6 +37,12 @@ const Header = () => {
             Gerar Rota
           </Link>
           <Link to="/catalogo" className={`btn-glass ${location.pathname === '/catalogo' ? 'active' : ''}`}>Catálogo</Link>
+          {user?.activeRoute && (
+            <Link to="/sua-rota" className={`btn-glass ${location.pathname === '/sua-rota' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <RouteIcon size={18} />
+              Sua Rota
+            </Link>
+          )}
           <Link to="/mapa" className={`btn-glass ${location.pathname === '/mapa' ? 'active' : ''}`}>
             <MapPinned size={18} style={{ display: 'inline', marginRight: '5px' }} />
             Mapa
@@ -43,7 +51,11 @@ const Header = () => {
           <div style={{ width: '1px', height: '24px', background: 'var(--card-border)', margin: '0 5px' }}></div>
 
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <div 
+              style={{ position: 'relative', display: 'flex', alignItems: 'center' }}
+              onMouseEnter={() => setShowProfileMenu(true)}
+              onMouseLeave={() => setShowProfileMenu(false)}
+            >
               <Link
                 to="/perfil"
                 style={{
@@ -51,10 +63,8 @@ const Header = () => {
                   color: 'var(--green-dark)', textDecoration: 'none',
                   padding: '6px 14px', borderRadius: '8px',
                   transition: 'background 0.2s ease',
-                  background: location.pathname === '/perfil' ? '#ecf5ee' : 'transparent'
+                  background: (location.pathname === '/perfil' || showProfileMenu) ? '#ecf5ee' : 'transparent'
                 }}
-                onMouseEnter={(e) => { if (location.pathname !== '/perfil') e.currentTarget.style.background = '#ecf5ee'; }}
-                onMouseLeave={(e) => { if (location.pathname !== '/perfil') e.currentTarget.style.background = 'transparent'; }}
               >
                 <div style={{
                   background: 'linear-gradient(135deg, var(--green-dark), var(--green))',
@@ -66,13 +76,38 @@ const Header = () => {
                 </div>
                 <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user.name.split(' ')[0]}</span>
               </Link>
-              <button
-                onClick={logout}
-                style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem', fontWeight: 500 }}
-              >
-                <LogOut size={16} />
-                Sair
-              </button>
+
+              <AnimatePresence>
+                {showProfileMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    style={{
+                      position: 'absolute', top: '100%', right: 0, marginTop: '8px',
+                      background: 'var(--card-bg)', border: '1px solid var(--card-border)',
+                      borderRadius: '12px', boxShadow: 'var(--card-shadow)',
+                      padding: '8px', minWidth: '180px', display: 'flex', flexDirection: 'column',
+                      gap: '4px', zIndex: 100
+                    }}
+                  >
+                    <Link to="/perfil" onClick={() => setShowProfileMenu(false)} className="btn-glass" style={{ border: 'none', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px' }}>
+                      <User size={16} /> Meu Perfil
+                    </Link>
+                    <Link to="/perfil#carteira" onClick={() => setShowProfileMenu(false)} className="btn-glass" style={{ border: 'none', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px' }}>
+                      <Wallet size={16} /> Minha Carteira
+                    </Link>
+                    <Link to="/mapa" onClick={() => setShowProfileMenu(false)} className="btn-glass" style={{ border: 'none', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px' }}>
+                      <MapPinned size={16} /> Mapa
+                    </Link>
+                    <div style={{ height: '1px', background: 'var(--card-border)', margin: '4px 0' }} />
+                    <button onClick={() => { logout(); setShowProfileMenu(false); }} className="btn-glass" style={{ border: 'none', textAlign: 'left', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px' }}>
+                      <LogOut size={16} /> Sair
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           ) : (
             <Link to="/login" className="btn-gold" style={{ padding: '8px 20px', fontSize: '0.9rem' }}>
@@ -109,6 +144,12 @@ const Header = () => {
               <Link to="/catalogo" onClick={closeMenu} className={`btn-glass ${location.pathname === '/catalogo' ? 'active' : ''}`} style={{ textAlign: 'center' }}>
                 Catálogo
               </Link>
+              {user?.activeRoute && (
+                <Link to="/sua-rota" onClick={closeMenu} className={`btn-glass ${location.pathname === '/sua-rota' ? 'active' : ''}`} style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                  <RouteIcon size={18} style={{ verticalAlign: 'text-bottom' }} />
+                  Sua Rota
+                </Link>
+              )}
               <Link to="/mapa" onClick={closeMenu} className={`btn-glass ${location.pathname === '/mapa' ? 'active' : ''}`} style={{ textAlign: 'center' }}>
                 <MapPinned size={18} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'text-bottom' }} />
                 Mapa
@@ -175,6 +216,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/cadastro" element={<Register />} />
               <Route path="/perfil" element={<Profile />} />
+              <Route path="/sua-rota" element={<SuaRota />} />
             </Routes>
           </main>
         </div>

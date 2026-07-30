@@ -8,9 +8,28 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const currentUser = authService.getCurrentUser();
-    setUser(currentUser);
-    setLoading(false);
+    const initAuth = async () => {
+      let currentUser = authService.getCurrentUser();
+      
+      // Checa se a activeRoute expirou
+      if (currentUser && currentUser.activeRoute) {
+        const route = currentUser.activeRoute;
+        const now = new Date();
+        const expirationDate = new Date(route.expirationDate);
+        if (now > expirationDate) {
+          // Arquivar rota
+          const savedRoutes = [route, ...(currentUser.savedRoutes || [])];
+          currentUser = await authService.updateProfile(currentUser.id, {
+            activeRoute: null,
+            savedRoutes
+          });
+        }
+      }
+      
+      setUser(currentUser);
+      setLoading(false);
+    };
+    initAuth();
   }, []);
 
   const login = async (email, password) => {

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Mail, Lock, Eye, EyeOff, MapPin, Calendar,
-  Edit3, Check, X, LogOut, Route, Shield, Sparkles
+  Edit3, Check, X, LogOut, Route, Shield, Sparkles, Wallet
 } from 'lucide-react';
 import SavedRouteCard from '../components/SavedRouteCard';
+import ActiveRouteCard from '../components/ActiveRouteCard';
+import Financas from './Financas';
 
 const BRAZILIAN_STATES = [
   'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS',
@@ -17,10 +19,21 @@ const BRAZILIAN_STATES = [
 const Profile = () => {
   const { user, updateProfile, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [showPassword, setShowPassword] = useState(false);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState(location.hash === '#carteira' ? 'carteira' : 'perfil');
+  const [showEndRouteModal, setShowEndRouteModal] = useState(false);
+  const [unvisitedPlaces, setUnvisitedPlaces] = useState([]);
+  const [placeReasons, setPlaceReasons] = useState({});
+
+  React.useEffect(() => {
+    if (location.hash === '#carteira') {
+      setActiveTab('carteira');
+    }
+  }, [location.hash]);
 
   // Campos editáveis
   const [editName, setEditName] = useState(user?.name || '');
@@ -54,6 +67,60 @@ const Profile = () => {
   const handleLogout = async () => {
     await logout();
     navigate('/');
+  };
+
+  const handleToggleVisited = async (dayIndex, period, placeId) => {
+    if (!user.activeRoute) return;
+    const newRoute = { ...user.activeRoute };
+    const place = newRoute.days[dayIndex][period].find(p => p.id === placeId);
+    if (place) {
+      place.visited = !place.visited;
+      await updateProfile({ activeRoute: newRoute });
+    }
+  };
+
+  const handleEndRouteClick = () => {
+    const unvisited = [];
+    user.activeRoute.days.forEach(d => {
+      ['manha', 'tarde', 'noite'].forEach(period => {
+        if (d[period]) {
+          d[period].forEach(p => {
+            if (!p.visited) unvisited.push(p);
+          });
+        }
+      });
+    });
+    
+    if (unvisited.length === 0) {
+       finishRoute({});
+    } else {
+       setUnvisitedPlaces(unvisited);
+       setPlaceReasons({});
+       setShowEndRouteModal(true);
+    }
+  };
+
+  const handleReasonChange = (placeId, reason) => {
+    setPlaceReasons(prev => ({ ...prev, [placeId]: reason }));
+  };
+
+  const finishRoute = async (reasons) => {
+    const newRoute = { ...user.activeRoute };
+    newRoute.days.forEach(d => {
+      ['manha', 'tarde', 'noite'].forEach(period => {
+        if (d[period]) {
+          d[period].forEach(p => {
+            if (!p.visited && reasons[p.id]) {
+              p.skippedReason = reasons[p.id];
+            }
+          });
+        }
+      });
+    });
+    
+    const savedRoutes = [newRoute, ...(user.savedRoutes || [])];
+    await updateProfile({ activeRoute: null, savedRoutes });
+    setShowEndRouteModal(false);
   };
 
   const stateName = (uf) => {
@@ -153,8 +220,64 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* ── Dados Pessoais ── */}
-        <motion.div
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' }}>
+          <button 
+            onClick={() => setActiveTab('perfil')} 
+            className={`btn-glass ${activeTab === 'perfil' ? 'active' : ''}`}
+            style={{ flex: 1, minWidth: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px' }}
+          >
+            <User size={18} /> Meu Perfil
+          </button>
+          <button 
+            onClick={() => setActiveTab('rota')} 
+            className={`btn-glass ${activeTab === 'rota' ? 'active' : ''}`}
+            style={{ flex: 1, minWidth: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px' }}
+          >
+            <Route size={18} /> Minha Rota
+          </button>
+          <button 
+            onClick={() => setActiveTab('carteira')} 
+            className={`btn-glass ${activeTab === 'carteira' ? 'active' : ''}`}
+            style={{ flex: 1, minWidth: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px' }}
+          >
+            <Wallet size={18} /> Minha Carteira
+          </button>
+        </div>
+
+        {activeTab === 'carteira' ? (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <Financas />
+          </motion.div>
+        ) : activeTab === 'rota' ? (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            {user.activeRoute ? (
+              <ActiveRouteCard 
+                route={user.activeRoute} 
+                onToggleVisited={handleToggleVisited} 
+                onEndRoute={handleEndRouteClick} 
+              />
+            ) : (
+              <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
+                <Route size={40} style={{ marginBottom: '12px', opacity: 0.4 }} />
+                <p style={{ fontWeight: 500 }}>Você não possui uma rota ativa no momento.</p>
+                <Link to="/rota" className="btn-gold" style={{ marginTop: '16px', display: 'inline-flex', padding: '10px 24px', fontSize: '0.9rem' }}>
+                  Criar Nova Rota
+                </Link>
+              </div>
+            )}
+          </motion.div>
+        ) : activeTab === 'perfil' ? (
+          <>
+            {/* ── Dados Pessoais ── */}
+            <motion.div
           className="liquid-glass"
           style={{ padding: '30px', marginBottom: '24px' }}
           initial={{ opacity: 0, y: 15 }}
@@ -340,7 +463,61 @@ const Profile = () => {
             <LogOut size={18} /> Sair da Conta
           </button>
         </motion.div>
+        </>
+        ) : null}
       </motion.div>
+
+      {/* Modal de Encerramento de Rota */}
+      <AnimatePresence>
+        {showEndRouteModal && (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 999,
+            background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+          }}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="liquid-glass"
+              style={{ width: '100%', maxWidth: '500px', padding: '30px', maxHeight: '80vh', overflowY: 'auto' }}
+            >
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '15px' }}>Você não visitou todos os lugares!</h3>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '20px' }}>
+                Para melhorar nossas futuras recomendações, conte-nos o motivo de não ter visitado esses locais:
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '25px' }}>
+                {unvisitedPlaces.map(place => (
+                  <div key={place.id} style={{ background: 'var(--primary-dark)', padding: '15px', borderRadius: '10px' }}>
+                    <p style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '10px' }}>{place.name}</p>
+                    <select
+                      className="input-field"
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', background: 'var(--card-bg)', color: 'var(--text-main)', appearance: 'auto' }}
+                      value={placeReasons[place.id] || ''}
+                      onChange={(e) => handleReasonChange(place.id, e.target.value)}
+                    >
+                      <option value="">Selecione um motivo...</option>
+                      <option value="nao_deu_tempo">Não deu tempo</option>
+                      <option value="nao_gostei">Não gostei do local</option>
+                      <option value="mudei_planos">Mudei os planos no meio do dia</option>
+                      <option value="outro">Outro</option>
+                    </select>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: 'flex', gap: '15px', justifyContent: 'flex-end' }}>
+                <button onClick={() => setShowEndRouteModal(false)} className="btn-glass" style={{ padding: '10px 20px' }}>
+                  Cancelar
+                </button>
+                <button onClick={() => finishRoute(placeReasons)} className="btn-gold" style={{ padding: '10px 20px' }}>
+                  Encerrar Rota
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
