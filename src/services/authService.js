@@ -18,6 +18,7 @@ const MOCK_USER = {
     { id: 2, name: 'Marco das Três Fronteiras', date: '2026-07-20' },
     { id: 3, name: 'Itaipu Binacional – Tour Panorâmico', date: '2026-07-25' },
   ],
+  activeRoute: null,
 };
 
 // Garante que o usuário mock exista no "banco"
@@ -38,6 +39,7 @@ const publicData = (user) => ({
   age: user.age || '',
   state: user.state || '',
   savedRoutes: user.savedRoutes || [],
+  activeRoute: user.activeRoute || null,
 });
 
 export const authService = {
@@ -60,6 +62,7 @@ export const authService = {
           age: extraFields.age || '',
           state: extraFields.state || '',
           savedRoutes: [],
+          activeRoute: null,
         };
         users.push(newUser);
         localStorage.setItem(USERS_KEY, JSON.stringify(users));
@@ -120,6 +123,7 @@ export const authService = {
         if (updates.age !== undefined) users[idx].age = updates.age;
         if (updates.state !== undefined) users[idx].state = updates.state;
         if (updates.savedRoutes !== undefined) users[idx].savedRoutes = updates.savedRoutes;
+        if (updates.activeRoute !== undefined) users[idx].activeRoute = updates.activeRoute;
 
         localStorage.setItem(USERS_KEY, JSON.stringify(users));
 

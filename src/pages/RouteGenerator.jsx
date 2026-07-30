@@ -13,6 +13,7 @@ import { trackRouteGenerated, trackNps } from '../services/analyticsService';
 import { WEEKDAY_LABELS, WEEKDAY_SHORT, isPlaceAvailable, isOpenOnDay } from '../services/availabilityService';
 import { useAuth } from '../context/AuthContext';
 
+
 // Filtra o grupo de locais pelos que estão abertos no período/dia-da-semana pedidos.
 // Se ninguém do grupo estiver disponível (caso raro), relaxa a exigência em vez de deixar o resultado vazio.
 const filterAvailable = (pool, periodKey, dayIndex) => {
@@ -139,7 +140,9 @@ const RouteGenerator = () => {
     preferences: [],
     timeAvailable: '',
     period: '',
-    totalBudget: null
+    totalBudget: null,
+    originCountry: '',
+    originState: '',
   });
   const [showNps, setShowNps] = useState(false);
   const [npsScore, setNpsScore] = useState(null);
@@ -166,16 +169,20 @@ const RouteGenerator = () => {
           id: Date.now(),
           name: profile.reason === 'trabalho' ? 'Roteiro Curto de Trabalho' : `Roteiro em Foz (${days} dias)`,
           date: new Date().toISOString().split('T')[0],
+          expirationDate: new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString(),
           days: route.map(dayPlan => ({
             day: dayPlan.day,
             weekday: dayPlan.weekday,
-            manha: (dayPlan.manha || []).map(p => ({ id: p.id, name: p.name, category: p.category, address: p.address, zone: p.zone, image: p.image, avgPrice: p.avgPrice, entryFee: p.entryFee, icon: p.icon })),
-            tarde: (dayPlan.tarde || []).map(p => ({ id: p.id, name: p.name, category: p.category, address: p.address, zone: p.zone, image: p.image, avgPrice: p.avgPrice, entryFee: p.entryFee, icon: p.icon })),
-            noite: (dayPlan.noite || []).map(p => ({ id: p.id, name: p.name, category: p.category, address: p.address, zone: p.zone, image: p.image, avgPrice: p.avgPrice, entryFee: p.entryFee, icon: p.icon })),
+            manha: (dayPlan.manha || []).map(p => ({ id: p.id, name: p.name, category: p.category, address: p.address, zone: p.zone, image: p.image, avgPrice: p.avgPrice, entryFee: p.entryFee, icon: p.icon, visited: false, skippedReason: null })),
+            tarde: (dayPlan.tarde || []).map(p => ({ id: p.id, name: p.name, category: p.category, address: p.address, zone: p.zone, image: p.image, avgPrice: p.avgPrice, entryFee: p.entryFee, icon: p.icon, visited: false, skippedReason: null })),
+            noite: (dayPlan.noite || []).map(p => ({ id: p.id, name: p.name, category: p.category, address: p.address, zone: p.zone, image: p.image, avgPrice: p.avgPrice, entryFee: p.entryFee, icon: p.icon, visited: false, skippedReason: null })),
           }))
         };
         const currentSaved = user.savedRoutes || [];
-        await updateProfile({ savedRoutes: [newRoute, ...currentSaved] });
+        if (user.activeRoute) {
+          currentSaved.unshift(user.activeRoute);
+        }
+        await updateProfile({ activeRoute: newRoute, savedRoutes: currentSaved });
       } catch (err) {
         console.error('Erro ao salvar rota no perfil:', err);
       }
@@ -415,6 +422,14 @@ const RouteGenerator = () => {
     setRoute(generatedDays);
     // Track the generated route for the admin observatory
     trackRouteGenerated(profile, generatedDays, days, startDay);
+    
+    if (profile.totalBudget) {
+      localStorage.setItem('rotavis_total_budget', profile.totalBudget.toString());
+    } else {
+      const totalEstimated = generatedDays.reduce((acc, day) => acc + day.estimatedCost, 0);
+      localStorage.setItem('rotavis_total_budget', totalEstimated.toString());
+    }
+    
     setStep(10);
     // Show NPS popup after 3 seconds
     setTimeout(() => setShowNps(true), 3000);
@@ -495,25 +510,96 @@ const RouteGenerator = () => {
             <motion.div
               key="step2_origin"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-              className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
+              className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '28px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}><MapPinned size={24} style={{ marginRight: '8px', verticalAlign: 'middle' }} />De onde você vem?</h2>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center', maxWidth: '600px' }}>
-                {[
-                  'SP', 'PR', 'SC', 'RS', 'MG', 'RJ', 'GO', 'MS', 'BA', 'MT',
-                  'Paraguai', 'Argentina', 'Outros'
-                ].map(o => (
-                  <button
-                    key={o}
-                    onClick={() => { setProfile({...profile, origin: o}); setStep(3); }}
-                    className={`btn-glass wizard-option ${profile.origin === o ? 'active' : ''}`}
-                    style={{ padding: '12px 22px', borderRadius: '30px', fontSize: '0.95rem', fontWeight: 500 }}
-                  >
-                    {o}
-                  </button>
-                ))}
+
+              {/* Escolha país */}
+              <div style={{ display: 'flex', gap: '20px', width: '100%', maxWidth: '500px' }}>
+                <button
+                  onClick={() => setProfile({ ...profile, originCountry: 'brasil', origin: '', originState: '' })}
+                  className={`btn-glass wizard-option ${profile.originCountry === 'brasil' ? 'active' : ''}`}
+                  style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '24px' }}
+                >
+                  <span style={{ fontSize: '2.2rem' }}>🇧🇷</span>
+                  <span style={{ fontSize: '1.1rem', fontWeight: 600 }}>Brasil</span>
+                </button>
+                <button
+                  onClick={() => setProfile({ ...profile, originCountry: 'outro', origin: '', originState: '' })}
+                  className={`btn-glass wizard-option ${profile.originCountry === 'outro' ? 'active' : ''}`}
+                  style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '24px' }}
+                >
+                  <span style={{ fontSize: '2.2rem' }}>🌎</span>
+                  <span style={{ fontSize: '1.1rem', fontWeight: 600 }}>Outro País</span>
+                </button>
               </div>
-              <button onClick={() => setStep(1)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+
+              {/* Brasil → dropdown de estados */}
+              {profile.originCountry === 'brasil' && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+                  style={{ width: '100%', maxWidth: '500px', display: 'flex', flexDirection: 'column', gap: '14px' }}
+                >
+                  <label style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-muted)' }}>Qual estado?</label>
+                  <select
+                    value={profile.originState || ''}
+                    onChange={(e) => setProfile({ ...profile, originState: e.target.value, origin: e.target.value })}
+                    className="input-field"
+                    style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', background: 'var(--primary-dark)', color: 'var(--text-main)', fontSize: '1rem', appearance: 'auto', border: '1px solid var(--card-border)', cursor: 'pointer' }}
+                  >
+                    <option value="">Selecione seu estado...</option>
+                    {['Acre','Alagoas','Amapá','Amazonas','Bahia','Ceará','Distrito Federal','Espírito Santo','Goiás','Maranhão',
+                      'Mato Grosso','Mato Grosso do Sul','Minas Gerais','Pará','Paraíba','Paraná','Pernambuco','Piauí',
+                      'Rio de Janeiro','Rio Grande do Norte','Rio Grande do Sul','Rondônia','Roraima',
+                      'Santa Catarina','São Paulo','Sergipe','Tocantins'].map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                  {profile.originState && (
+                    <motion.button
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                      onClick={() => setStep(3)}
+                      className="btn-gold"
+                      style={{ padding: '14px 30px' }}
+                    >
+                      Próximo <ChevronRight size={18} />
+                    </motion.button>
+                  )}
+                </motion.div>
+              )}
+
+              {/* Outro País → lista da América Latina */}
+              {profile.originCountry === 'outro' && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+                  style={{ width: '100%', maxWidth: '540px', display: 'flex', flexDirection: 'column', gap: '14px' }}
+                >
+                  <label style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-muted)' }}>Qual país?</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
+                    {[
+                      { name: 'Argentina', flag: '🇦🇷' }, { name: 'Paraguai', flag: '🇵🇾' },
+                      { name: 'Uruguai', flag: '🇺🇾' }, { name: 'Chile', flag: '🇨🇱' },
+                      { name: 'Bolívia', flag: '🇧🇴' }, { name: 'Peru', flag: '🇵🇪' },
+                      { name: 'Colômbia', flag: '🇨🇴' }, { name: 'Venezuela', flag: '🇻🇪' },
+                      { name: 'Equador', flag: '🇪🇨' }, { name: 'México', flag: '🇲🇽' },
+                      { name: 'Cuba', flag: '🇨🇺' }, { name: 'Panamá', flag: '🇵🇦' },
+                      { name: 'Costa Rica', flag: '🇨🇷' }, { name: 'Guiana', flag: '🇬🇾' },
+                      { name: 'Suriname', flag: '🇸🇷' }, { name: 'Outro', flag: '🌐' }
+                    ].map(c => (
+                      <button
+                        key={c.name}
+                        onClick={() => { setProfile({ ...profile, origin: c.name, originState: c.name }); setStep(3); }}
+                        className={`btn-glass wizard-option ${profile.origin === c.name ? 'active' : ''}`}
+                        style={{ padding: '10px 18px', borderRadius: '30px', fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}
+                      >
+                        <span>{c.flag}</span> {c.name}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              <button onClick={() => setStep(1)} className="btn-glass">Voltar</button>
             </motion.div>
           )}
 
@@ -525,13 +611,19 @@ const RouteGenerator = () => {
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}><Users size={24} style={{ marginRight: '8px', verticalAlign: 'middle' }} />Com quem você viaja?</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '15px', width: '100%' }}>
-                {[
-                  { id: 'familia', label: 'Família', icon: Users },
-                  { id: 'casal', label: 'Casal', icon: Heart },
-                  { id: 'solo', label: 'Sozinho(a)', icon: MapIcon },
-                  { id: 'amigos', label: 'Amigos', icon: Star },
-                  { id: 'corporativo', label: 'Corporativo', icon: Briefcase }
-                ].map(g => (
+                {(profile.reason === 'trabalho'
+                  ? [
+                      { id: 'solo', label: 'Sozinho(a)', icon: MapIcon },
+                      { id: 'colaboradores', label: 'Com Colaboradores', icon: Briefcase }
+                    ]
+                  : [
+                      { id: 'familia', label: 'Família', icon: Users },
+                      { id: 'casal', label: 'Casal', icon: Heart },
+                      { id: 'solo', label: 'Sozinho(a)', icon: MapIcon },
+                      { id: 'amigos', label: 'Amigos', icon: Star },
+                      { id: 'corporativo', label: 'Corporativo', icon: Briefcase }
+                    ]
+                ).map(g => (
                   <button
                     key={g.id}
                     onClick={() => { setProfile({...profile, groupType: g.id}); setStep(4); }}
