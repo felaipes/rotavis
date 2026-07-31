@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { places } from '../data';
 import { Calendar, CheckCircle2, ChevronRight, Sun, Sunset, Moon, Briefcase, Map as MapIcon, Wallet, Star, Coffee, Tent, History, Utensils, GlassWater, Car, Footprints, Download, X, Activity, Rocket, Clock, Timer, Hourglass, MapPinned, Users, Heart, Route } from 'lucide-react';
 
@@ -6,11 +6,12 @@ import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import PlaceCard from '../components/PlaceCard';
 import RouteMapView, { DAY_COLORS, DayRouteMap } from '../components/RouteMapView';
+import DateCalendar, { toISODate, addDaysISO } from '../components/DateCalendar';
 import { getPlaceCoordinates, totalRouteDistanceKm, formatDistanceKm } from '../data/zoneCoordinates';
 import { motion, AnimatePresence } from 'framer-motion';
 import { scorePlaces } from '../services/recommendationService';
 import { trackRouteGenerated, trackNps } from '../services/analyticsService';
-import { WEEKDAY_LABELS, WEEKDAY_SHORT, isPlaceAvailable, isOpenOnDay } from '../services/availabilityService';
+import { WEEKDAY_LABELS, isPlaceAvailable, isOpenOnDay } from '../services/availabilityService';
 import { useAuth } from '../context/AuthContext';
 import RouteLoadingScreen from '../components/RouteLoadingScreen';
 
@@ -33,6 +34,15 @@ const hexToRgb = (hex) => {
     b: parseInt(clean.slice(4, 6), 16)
   };
 };
+
+// T12:00:00 evita o "new Date('yyyy-mm-dd')" cair na meia-noite UTC, que em fusos negativos
+// (Brasil) mostra o dia da semana anterior ao selecionado no calendário.
+const formatFullDate = (iso) => iso
+  ? new Date(`${iso}T12:00:00`).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
+  : '';
+const formatShortDate = (iso) => iso
+  ? new Date(`${iso}T12:00:00`).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+  : '';
 
 // Quantas paradas cabem no tempo livre informado para o roteiro de quem está a trabalho.
 const WORK_STOPS = { ate2h: 1, '2a4h': 2, mais4h: 3 };
@@ -128,6 +138,33 @@ const RouteGenerator = () => {
   const { user, updateProfile } = useAuth();
   const [days, setDays] = useState(1);
   const [startDay, setStartDay] = useState(new Date().getDay());
+  const [arrivalDate, setArrivalDate] = useState('');
+  const [departureDate, setDepartureDate] = useState('');
+  const todayISO = toISODate(new Date());
+
+  // Deriva o dia da semana da chegada e a quantidade de dias (contagem inclusiva: chegada e
+  // saída no mesmo dia = 1 dia; um dia de diferença = 2 dias etc.) a partir das datas escolhidas.
+  useEffect(() => {
+    if (arrivalDate) {
+      setStartDay(new Date(`${arrivalDate}T12:00:00`).getDay());
+    }
+  }, [arrivalDate]);
+
+  useEffect(() => {
+    if (arrivalDate && departureDate) {
+      const diff = Math.round((new Date(`${departureDate}T12:00:00`) - new Date(`${arrivalDate}T12:00:00`)) / 86400000);
+      setDays(Math.max(1, diff + 1));
+    }
+  }, [arrivalDate, departureDate]);
+
+  // Se a chegada muda para depois da saída já escolhida (ou o intervalo passa de 5 dias,
+  // limite do gerador), limpa a saída para forçar uma nova escolha válida.
+  const handleArrivalChange = (val) => {
+    setArrivalDate(val);
+    if (departureDate && val && (departureDate < val || departureDate > addDaysISO(val, 4))) {
+      setDepartureDate('');
+    }
+  };
   const [route, setRoute] = useState(null);
   const [workRoute, setWorkRoute] = useState(null);
   const [step, setStep] = useState(1);
@@ -775,25 +812,32 @@ const RouteGenerator = () => {
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Em que dia da semana você chega?</h2>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Calendar size={24} /> Qual a data de chegada?
+              </h2>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '-15px', textAlign: 'center' }}>
                 Usamos isso para só recomendar lugares abertos em cada dia do seu roteiro.
               </p>
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                {WEEKDAY_SHORT.map((label, idx) => (
-                  <button
-                    key={label}
-                    onClick={() => setStartDay(idx)}
-                    className={`btn-glass wizard-option ${startDay === idx ? 'active' : ''}`}
-                    style={{ width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 'bold' }}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-              <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
+              <DateCalendar
+                value={arrivalDate}
+                min={todayISO}
+                onChange={handleArrivalChange}
+              />
+              {arrivalDate && (
+                <p style={{ color: 'var(--green-dark)', fontWeight: 600, fontSize: '0.95rem', marginTop: '-10px', textAlign: 'center', textTransform: 'capitalize' }}>
+                  {formatFullDate(arrivalDate)}
+                </p>
+              )}
+              <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
                 <button onClick={() => setStep(6)} className="btn-glass">Voltar</button>
-                <button onClick={() => setStep(8)} className="btn-gold" style={{ padding: '15px 30px' }}>Próximo <ChevronRight size={18} /></button>
+                <button
+                  onClick={() => setStep(8)}
+                  disabled={!arrivalDate}
+                  className="btn-gold"
+                  style={{ padding: '15px 30px', opacity: arrivalDate ? 1 : 0.5, cursor: arrivalDate ? 'pointer' : 'not-allowed' }}
+                >
+                  Próximo <ChevronRight size={18} />
+                </button>
               </div>
             </motion.div>
           )}
@@ -831,22 +875,34 @@ const RouteGenerator = () => {
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Quantos dias você ficará em Foz do Iguaçu?</h2>
-              <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                {[1, 2, 3, 4, 5].map(num => (
-                  <button
-                    key={num}
-                    onClick={() => setDays(num)}
-                    className={`btn-glass wizard-option ${days === num ? 'active' : ''}`}
-                    style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', fontWeight: 'bold' }}
-                  >
-                    {num}
-                  </button>
-                ))}
-              </div>
-              <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Calendar size={24} /> Qual a data de saída?
+              </h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '-15px', textAlign: 'center' }}>
+                Roteiros de até 5 dias · Chegada em {formatShortDate(arrivalDate)}
+              </p>
+              <DateCalendar
+                value={departureDate}
+                min={arrivalDate || todayISO}
+                max={arrivalDate ? addDaysISO(arrivalDate, 4) : undefined}
+                rangeStart={arrivalDate}
+                onChange={setDepartureDate}
+              />
+              {departureDate && (
+                <p style={{ color: 'var(--green-dark)', fontWeight: 600, fontSize: '0.95rem', marginTop: '-10px', textAlign: 'center', textTransform: 'capitalize' }}>
+                  {formatFullDate(departureDate)} · {days} {days === 1 ? 'dia' : 'dias'} de viagem
+                </p>
+              )}
+              <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
                 <button onClick={() => setStep(7)} className="btn-glass">Voltar</button>
-                <button onClick={() => setStep(9)} className="btn-gold" style={{ padding: '15px 30px' }}>Próximo <ChevronRight size={18} /></button>
+                <button
+                  onClick={() => setStep(9)}
+                  disabled={!departureDate}
+                  className="btn-gold"
+                  style={{ padding: '15px 30px', opacity: departureDate ? 1 : 0.5, cursor: departureDate ? 'pointer' : 'not-allowed' }}
+                >
+                  Próximo <ChevronRight size={18} />
+                </button>
               </div>
             </motion.div>
           )}
