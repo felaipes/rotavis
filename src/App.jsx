@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Map, MapPinned, Menu, X, User, LogOut, LogIn, Wallet, Route as RouteIcon } from 'lucide-react';
+import { Map, MapPinned, Menu, X, User, LogOut, LogIn, Wallet, Route as RouteIcon, Trophy } from 'lucide-react';
 import Home from './pages/Home';
 import Mapa from './pages/Mapa';
 import RouteGenerator from './pages/RouteGenerator';
@@ -9,8 +9,60 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import SuaRota from './pages/SuaRota';
+import Conquistas from './pages/Conquistas';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { CheckInProvider, useCheckIns } from './context/CheckInContext';
+import { TIERS } from './data/achievements';
 import './index.css';
+
+// Aviso de troféu novo. Fica no App para aparecer de qualquer tela — inclusive quando o
+// check-in é feito de dentro do catálogo, longe da aba de conquistas.
+const UnlockToast = () => {
+  const { recentUnlock, dismissUnlock } = useCheckIns();
+
+  useEffect(() => {
+    if (!recentUnlock) return;
+    const t = setTimeout(dismissUnlock, 5000);
+    return () => clearTimeout(t);
+  }, [recentUnlock, dismissUnlock]);
+
+  return (
+    <AnimatePresence>
+      {recentUnlock && (
+        <motion.div
+          initial={{ opacity: 0, y: 30, scale: 0.94 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 20, scale: 0.96 }}
+          transition={{ duration: 0.28, ease: 'easeOut' }}
+          role="status"
+          onClick={dismissUnlock}
+          style={{
+            position: 'fixed', left: '50%', bottom: '24px', transform: 'translateX(-50%)',
+            zIndex: 200, cursor: 'pointer', maxWidth: 'calc(100vw - 32px)',
+            background: 'var(--card-bg)', border: `2px solid ${TIERS[recentUnlock.tier].color}`,
+            borderRadius: '16px', padding: '14px 20px', boxShadow: '0 12px 32px rgba(7,11,20,0.22)',
+            display: 'flex', alignItems: 'center', gap: '14px'
+          }}
+        >
+          <div style={{
+            width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
+            background: TIERS[recentUnlock.tier].color,
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <recentUnlock.icon size={22} color="#ffffff" />
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: TIERS[recentUnlock.tier].color }}>
+              Novo troféu {TIERS[recentUnlock.tier].label}
+            </div>
+            <div style={{ fontWeight: 800, fontSize: '1rem' }}>{recentUnlock.title}</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{recentUnlock.description}</div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -46,6 +98,10 @@ const Header = () => {
           <Link to="/mapa" className={`btn-glass ${location.pathname === '/mapa' ? 'active' : ''}`}>
             <MapPinned size={18} style={{ display: 'inline', marginRight: '5px' }} />
             Mapa
+          </Link>
+          <Link to="/conquistas" className={`btn-glass ${location.pathname === '/conquistas' ? 'active' : ''}`}>
+            <Trophy size={18} style={{ display: 'inline', marginRight: '5px' }} />
+            Conquistas
           </Link>
 
           <div style={{ width: '1px', height: '24px', background: 'var(--card-border)', margin: '0 5px' }}></div>
@@ -154,6 +210,10 @@ const Header = () => {
                 <MapPinned size={18} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'text-bottom' }} />
                 Mapa
               </Link>
+              <Link to="/conquistas" onClick={closeMenu} className={`btn-glass ${location.pathname === '/conquistas' ? 'active' : ''}`} style={{ textAlign: 'center' }}>
+                <Trophy size={18} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'text-bottom' }} />
+                Conquistas
+              </Link>
 
               {user ? (
                 <>
@@ -204,23 +264,27 @@ const Header = () => {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <div className="app-container">
-          <Header />
-          <main>
-            <Routes>
-              <Route path="/" element={<RouteGenerator />} />
-              <Route path="/catalogo" element={<Home />} />
-              <Route path="/mapa" element={<Mapa />} />
-              <Route path="/rota" element={<RouteGenerator />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/cadastro" element={<Register />} />
-              <Route path="/perfil" element={<Profile />} />
-              <Route path="/sua-rota" element={<SuaRota />} />
-            </Routes>
-          </main>
-        </div>
-      </Router>
+      <CheckInProvider>
+        <Router>
+          <div className="app-container">
+            <Header />
+            <main>
+              <Routes>
+                <Route path="/" element={<RouteGenerator />} />
+                <Route path="/catalogo" element={<Home />} />
+                <Route path="/mapa" element={<Mapa />} />
+                <Route path="/rota" element={<RouteGenerator />} />
+                <Route path="/conquistas" element={<Conquistas />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/cadastro" element={<Register />} />
+                <Route path="/perfil" element={<Profile />} />
+                <Route path="/sua-rota" element={<SuaRota />} />
+              </Routes>
+            </main>
+            <UnlockToast />
+          </div>
+        </Router>
+      </CheckInProvider>
     </AuthProvider>
   );
 }

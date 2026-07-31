@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, Clock, Wallet, ChefHat, Sparkles } from 'lucide-react';
+import { MapPin, Clock, Wallet, ChefHat, Sparkles, Check, Plus } from 'lucide-react';
+import { useCheckIns } from '../context/CheckInContext';
 
 const PlaceCard = ({ place }) => {
+  const { stats, addCheckIn } = useCheckIns();
+  const visitCount = stats.countByPlace[place.id] || 0;
   // Hover cobre o mouse; tapped cobre toque/teclado, já que hover sozinho não é
   // confiável em dispositivos móveis (regra "Hover vs Tap" da skill ui-ux-pro-max).
   const [isHovering, setIsHovering] = useState(false);
@@ -154,6 +157,22 @@ const PlaceCard = ({ place }) => {
             </div>
           )}
         </div>
+
+        {/* Check-in: alimenta a porcentagem de Foz explorada e os troféus da aba Conquistas.
+            stopPropagation para o clique não abrir/fechar o card junto. */}
+        <button
+          onClick={(e) => { e.stopPropagation(); addCheckIn(place.id); }}
+          aria-label={visitCount > 0 ? `Visitei de novo: ${place.name}` : `Marcar ${place.name} como visitado`}
+          className={visitCount > 0 ? 'btn-glass' : 'btn-gold'}
+          style={{
+            marginTop: '15px', width: '100%', padding: '9px', fontSize: '0.84rem', gap: '6px',
+            ...(visitCount > 0 ? { borderColor: 'var(--green)', color: 'var(--green-dark)' } : {})
+          }}
+        >
+          {visitCount > 0
+            ? <><Check size={15} /> Visitado {visitCount}x · registrar de novo</>
+            : <><Plus size={15} /> Já visitei</>}
+        </button>
 
         <div style={{ marginTop: '15px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
           {place.tags.slice(0, 3).map(tag => (
