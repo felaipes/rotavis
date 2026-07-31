@@ -7,6 +7,7 @@ import html2canvas from 'html2canvas';
 import PlaceCard from '../components/PlaceCard';
 import RouteMapView, { DAY_COLORS, DayRouteMap } from '../components/RouteMapView';
 import DateCalendar, { toISODate, addDaysISO } from '../components/DateCalendar';
+import CountryFlag from '../components/CountryFlag';
 import { getPlaceCoordinates, totalRouteDistanceKm, formatDistanceKm, haversineDistanceKm } from '../data/zoneCoordinates';
 import { motion, AnimatePresence } from 'framer-motion';
 import { scorePlaces } from '../services/recommendationService';
@@ -608,7 +609,7 @@ const RouteGenerator = () => {
                   className={`btn-glass wizard-option ${profile.originCountry === 'brasil' ? 'active' : ''}`}
                   style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '24px' }}
                 >
-                  <span style={{ fontSize: '2.2rem' }}>🇧🇷</span>
+                  <CountryFlag country="Brasil" width={52} />
                   <span style={{ fontSize: '1.1rem', fontWeight: 600 }}>Brasil</span>
                 </button>
                 <button
@@ -616,7 +617,7 @@ const RouteGenerator = () => {
                   className={`btn-glass wizard-option ${profile.originCountry === 'outro' ? 'active' : ''}`}
                   style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '24px' }}
                 >
-                  <span style={{ fontSize: '2.2rem' }}>🌎</span>
+                  <CountryFlag country="Outro" width={52} />
                   <span style={{ fontSize: '1.1rem', fontWeight: 600 }}>Outro País</span>
                 </button>
               </div>
@@ -664,22 +665,18 @@ const RouteGenerator = () => {
                   <label style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-muted)' }}>Qual país?</label>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
                     {[
-                      { name: 'Argentina', flag: '🇦🇷' }, { name: 'Paraguai', flag: '🇵🇾' },
-                      { name: 'Uruguai', flag: '🇺🇾' }, { name: 'Chile', flag: '🇨🇱' },
-                      { name: 'Bolívia', flag: '🇧🇴' }, { name: 'Peru', flag: '🇵🇪' },
-                      { name: 'Colômbia', flag: '🇨🇴' }, { name: 'Venezuela', flag: '🇻🇪' },
-                      { name: 'Equador', flag: '🇪🇨' }, { name: 'México', flag: '🇲🇽' },
-                      { name: 'Cuba', flag: '🇨🇺' }, { name: 'Panamá', flag: '🇵🇦' },
-                      { name: 'Costa Rica', flag: '🇨🇷' }, { name: 'Guiana', flag: '🇬🇾' },
-                      { name: 'Suriname', flag: '🇸🇷' }, { name: 'Outro', flag: '🌐' }
-                    ].map(c => (
+                      'Argentina', 'Paraguai', 'Uruguai', 'Chile',
+                      'Bolívia', 'Peru', 'Colômbia', 'Venezuela',
+                      'Equador', 'México', 'Cuba', 'Panamá',
+                      'Costa Rica', 'Guiana', 'Suriname', 'Outro'
+                    ].map(name => (
                       <button
-                        key={c.name}
-                        onClick={() => { setProfile({ ...profile, origin: c.name, originState: c.name }); setStep(3); }}
-                        className={`btn-glass wizard-option ${profile.origin === c.name ? 'active' : ''}`}
+                        key={name}
+                        onClick={() => { setProfile({ ...profile, origin: name, originState: name }); setStep(3); }}
+                        className={`btn-glass wizard-option ${profile.origin === name ? 'active' : ''}`}
                         style={{ padding: '10px 18px', borderRadius: '30px', fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}
                       >
-                        <span>{c.flag}</span> {c.name}
+                        <CountryFlag country={name} width={20} /> {name}
                       </button>
                     ))}
                   </div>
