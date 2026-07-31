@@ -7,7 +7,7 @@ import html2canvas from 'html2canvas';
 import PlaceCard from '../components/PlaceCard';
 import RouteMapView, { DAY_COLORS, DayRouteMap } from '../components/RouteMapView';
 import DateCalendar, { toISODate, addDaysISO } from '../components/DateCalendar';
-import { getPlaceCoordinates, totalRouteDistanceKm, formatDistanceKm } from '../data/zoneCoordinates';
+import { getPlaceCoordinates, totalRouteDistanceKm, formatDistanceKm, haversineDistanceKm } from '../data/zoneCoordinates';
 import { motion, AnimatePresence } from 'framer-motion';
 import { scorePlaces } from '../services/recommendationService';
 import { trackRouteGenerated, trackNps } from '../services/analyticsService';
@@ -62,6 +62,9 @@ const WORK_POOL_BY_PERIOD = {
   tarde: ['passeios', 'restaurantes', 'cafeterias_docerias'],
   noite: ['restaurantes', 'bares']
 };
+// Quem se desloca a pé não deve caminhar mais que isso por dia; o gerador corta paradas
+// que estourariam o limite em vez de montar um dia impossível de cumprir andando.
+const FOOT_DAILY_LIMIT_KM = 10;
 const PERIOD_LABELS = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' };
 const DURATION_LABELS = { ate2h: 'até 2 horas', '2a4h': '2 a 4 horas', mais4h: 'mais de 4 horas' };
 const TOTAL_INPUT_STEPS = 9;
@@ -378,13 +381,25 @@ const RouteGenerator = () => {
     let generatedDays = [];
     let usedIds = new Set();
 
-    const getNextPlace = (pool, { preferredZone = null, periodKey = null, dayIndex = null, isFoot = false, strictProximity = false, maxPrice = null } = {}) => {
+    const getNextPlace = (pool, { preferredZone = null, periodKey = null, dayIndex = null, isFoot = false, strictProximity = false, maxPrice = null, fromCoords = null, maxLegKm = null } = {}) => {
       let available = pool.filter(p => !usedIds.has(p.id));
       if (available.length === 0) return null;
 
       // 1. Só considera locais abertos no horário/dia planejados
       if (periodKey && dayIndex !== null) {
         available = filterAvailable(available, periodKey, dayIndex);
+      }
+
+      // 1b. A pé: o trecho até o próximo local precisa caber no que sobrou do limite diário
+      // de caminhada. Sem candidato viável, o período fica sem essa parada — é preferível a
+      // devolver um roteiro que o usuário não consegue fazer andando.
+      if (maxLegKm != null && fromCoords) {
+        available = available.filter(p => haversineDistanceKm(fromCoords, getPlaceCoordinates(p)) <= maxLegKm);
+        if (available.length === 0) return null;
+        // Mais perto primeiro: aproveita melhor o limite e cabe mais parada no mesmo dia.
+        available = [...available].sort((a, b) =>
+          haversineDistanceKm(fromCoords, getPlaceCoordinates(a)) - haversineDistanceKm(fromCoords, getPlaceCoordinates(b))
+        );
       }
 
       // Dentre os candidatos, prioriza os que cabem no orçamento restante do dia (quando há um definido).
@@ -424,25 +439,44 @@ const RouteGenerator = () => {
         if (remainingBudget != null && place) remainingBudget = Math.max(0, remainingBudget - priceOf(place));
       };
 
+      // A pé, o dia tem um "orçamento" de quilômetros além do de dinheiro; de carro/app, não.
+      let remainingKm = isFoot ? FOOT_DAILY_LIMIT_KM : null;
+      let lastCoords = null;
+
+      // Marca o local como visitado no trajeto e desconta do limite diário de caminhada.
+      const walk = (place) => {
+        if (!place) return;
+        const coords = getPlaceCoordinates(place);
+        if (remainingKm != null && lastCoords) {
+          remainingKm = Math.max(0, remainingKm - haversineDistanceKm(lastCoords, coords));
+        }
+        lastCoords = coords;
+      };
+
       let mCafe = getNextPlace(cafes, { periodKey: 'manha', dayIndex });
-      let mPasseio = getNextPlace(passeios, { preferredZone: mCafe?.zone, periodKey: 'manha', dayIndex, isFoot, maxPrice: remainingBudget });
+      walk(mCafe);
+      let mPasseio = getNextPlace(passeios, { preferredZone: mCafe?.zone, periodKey: 'manha', dayIndex, isFoot, maxPrice: remainingBudget, fromCoords: lastCoords, maxLegKm: remainingKm });
       spend(mPasseio);
+      walk(mPasseio);
 
       let primaryZone = mPasseio?.zone || mCafe?.zone;
 
       // Restaurantes seguem preço (já aplicado pelo score) + proximidade do local anterior, sempre.
-      let tRest = getNextPlace(restaurantes, { preferredZone: primaryZone, periodKey: 'tarde', dayIndex, isFoot, strictProximity: true, maxPrice: remainingBudget });
+      let tRest = getNextPlace(restaurantes, { preferredZone: primaryZone, periodKey: 'tarde', dayIndex, isFoot, strictProximity: true, maxPrice: remainingBudget, fromCoords: lastCoords, maxLegKm: remainingKm });
       spend(tRest);
-      let tPasseio = getNextPlace(passeios, { preferredZone: tRest?.zone || primaryZone, periodKey: 'tarde', dayIndex, isFoot, maxPrice: remainingBudget })
-        || getNextPlace(cafeterias, { preferredZone: tRest?.zone || primaryZone, periodKey: 'tarde', dayIndex, isFoot });
+      walk(tRest);
+      let tPasseio = getNextPlace(passeios, { preferredZone: tRest?.zone || primaryZone, periodKey: 'tarde', dayIndex, isFoot, maxPrice: remainingBudget, fromCoords: lastCoords, maxLegKm: remainingKm })
+        || getNextPlace(cafeterias, { preferredZone: tRest?.zone || primaryZone, periodKey: 'tarde', dayIndex, isFoot, fromCoords: lastCoords, maxLegKm: remainingKm });
       spend(tPasseio);
+      walk(tPasseio);
 
       let newPrimaryZone = tPasseio?.zone || tRest?.zone || primaryZone;
 
       let nLugar = (i % 2 === 0 && bares.filter(p => !usedIds.has(p.id)).length > 0)
-        ? getNextPlace(bares, { preferredZone: newPrimaryZone, periodKey: 'noite', dayIndex, isFoot })
-        : getNextPlace(restaurantes, { preferredZone: newPrimaryZone, periodKey: 'noite', dayIndex, isFoot, strictProximity: true, maxPrice: remainingBudget });
+        ? getNextPlace(bares, { preferredZone: newPrimaryZone, periodKey: 'noite', dayIndex, isFoot, fromCoords: lastCoords, maxLegKm: remainingKm })
+        : getNextPlace(restaurantes, { preferredZone: newPrimaryZone, periodKey: 'noite', dayIndex, isFoot, strictProximity: true, maxPrice: remainingBudget, fromCoords: lastCoords, maxLegKm: remainingKm });
       spend(nLugar);
+      walk(nLugar);
 
       const dayPlaces = [mCafe, mPasseio, tRest, tPasseio, nLugar].filter(Boolean);
       const estimatedCost = dayPlaces.reduce((sum, p) => sum + priceOf(p), 0);
@@ -743,6 +777,9 @@ const RouteGenerator = () => {
                 >
                   <Footprints size={32} color="var(--green)" />
                   <span style={{ fontSize: '1.2rem', fontWeight: 500 }}>A pé / App</span>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '-8px' }}>
+                    Roteiro de até {FOOT_DAILY_LIMIT_KM} km por dia
+                  </span>
                 </button>
               </div>
               <button onClick={() => setStep(4)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
@@ -1083,6 +1120,7 @@ const RouteGenerator = () => {
                       <DayRouteMap stops={dayStops} color={DAY_COLORS[index % DAY_COLORS.length]} />
                       <p style={{ textAlign: 'center', fontSize: '0.82rem', fontWeight: 600, color: 'var(--green-dark)', marginTop: '10px' }}>
                         {formatDistanceKm(dayDistanceKm)} no trajeto do dia
+                        {profile.transport === 'ape' && ` · a pé, dentro do limite de ${FOOT_DAILY_LIMIT_KM} km`}
                       </p>
                     </div>
                   )}
