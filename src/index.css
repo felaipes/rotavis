@@ -214,9 +214,9 @@ a {
   object-fit: cover;
   /* O desfoque mantém a foto como cenário e disfarça compressão. A escala > 1 evita a
      borda transparente que o blur cria nas beiradas. */
-  /* 4px é o ponto de equilíbrio: some com a compressão e impede que a foto dispute
-     atenção, mas ainda dá para reconhecer as Cataratas. Mais que isso vira borrão bege. */
-  filter: blur(4px) saturate(1.12) contrast(1.04);
+  /* Desfoque leve: o suficiente para disfarçar a ampliação da imagem em telas grandes
+     sem apagar as quedas. Quem segura a leitura do texto é o véu, não o borrão. */
+  filter: blur(2.5px) saturate(1.14) contrast(1.05);
   transform: scale(1.14);
   will-change: transform;
 }
@@ -245,63 +245,10 @@ a {
   inset: 0;
   background:
     linear-gradient(180deg,
-      rgba(250, 247, 239, 0.8) 0%,
-      rgba(250, 247, 239, 0.72) 25%,
-      rgba(250, 247, 239, 0.62) 60%,
-      rgba(250, 247, 239, 0.6) 100%);
-}
-
-/* Tracejado correndo ao longo da rota, como o trajeto sendo percorrido. */
-@keyframes map-dash-flow {
-  to {
-    stroke-dashoffset: -240;
-  }
-}
-
-/* Marcador respirando no lugar. */
-@keyframes map-waypoint-pulse {
-
-  0%,
-  100% {
-    r: 5;
-    opacity: 0.5;
-  }
-
-  50% {
-    r: 7.5;
-    opacity: 0.24;
-  }
-}
-
-/* Deriva lenta do mapa inteiro, como arrastar o mapa muito devagar. */
-@keyframes map-drift {
-  from {
-    transform: translate3d(-1.1%, -0.7%, 0);
-  }
-
-  to {
-    transform: translate3d(1.1%, 0.7%, 0);
-  }
-}
-
-.map-bg-layer {
-  animation: map-drift 46s var(--ease-in-out) infinite alternate;
-}
-
-.map-route-flow {
-  animation: map-dash-flow 14s linear infinite;
-}
-
-.map-route-flow--slow {
-  animation-duration: 22s;
-}
-
-.map-route-flow--reverse {
-  animation-direction: reverse;
-}
-
-.map-waypoint {
-  animation: map-waypoint-pulse 4.5s var(--ease-in-out) infinite;
+      rgba(250, 247, 239, 0.6) 0%,
+      rgba(250, 247, 239, 0.58) 35%,
+      rgba(250, 247, 239, 0.5) 70%,
+      rgba(250, 247, 239, 0.46) 100%);
 }
 
 /* Remove o fundo branco/borda padrão que o Leaflet aplica a todo divIcon; o pino já

@@ -108,97 +108,30 @@ const PERIOD_LABELS = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' };
 const DURATION_LABELS = { ate2h: 'até 2 horas', '2a4h': '2 a 4 horas', mais4h: 'mais de 4 horas' };
 const TOTAL_INPUT_STEPS = 8;
 
-// Fundo do questionário: as Cataratas por trás das perguntas. Fixo (não rola com a
-// página), atrás de todo o conteúdo, sem capturar cliques.
+// Fundo do questionario: as Cataratas por tras das perguntas. Fixo (nao rola com a
+// pagina), atras de todo o conteudo, sem capturar cliques.
 //
-// Três camadas:
-// 1. a foto das Cataratas, desfocada e com uma deriva lenta de zoom, que dá o movimento;
-// 2. um véu creme por cima, mais forte no topo, onde ficam título e subtítulo — texto
-//    escuro sobre foto de água ao sol não tem contraste suficiente para ser lido;
-// 3. o traçado de rota animado, agora em branco para aparecer sobre a foto.
+// Duas camadas: a foto, com um zoom lento que da o movimento, e um veu creme por cima.
+// O veu nao e enfeite — e o que garante contraste do texto do cabecalho, que fica
+// direto sobre a foto. 0,55 e o piso medido: abaixo disso o titulo cai de 3,0 de
+// contraste sobre os trechos escuros da imagem (pedra molhada, mata na sombra).
 //
-// O desfoque não é só estética: é o que mantém o fundo como cenário em vez de disputar
-// atenção com o formulário, e de quebra some com artefato de compressão da imagem.
-const MAP_ROUTES = [
-  { id: 'rota-bg-1', d: 'M-40,620 C220,560 300,380 520,340 C740,300 820,150 1240,90', flowClass: 'map-route-flow', dur: '17s' },
-  { id: 'rota-bg-2', d: 'M-40,180 C180,240 260,300 420,300 C620,300 700,470 1240,520', flowClass: 'map-route-flow map-route-flow--slow', dur: '23s' },
-  { id: 'rota-bg-3', d: 'M180,-40 C240,180 420,220 500,420 C570,590 760,640 900,840', flowClass: 'map-route-flow map-route-flow--reverse', dur: '20s' }
-];
-
-const MAP_WAYPOINTS = [
-  { cx: 520, cy: 340, delay: '0s' },
-  { cx: 420, cy: 300, delay: '1.1s' },
-  { cx: 900, cy: 155, delay: '2.2s' },
-  { cx: 500, cy: 420, delay: '0.6s' },
-  { cx: 230, cy: 560, delay: '3s' },
-  { cx: 1010, cy: 470, delay: '1.7s' }
-];
-
-// Traçado desenhado sobre a foto: branco, porque sobre a água e a mata o tom de areia
-// que servia no fundo creme sumiria.
-const ROUTE_INK = '#ffffff';
-
-const MapBackground = () => {
-  // SMIL (<animateMotion>) não obedece à media query de movimento reduzido, então quem
-  // pediu menos movimento recebe a foto parada, sem deriva e sem traçado correndo.
+// O desfoque leve mantem a foto como cenario em vez de disputar atencao com o
+// formulario, e disfarca a ampliacao da imagem em telas grandes.
+const FallsBackground = () => {
   const reduceMotion = useReducedMotion();
 
-  const layerStyle = { position: 'fixed', inset: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none' };
-
   return (
-    <div aria-hidden="true" style={{ ...layerStyle, overflow: 'hidden' }}>
+    <div
+      aria-hidden="true"
+      style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}
+    >
       <img
         src="/hero_cataratas.jpg"
         alt=""
         className={`falls-bg ${reduceMotion ? '' : 'falls-bg--drifting'}`}
       />
       <div className="falls-scrim" />
-
-      {!reduceMotion && (
-        <svg
-          viewBox="0 0 1200 800"
-          preserveAspectRatio="xMidYMid slice"
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-        >
-          <g className="map-bg-layer">
-            {MAP_ROUTES.map(r => (
-              <path
-                key={r.id}
-                id={r.id}
-                d={r.d}
-                fill="none"
-                stroke={ROUTE_INK}
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeDasharray="10 14"
-                opacity="0.45"
-                className={r.flowClass}
-              />
-            ))}
-
-            {MAP_WAYPOINTS.map((w, i) => (
-              <circle
-                key={i}
-                cx={w.cx}
-                cy={w.cy}
-                r="5"
-                fill={ROUTE_INK}
-                className="map-waypoint"
-                style={{ animationDelay: w.delay }}
-              />
-            ))}
-
-            {/* Ponto percorrendo cada rota, como o "você está aqui" andando pelo trajeto. */}
-            {MAP_ROUTES.map(r => (
-              <circle key={`${r.id}-dot`} r="5.5" fill={ROUTE_INK} opacity="0.7">
-                <animateMotion dur={r.dur} repeatCount="indefinite" rotate="auto">
-                  <mpath href={`#${r.id}`} />
-                </animateMotion>
-              </circle>
-            ))}
-          </g>
-        </svg>
-      )}
     </div>
   );
 };
@@ -716,7 +649,7 @@ const RouteGenerator = () => {
       </AnimatePresence>
 
       <div className="container" style={{ padding: '60px 20px', minHeight: '80vh', position: 'relative' }}>
-      <MapBackground />
+      <FallsBackground />
       <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: '800px', margin: '0 auto 40px' }}>
         <h1 style={{ fontSize: 'clamp(1.9rem, 7vw, 3rem)', fontWeight: 800, marginBottom: '20px' }} className="text-gradient">
           Sua <span className="gold-gradient">Rota Perfeita</span>
