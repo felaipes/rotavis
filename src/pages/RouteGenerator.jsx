@@ -10,7 +10,7 @@ import DateCalendar, { toISODate, addDaysISO } from '../components/DateCalendar'
 import CountryFlag from '../components/CountryFlag';
 import { T, wizardStep, fadeUp, stagger } from '../motion';
 import { getPlaceCoordinates, totalRouteDistanceKm, formatDistanceKm, haversineDistanceKm } from '../data/zoneCoordinates';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { scorePlaces } from '../services/recommendationService';
 import { trackRouteGenerated, trackNps } from '../services/analyticsService';
 import { WEEKDAY_LABELS, isPlaceAvailable, isOpenOnDay } from '../services/availabilityService';
@@ -102,23 +102,103 @@ const PERIOD_LABELS = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' };
 const DURATION_LABELS = { ate2h: 'até 2 horas', '2a4h': '2 a 4 horas', mais4h: 'mais de 4 horas' };
 const TOTAL_INPUT_STEPS = 8;
 
-// Textura decorativa de fundo: uma linha de rota pontilhada com marcadores, evocando um mapa.
-// Fixa (não rola com a página), atrás de todo o conteúdo, sem capturar cliques.
-const MapBackground = () => (
-  <svg aria-hidden="true" style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none' }}>
-    <defs>
-      <pattern id="rotavisMapPattern" width="420" height="420" patternUnits="userSpaceOnUse">
-        <path d="M10,400 C90,360 110,260 190,240 C270,220 290,140 410,70" fill="none" stroke="#b8a888" strokeWidth="2" strokeDasharray="6 10" opacity="0.4" />
-        <path d="M420,300 C360,320 340,220 260,210" fill="none" stroke="#b8a888" strokeWidth="2" strokeDasharray="6 10" opacity="0.3" />
-        <circle cx="10" cy="400" r="5" fill="#b8a888" opacity="0.45" />
-        <circle cx="190" cy="240" r="5" fill="#b8a888" opacity="0.5" />
-        <circle cx="410" cy="70" r="5" fill="#b8a888" opacity="0.45" />
-        <circle cx="260" cy="210" r="4" fill="#b8a888" opacity="0.4" />
-      </pattern>
-    </defs>
-    <rect width="100%" height="100%" fill="url(#rotavisMapPattern)" />
-  </svg>
-);
+// Fundo do questionário: um mapa em movimento por trás das perguntas. Fixo (não rola
+// com a página), atrás de todo o conteúdo, sem capturar cliques.
+//
+// Duas camadas por um motivo de desempenho: a textura de baixo é um <pattern> repetido
+// pela viewport inteira e fica parada — animar conteúdo dentro de um pattern obriga o
+// navegador a rasterizar o ladrilho todo a cada quadro. O movimento fica só na camada de
+// cima, que tem meia dúzia de formas: tracejado correndo pela rota, marcador pulsando e
+// um ponto percorrendo o trajeto.
+const MAP_ROUTES = [
+  { id: 'rota-bg-1', d: 'M-40,620 C220,560 300,380 520,340 C740,300 820,150 1240,90', flowClass: 'map-route-flow', dur: '17s' },
+  { id: 'rota-bg-2', d: 'M-40,180 C180,240 260,300 420,300 C620,300 700,470 1240,520', flowClass: 'map-route-flow map-route-flow--slow', dur: '23s' },
+  { id: 'rota-bg-3', d: 'M180,-40 C240,180 420,220 500,420 C570,590 760,640 900,840', flowClass: 'map-route-flow map-route-flow--reverse', dur: '20s' }
+];
+
+const MAP_WAYPOINTS = [
+  { cx: 520, cy: 340, delay: '0s' },
+  { cx: 420, cy: 300, delay: '1.1s' },
+  { cx: 900, cy: 155, delay: '2.2s' },
+  { cx: 500, cy: 420, delay: '0.6s' },
+  { cx: 230, cy: 560, delay: '3s' },
+  { cx: 1010, cy: 470, delay: '1.7s' }
+];
+
+const SAND = '#b8a888';
+
+const MapBackground = () => {
+  // SMIL (<animateMotion>) não obedece à media query de movimento reduzido, então quem
+  // pediu menos movimento recebe só a textura parada.
+  const reduceMotion = useReducedMotion();
+
+  const layerStyle = { position: 'fixed', inset: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none' };
+
+  return (
+    <>
+      <svg aria-hidden="true" style={layerStyle}>
+        <defs>
+          <pattern id="rotavisMapPattern" width="420" height="420" patternUnits="userSpaceOnUse">
+            <path d="M10,400 C90,360 110,260 190,240 C270,220 290,140 410,70" fill="none" stroke={SAND} strokeWidth="2" strokeDasharray="6 10" opacity="0.4" />
+            <path d="M420,300 C360,320 340,220 260,210" fill="none" stroke={SAND} strokeWidth="2" strokeDasharray="6 10" opacity="0.3" />
+            <circle cx="10" cy="400" r="5" fill={SAND} opacity="0.45" />
+            <circle cx="190" cy="240" r="5" fill={SAND} opacity="0.5" />
+            <circle cx="410" cy="70" r="5" fill={SAND} opacity="0.45" />
+            <circle cx="260" cy="210" r="4" fill={SAND} opacity="0.4" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#rotavisMapPattern)" />
+      </svg>
+
+      {!reduceMotion && (
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 1200 800"
+          preserveAspectRatio="xMidYMid slice"
+          style={layerStyle}
+        >
+          <g className="map-bg-layer">
+            {MAP_ROUTES.map(r => (
+              <path
+                key={r.id}
+                id={r.id}
+                d={r.d}
+                fill="none"
+                stroke={SAND}
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeDasharray="10 14"
+                opacity="0.5"
+                className={r.flowClass}
+              />
+            ))}
+
+            {MAP_WAYPOINTS.map((w, i) => (
+              <circle
+                key={i}
+                cx={w.cx}
+                cy={w.cy}
+                r="5"
+                fill={SAND}
+                className="map-waypoint"
+                style={{ animationDelay: w.delay }}
+              />
+            ))}
+
+            {/* Ponto percorrendo cada rota, como o "você está aqui" andando pelo trajeto. */}
+            {MAP_ROUTES.map(r => (
+              <circle key={`${r.id}-dot`} r="5.5" fill={SAND} opacity="0.75">
+                <animateMotion dur={r.dur} repeatCount="indefinite" rotate="auto">
+                  <mpath href={`#${r.id}`} />
+                </animateMotion>
+              </circle>
+            ))}
+          </g>
+        </svg>
+      )}
+    </>
+  );
+};
 
 // Indicador de progresso do questionário (não aparece na tela de resultado).
 const WizardProgress = ({ step }) => {

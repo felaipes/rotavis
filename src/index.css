@@ -201,6 +201,64 @@ a {
   pointer-events: none;
 }
 
+/* Fundo animado do questionário: um mapa vivo por trás das perguntas.
+   Movimento longo e de baixa amplitude — é cenário, não pode competir com o
+   conteúdo nem pesar. Tudo aqui é decorativo e desliga sozinho em
+   prefers-reduced-motion (regra no topo do arquivo). */
+
+/* Tracejado correndo ao longo da rota, como o trajeto sendo percorrido. */
+@keyframes map-dash-flow {
+  to {
+    stroke-dashoffset: -240;
+  }
+}
+
+/* Marcador respirando no lugar. */
+@keyframes map-waypoint-pulse {
+
+  0%,
+  100% {
+    r: 5;
+    opacity: 0.5;
+  }
+
+  50% {
+    r: 7.5;
+    opacity: 0.24;
+  }
+}
+
+/* Deriva lenta do mapa inteiro, como arrastar o mapa muito devagar. */
+@keyframes map-drift {
+  from {
+    transform: translate3d(-1.1%, -0.7%, 0);
+  }
+
+  to {
+    transform: translate3d(1.1%, 0.7%, 0);
+  }
+}
+
+.map-bg-layer {
+  animation: map-drift 46s var(--ease-in-out) infinite alternate;
+}
+
+.map-route-flow {
+  animation: map-dash-flow 14s linear infinite;
+}
+
+.map-route-flow--slow {
+  animation-duration: 22s;
+}
+
+.map-route-flow--reverse {
+  animation-direction: reverse;
+}
+
+.map-waypoint {
+  animation: map-waypoint-pulse 4.5s var(--ease-in-out) infinite;
+}
+
 /* Remove o fundo branco/borda padrão que o Leaflet aplica a todo divIcon; o pino já
    desenha seu próprio fundo colorido e borda no HTML do ícone. */
 .rotavis-map-icon {
