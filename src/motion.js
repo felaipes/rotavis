@@ -63,11 +63,12 @@ export const pageTransition = {
   animate: { opacity: 1, y: 0, transition: { duration: DUR.base, ease: EASE.out } }
 };
 
-// Passo do questionário: entra pelo lado para sugerir avanço no fluxo.
+// Passo do questionário: entra pelo lado para sugerir avanço no fluxo. Sem exit, pelo
+// mesmo motivo de pageTransition — esperar a saída do passo anterior trava a pergunta
+// nova quando a animação não roda.
 export const wizardStep = {
   initial: { opacity: 0, x: 24 },
-  animate: { opacity: 1, x: 0, transition: T.base },
-  exit: { opacity: 0, x: -24, transition: T.exit }
+  animate: { opacity: 1, x: 0, transition: T.base }
 };
 
 // --- Listas escalonadas ---

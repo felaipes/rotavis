@@ -67,9 +67,40 @@ const WORK_POOL_BY_PERIOD = {
 // Quem se desloca a pé não deve caminhar mais que isso por dia; o gerador corta paradas
 // que estourariam o limite em vez de montar um dia impossível de cumprir andando.
 const FOOT_DAILY_LIMIT_KM = 10;
+
+// Todas as paradas de um roteiro, na ordem, achatadas numa lista só.
+const flattenStops = (dayPlans) =>
+  dayPlans.flatMap(d => [...(d.manha || []), ...(d.tarde || []), ...(d.noite || [])].filter(Boolean));
+
+const collectPlaceIds = (dayPlans) => flattenStops(dayPlans).map(p => p.id);
+
+// Faixas de gasto por dia usadas pelo scorePlaces. Antes vinham de uma pergunta própria;
+// agora saem do orçamento total dividido pelos dias, para não perguntar dinheiro duas vezes.
+const budgetTierFromDaily = (dailyBudget) => {
+  if (dailyBudget == null) return undefined;
+  if (dailyBudget < 150) return 'economico';
+  if (dailyBudget <= 350) return 'conforto';
+  return 'luxo';
+};
+
+// Números que resumem uma opção de roteiro no cartão de escolha. O destaque é o primeiro
+// atrativo, não a primeira parada: o café da manhã costuma ser o mesmo nas duas opções
+// (só existem 3 no catálogo), então não ajudaria a diferenciá-las.
+const summarizeItinerary = (dayPlans) => {
+  const stops = flattenStops(dayPlans);
+  const cost = dayPlans.reduce((sum, d) => sum + (d.estimatedCost || 0), 0);
+  const km = dayPlans.reduce(
+    (sum, d) => sum + totalRouteDistanceKm(
+      [...(d.manha || []), ...(d.tarde || []), ...(d.noite || [])].filter(Boolean).map(getPlaceCoordinates)
+    ),
+    0
+  );
+  const highlight = stops.find(p => p.category === 'passeios') || stops[0];
+  return { stopCount: stops.length, cost, km, highlight: highlight?.name || '' };
+};
 const PERIOD_LABELS = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' };
 const DURATION_LABELS = { ate2h: 'até 2 horas', '2a4h': '2 a 4 horas', mais4h: 'mais de 4 horas' };
-const TOTAL_INPUT_STEPS = 9;
+const TOTAL_INPUT_STEPS = 8;
 
 // Textura decorativa de fundo: uma linha de rota pontilhada com marcadores, evocando um mapa.
 // Fixa (não rola com a página), atrás de todo o conteúdo, sem capturar cliques.
@@ -170,7 +201,11 @@ const RouteGenerator = () => {
       setDepartureDate('');
     }
   };
-  const [route, setRoute] = useState(null);
+  // Duas opções de roteiro; `route` é sempre a que está selecionada, então o resto da
+  // tela (mapa, PDF, salvar) continua trabalhando com um roteiro só.
+  const [routeOptions, setRouteOptions] = useState(null);
+  const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
+  const route = routeOptions ? routeOptions[selectedRouteIndex] : null;
   const [workRoute, setWorkRoute] = useState(null);
   const [step, setStep] = useState(1);
   const [modalStage, setModalStage] = useState(null);
@@ -178,7 +213,6 @@ const RouteGenerator = () => {
   const mapSnapshotRef = useRef(null);
   const [profile, setProfile] = useState({
     reason: '',
-    budget: '',
     transport: '',
     preferences: [],
     timeAvailable: '',
@@ -365,10 +399,11 @@ const RouteGenerator = () => {
     }, 500);
   };
 
-  const generateRoute = () => {
-    // Score and sort places based on user profile
-    const scoredPlaces = scorePlaces(places, profile);
-
+  // Monta um roteiro completo. `avoidIds` são os locais já usados na outra opção: o
+  // gerador evita repeti-los, mas só enquanto houver alternativa na categoria — algumas
+  // (café da manhã, por exemplo) têm poucos lugares, e é melhor repetir um do que
+  // devolver um período vazio na segunda opção.
+  const buildItinerary = (scoredPlaces, dailyBudget, avoidIds = new Set()) => {
     // Separate places by category (they remain sorted by score)
     const cafes = scoredPlaces.filter(p => p.category === 'cafe_da_manha');
     const passeios = scoredPlaces.filter(p => p.category === 'passeios');
@@ -376,8 +411,6 @@ const RouteGenerator = () => {
     const bares = scoredPlaces.filter(p => p.category === 'bares');
     const cafeterias = scoredPlaces.filter(p => p.category === 'cafeterias_docerias');
 
-    // Orçamento total dividido igualmente entre os dias do roteiro (null = sem restrição de orçamento).
-    const dailyBudget = profile.totalBudget && days > 0 ? Number(profile.totalBudget) / days : null;
     const priceOf = (p) => p?.avgPrice ?? (typeof p?.entryFee === 'number' ? p.entryFee : 0);
 
     let generatedDays = [];
@@ -390,6 +423,12 @@ const RouteGenerator = () => {
       // 1. Só considera locais abertos no horário/dia planejados
       if (periodKey && dayIndex !== null) {
         available = filterAvailable(available, periodKey, dayIndex);
+      }
+
+      // 1a. Segunda opção: descarta o que a primeira já usou, desde que sobre alguém.
+      if (avoidIds.size > 0) {
+        const fresh = available.filter(p => !avoidIds.has(p.id));
+        if (fresh.length > 0) available = fresh;
       }
 
       // 1b. A pé: o trecho até o próximo local precisa caber no que sobrou do limite diário
@@ -494,17 +533,34 @@ const RouteGenerator = () => {
       });
     }
 
-    setRoute(generatedDays);
+    return generatedDays;
+  };
+
+  const generateRoute = () => {
+    // O orçamento total, dividido pelos dias, faz o papel que a pergunta de gasto diário
+    // fazia antes: dá o nível de preço que o scorePlaces usa para ordenar os lugares.
+    const dailyBudget = profile.totalBudget && days > 0 ? Number(profile.totalBudget) / days : null;
+    const scoringProfile = { ...profile, budget: budgetTierFromDaily(dailyBudget) };
+    const scoredPlaces = scorePlaces(places, scoringProfile);
+
+    // Duas opções para a pessoa escolher: a segunda evita os lugares da primeira.
+    const optionA = buildItinerary(scoredPlaces, dailyBudget);
+    const idsA = new Set(collectPlaceIds(optionA));
+    const optionB = buildItinerary(scoredPlaces, dailyBudget, idsA);
+
+    setRouteOptions([optionA, optionB]);
+    setSelectedRouteIndex(0);
+
     // Track the generated route for the admin observatory
-    trackRouteGenerated(profile, generatedDays, days, startDay);
-    
+    trackRouteGenerated(scoringProfile, optionA, days, startDay);
+
     if (profile.totalBudget) {
       localStorage.setItem('rotavis_total_budget', profile.totalBudget.toString());
     } else {
-      const totalEstimated = generatedDays.reduce((acc, day) => acc + day.estimatedCost, 0);
+      const totalEstimated = optionA.reduce((acc, day) => acc + day.estimatedCost, 0);
       localStorage.setItem('rotavis_total_budget', totalEstimated.toString());
     }
-    
+
     // Mostra o loading screen; ele chama onComplete quando terminar
     setIsGenerating(true);
     // Show NPS popup after 3 seconds
@@ -537,7 +593,7 @@ const RouteGenerator = () => {
     const optionB = pickChain();
 
     setWorkRoute({ period, timeAvailable, optionA, optionB });
-    setStep(10);
+    setStep(9);
   };
 
   return (
@@ -548,7 +604,7 @@ const RouteGenerator = () => {
           <RouteLoadingScreen
             onComplete={() => {
               setIsGenerating(false);
-              setStep(10);
+              setStep(9);
             }}
           />
         )}
@@ -566,11 +622,10 @@ const RouteGenerator = () => {
 
         <WizardProgress step={step} />
 
-        <AnimatePresence mode="wait">
           {step === 1 && (
             <motion.div
-              key="step1"
-              variants={wizardStep} initial="initial" animate="animate" exit="exit"
+              key="motivo"
+              variants={wizardStep} initial="initial" animate="animate"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Qual o motivo da sua viagem?</h2>
@@ -597,8 +652,8 @@ const RouteGenerator = () => {
 
           {step === 2 && (
             <motion.div
-              key="step2_origin"
-              variants={wizardStep} initial="initial" animate="animate" exit="exit"
+              key="origem"
+              variants={wizardStep} initial="initial" animate="animate"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '28px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}><MapPinned size={24} style={{ marginRight: '8px', verticalAlign: 'middle' }} />De onde você vem?</h2>
@@ -690,8 +745,8 @@ const RouteGenerator = () => {
 
           {step === 3 && (
             <motion.div 
-              key="step3_group"
-              variants={wizardStep} initial="initial" animate="animate" exit="exit"
+              key="grupo"
+              variants={wizardStep} initial="initial" animate="animate"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}><Users size={24} style={{ marginRight: '8px', verticalAlign: 'middle' }} />Com quem você viaja?</h2>
@@ -726,42 +781,14 @@ const RouteGenerator = () => {
 
           {step === 4 && (
             <motion.div 
-              key="step4"
-              variants={wizardStep} initial="initial" animate="animate" exit="exit"
-              className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
-            >
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Como é o seu orçamento?</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', width: '100%' }}>
-                {[
-                  { id: 'economico', label: 'Econômico (Até R$ 50)', icon: Wallet },
-                  { id: 'conforto', label: 'Conforto (R$ 50 - 150)', icon: CheckCircle2 },
-                  { id: 'luxo', label: 'Luxo (+ R$ 150)', icon: Star }
-                ].map(b => (
-                  <button 
-                    key={b.id}
-                    onClick={() => { setProfile({...profile, budget: b.id}); setStep(5); }}
-                    className={`btn-glass wizard-option ${profile.budget === b.id ? 'active' : ''}`}
-                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '25px' }}
-                  >
-                    <b.icon size={28} color="var(--green)" />
-                    <span style={{ fontSize: '1.1rem', fontWeight: 500 }}>{b.label}</span>
-                  </button>
-                ))}
-              </div>
-              <button onClick={() => setStep(3)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
-            </motion.div>
-          )}
-
-          {step === 5 && (
-            <motion.div 
-              key="step5_transport"
-              variants={wizardStep} initial="initial" animate="animate" exit="exit"
+              key="transporte"
+              variants={wizardStep} initial="initial" animate="animate"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Como você vai se locomover?</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', width: '100%' }}>
                 <button 
-                  onClick={() => { setProfile({...profile, transport: 'carro'}); setStep(6); }}
+                  onClick={() => { setProfile({...profile, transport: 'carro'}); setStep(5); }}
                   className={`btn-glass wizard-option ${profile.transport === 'carro' ? 'active' : ''}`}
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '30px' }}
                 >
@@ -769,7 +796,7 @@ const RouteGenerator = () => {
                   <span style={{ fontSize: '1.2rem', fontWeight: 500 }}>Carro Próprio</span>
                 </button>
                 <button 
-                  onClick={() => { setProfile({...profile, transport: 'ape'}); setStep(6); }}
+                  onClick={() => { setProfile({...profile, transport: 'ape'}); setStep(5); }}
                   className={`btn-glass wizard-option ${profile.transport === 'ape' ? 'active' : ''}`}
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '30px' }}
                 >
@@ -780,14 +807,14 @@ const RouteGenerator = () => {
                   </span>
                 </button>
               </div>
-              <button onClick={() => setStep(4)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+              <button onClick={() => setStep(3)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
             </motion.div>
           )}
 
-          {step === 6 && (
+          {step === 5 && (
             <motion.div 
-              key="step6"
-              variants={wizardStep} initial="initial" animate="animate" exit="exit"
+              key="interesses"
+              variants={wizardStep} initial="initial" animate="animate"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Quais são os seus interesses? (Selecione vários)</h2>
@@ -835,16 +862,16 @@ const RouteGenerator = () => {
               ))}
 
               <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
-                <button onClick={() => setStep(5)} className="btn-glass">Voltar</button>
-                <button onClick={() => setStep(7)} className="btn-gold" style={{ padding: '15px 30px' }}>Próximo <ChevronRight size={18} /></button>
+                <button onClick={() => setStep(4)} className="btn-glass">Voltar</button>
+                <button onClick={() => setStep(6)} className="btn-gold" style={{ padding: '15px 30px' }}>Próximo <ChevronRight size={18} /></button>
               </div>
             </motion.div>
           )}
 
-          {step === 7 && (
+          {step === 6 && (
             <motion.div
-              key="step7_weekday"
-              variants={wizardStep} initial="initial" animate="animate" exit="exit"
+              key="data-chegada"
+              variants={wizardStep} initial="initial" animate="animate"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -864,9 +891,9 @@ const RouteGenerator = () => {
                 </p>
               )}
               <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
-                <button onClick={() => setStep(6)} className="btn-glass">Voltar</button>
+                <button onClick={() => setStep(5)} className="btn-glass">Voltar</button>
                 <button
-                  onClick={() => setStep(8)}
+                  onClick={() => setStep(7)}
                   disabled={!arrivalDate}
                   className="btn-gold"
                   style={{ padding: '15px 30px', opacity: arrivalDate ? 1 : 0.5, cursor: arrivalDate ? 'pointer' : 'not-allowed' }}
@@ -877,10 +904,10 @@ const RouteGenerator = () => {
             </motion.div>
           )}
 
-          {step === 8 && profile.reason === 'trabalho' && (
+          {step === 7 && profile.reason === 'trabalho' && (
             <motion.div
-              key="step8_work_duration"
-              variants={wizardStep} initial="initial" animate="animate" exit="exit"
+              key="duracao-trabalho"
+              variants={wizardStep} initial="initial" animate="animate"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Quanto tempo livre você tem por dia para passear?</h2>
@@ -891,7 +918,7 @@ const RouteGenerator = () => {
                 {WORK_DURATION_OPTIONS.map(d => (
                   <button
                     key={d.id}
-                    onClick={() => { setProfile({ ...profile, timeAvailable: d.id }); setStep(9); }}
+                    onClick={() => { setProfile({ ...profile, timeAvailable: d.id }); setStep(8); }}
                     className={`btn-glass wizard-option ${profile.timeAvailable === d.id ? 'active' : ''}`}
                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '25px' }}
                   >
@@ -900,14 +927,14 @@ const RouteGenerator = () => {
                   </button>
                 ))}
               </div>
-              <button onClick={() => setStep(7)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+              <button onClick={() => setStep(6)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
             </motion.div>
           )}
 
-          {step === 8 && profile.reason !== 'trabalho' && (
+          {step === 7 && profile.reason !== 'trabalho' && (
             <motion.div
-              key="step8_days"
-              variants={wizardStep} initial="initial" animate="animate" exit="exit"
+              key="data-saida"
+              variants={wizardStep} initial="initial" animate="animate"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -929,9 +956,9 @@ const RouteGenerator = () => {
                 </p>
               )}
               <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
-                <button onClick={() => setStep(7)} className="btn-glass">Voltar</button>
+                <button onClick={() => setStep(6)} className="btn-glass">Voltar</button>
                 <button
-                  onClick={() => setStep(9)}
+                  onClick={() => setStep(8)}
                   disabled={!departureDate}
                   className="btn-gold"
                   style={{ padding: '15px 30px', opacity: departureDate ? 1 : 0.5, cursor: departureDate ? 'pointer' : 'not-allowed' }}
@@ -942,10 +969,10 @@ const RouteGenerator = () => {
             </motion.div>
           )}
 
-          {step === 9 && profile.reason === 'trabalho' && (
+          {step === 8 && profile.reason === 'trabalho' && (
             <motion.div
-              key="step9_period"
-              variants={wizardStep} initial="initial" animate="animate" exit="exit"
+              key="periodo-trabalho"
+              variants={wizardStep} initial="initial" animate="animate"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Qual horário do dia você costuma ter livre?</h2>
@@ -962,14 +989,14 @@ const RouteGenerator = () => {
                   </button>
                 ))}
               </div>
-              <button onClick={() => setStep(8)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+              <button onClick={() => setStep(7)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
             </motion.div>
           )}
 
-          {step === 9 && profile.reason !== 'trabalho' && (
+          {step === 8 && profile.reason !== 'trabalho' && (
             <motion.div
-              key="step9_budget"
-              variants={wizardStep} initial="initial" animate="animate" exit="exit"
+              key="orcamento-total"
+              variants={wizardStep} initial="initial" animate="animate"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Qual o orçamento total da sua viagem?</h2>
@@ -1007,7 +1034,7 @@ const RouteGenerator = () => {
                 </p>
               )}
               <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
-                <button onClick={() => setStep(8)} className="btn-glass">Voltar</button>
+                <button onClick={() => setStep(7)} className="btn-glass">Voltar</button>
                 <button onClick={generateRoute} className="btn-gold" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
                   <Calendar style={{ marginRight: '10px' }} />
                   Gerar Meu Roteiro
@@ -1015,16 +1042,65 @@ const RouteGenerator = () => {
               </div>
             </motion.div>
           )}
-        </AnimatePresence>
       </div>
 
-      {step === 10 && route && (
+      {step === 9 && route && (
         <motion.div
           variants={fadeUp}
           initial="initial"
           animate="animate"
           style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '28px', maxWidth: '860px', margin: '0 auto' }}
         >
+          {/* Escolha entre as duas opções. Tudo abaixo (mapa, dias, PDF) segue a selecionada. */}
+          {routeOptions && routeOptions.length > 1 && (
+            <div className="liquid-glass" style={{ padding: 'clamp(16px, 3vw, 22px)', borderRadius: '20px' }}>
+              <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '6px' }}>
+                Montamos 2 roteiros para você
+              </h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>
+                Escolha o que combina mais com a sua viagem — dá para trocar quando quiser.
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', gap: '14px' }}>
+                {routeOptions.map((option, i) => {
+                  const s = summarizeItinerary(option);
+                  const isSelected = i === selectedRouteIndex;
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => setSelectedRouteIndex(i)}
+                      aria-pressed={isSelected}
+                      className="wizard-option"
+                      style={{
+                        textAlign: 'left', cursor: 'pointer', padding: '16px 18px', borderRadius: '16px',
+                        border: `2px solid ${isSelected ? 'var(--green)' : 'var(--card-border)'}`,
+                        background: isSelected ? 'rgba(61, 155, 79, 0.07)' : 'var(--card-bg)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <span style={{
+                          width: '26px', height: '26px', borderRadius: '50%', flexShrink: 0,
+                          background: isSelected ? 'var(--green-dark)' : 'var(--card-highlight)',
+                          color: isSelected ? '#fff' : 'var(--text-muted)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontWeight: 800, fontSize: '0.8rem'
+                        }}>
+                          {String.fromCharCode(65 + i)}
+                        </span>
+                        <strong style={{ fontSize: '1rem' }}>Roteiro {String.fromCharCode(65 + i)}</strong>
+                        {isSelected && <CheckCircle2 size={16} color="var(--green)" style={{ marginLeft: 'auto' }} />}
+                      </div>
+                      <div style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                        {s.stopCount} paradas · {formatDistanceKm(s.km)}<br />
+                        ~R$ {Math.round(s.cost).toLocaleString('pt-BR')} no total<br />
+                        Destaque: {s.highlight}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="liquid-glass" style={{ padding: 'clamp(16px, 3vw, 24px)', borderRadius: '20px' }}>
             <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '16px' }}>
               Sua rota no mapa
@@ -1146,7 +1222,7 @@ const RouteGenerator = () => {
         </motion.div>
       )}
 
-      {step === 10 && workRoute && (
+      {step === 9 && workRoute && (
         <motion.div
           variants={fadeUp}
           initial="initial"
