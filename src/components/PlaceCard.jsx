@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Clock, Wallet, ChefHat, Sparkles, Check, Plus } from 'lucide-react';
 import { useCheckIns } from '../context/CheckInContext';
+import { cssTransition, CSS_EASE_OUT, DUR } from '../motion';
 
 const PlaceCard = ({ place }) => {
   const { stats, addCheckIn } = useCheckIns();
   const visitCount = stats.countByPlace[place.id] || 0;
+  // A primeira imagem entra com fade sobre um skeleton, em vez de "pipocar" na tela.
+  const [coverLoaded, setCoverLoaded] = useState(false);
   // Hover cobre o mouse; tapped cobre toque/teclado, já que hover sozinho não é
   // confiável em dispositivos móveis (regra "Hover vs Tap" da skill ui-ux-pro-max).
   const [isHovering, setIsHovering] = useState(false);
@@ -47,7 +50,7 @@ const PlaceCard = ({ place }) => {
         zIndex: active ? 10 : 1,
         transform: active ? 'scale(1.08) translateY(-6px)' : 'scale(1) translateY(0)',
         boxShadow: active ? '0 24px 48px rgba(7, 11, 20, 0.28)' : 'var(--card-shadow)',
-        transition: 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease',
+        transition: cssTransition(['transform', 'box-shadow']),
         cursor: isInteractive ? 'pointer' : 'default'
       }}
       onMouseEnter={() => setIsHovering(true)}
@@ -60,20 +63,26 @@ const PlaceCard = ({ place }) => {
         }
       }}
     >
-      <div style={{ position: 'relative', height: '200px', width: '100%', overflow: 'hidden' }}>
+      <div
+        className={coverLoaded ? undefined : 'skeleton'}
+        style={{ position: 'relative', height: '200px', width: '100%', overflow: 'hidden' }}
+      >
         {gallery.map((src, idx) => (
           <img
             key={src}
             src={src}
             alt={place.name}
+            loading="lazy"
+            onLoad={idx === 0 ? () => setCoverLoaded(true) : undefined}
+            onError={idx === 0 ? () => setCoverLoaded(true) : undefined}
             style={{
               position: 'absolute',
               inset: 0,
               width: '100%',
               height: '100%',
               objectFit: 'cover',
-              opacity: idx === imgIndex ? 1 : 0,
-              transition: 'opacity 0.6s ease'
+              opacity: idx === imgIndex && (idx !== 0 || coverLoaded) ? 1 : 0,
+              transition: `opacity ${DUR.slow}s ${CSS_EASE_OUT}`
             }}
           />
         ))}
@@ -127,7 +136,7 @@ const PlaceCard = ({ place }) => {
                 height: '6px',
                 borderRadius: '50%',
                 background: idx === imgIndex ? '#ffffff' : 'rgba(255, 255, 255, 0.45)',
-                transition: 'background 0.3s ease'
+                transition: cssTransition(['background'])
               }} />
             ))}
           </div>
@@ -200,7 +209,7 @@ const PlaceCard = ({ place }) => {
             paddingTop: active ? '14px' : '0px',
             borderTop: active ? '1px solid var(--card-border)' : '1px solid transparent',
             overflow: 'hidden',
-            transition: 'max-height 0.35s ease, opacity 0.3s ease, margin-top 0.35s ease, padding-top 0.35s ease, border-color 0.35s ease'
+            transition: cssTransition(['max-height', 'opacity', 'margin-top', 'padding-top', 'border-color'], DUR.slow)
           }}>
             {place.specialty && (
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.85rem' }}>

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Route, MapPinned } from 'lucide-react';
 import ActiveRouteDashboard from '../components/ActiveRouteDashboard';
 import { useAuth } from '../context/AuthContext';
+import { T } from '../motion';
 
 const SuaRota = () => {
   const { user } = useAuth();
@@ -12,9 +13,9 @@ const SuaRota = () => {
     return (
       <div className="container" style={{ padding: '80px 20px', minHeight: '70vh', textAlign: 'center' }}>
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={T.base}
           style={{ maxWidth: '500px', margin: '0 auto' }}
         >
           <div style={{
@@ -42,9 +43,9 @@ const SuaRota = () => {
   return (
     <div className="container" style={{ padding: '40px 20px', minHeight: '80vh', maxWidth: '900px' }}>
       <motion.div
-        initial={{ opacity: 0, y: 15 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
+        transition={T.base}
         style={{ marginBottom: '24px' }}
       >
         <h1 style={{ fontSize: 'clamp(1.6rem, 5vw, 2.2rem)', fontWeight: 800, marginBottom: '8px' }} className="text-gradient">

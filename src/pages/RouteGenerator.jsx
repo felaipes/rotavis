@@ -8,6 +8,7 @@ import PlaceCard from '../components/PlaceCard';
 import RouteMapView, { DAY_COLORS, DayRouteMap } from '../components/RouteMapView';
 import DateCalendar, { toISODate, addDaysISO } from '../components/DateCalendar';
 import CountryFlag from '../components/CountryFlag';
+import { T, wizardStep, fadeUp, stagger } from '../motion';
 import { getPlaceCoordinates, totalRouteDistanceKm, formatDistanceKm, haversineDistanceKm } from '../data/zoneCoordinates';
 import { motion, AnimatePresence } from 'framer-motion';
 import { scorePlaces } from '../services/recommendationService';
@@ -102,7 +103,7 @@ const WizardProgress = ({ step }) => {
         <motion.div
           initial={false}
           animate={{ width: `${percent}%` }}
-          transition={{ duration: 0.4, ease: 'easeOut' }}
+          transition={T.slow}
           style={{ height: '100%', background: 'linear-gradient(90deg, var(--blue), var(--green), var(--accent-gold))', borderRadius: '99px' }}
         />
       </div>
@@ -569,7 +570,7 @@ const RouteGenerator = () => {
           {step === 1 && (
             <motion.div
               key="step1"
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              variants={wizardStep} initial="initial" animate="animate" exit="exit"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Qual o motivo da sua viagem?</h2>
@@ -597,7 +598,7 @@ const RouteGenerator = () => {
           {step === 2 && (
             <motion.div
               key="step2_origin"
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              variants={wizardStep} initial="initial" animate="animate" exit="exit"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '28px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}><MapPinned size={24} style={{ marginRight: '8px', verticalAlign: 'middle' }} />De onde você vem?</h2>
@@ -690,7 +691,7 @@ const RouteGenerator = () => {
           {step === 3 && (
             <motion.div 
               key="step3_group"
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              variants={wizardStep} initial="initial" animate="animate" exit="exit"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}><Users size={24} style={{ marginRight: '8px', verticalAlign: 'middle' }} />Com quem você viaja?</h2>
@@ -726,7 +727,7 @@ const RouteGenerator = () => {
           {step === 4 && (
             <motion.div 
               key="step4"
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              variants={wizardStep} initial="initial" animate="animate" exit="exit"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Como é o seu orçamento?</h2>
@@ -754,7 +755,7 @@ const RouteGenerator = () => {
           {step === 5 && (
             <motion.div 
               key="step5_transport"
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              variants={wizardStep} initial="initial" animate="animate" exit="exit"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Como você vai se locomover?</h2>
@@ -786,7 +787,7 @@ const RouteGenerator = () => {
           {step === 6 && (
             <motion.div 
               key="step6"
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              variants={wizardStep} initial="initial" animate="animate" exit="exit"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Quais são os seus interesses? (Selecione vários)</h2>
@@ -843,7 +844,7 @@ const RouteGenerator = () => {
           {step === 7 && (
             <motion.div
               key="step7_weekday"
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              variants={wizardStep} initial="initial" animate="animate" exit="exit"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -879,7 +880,7 @@ const RouteGenerator = () => {
           {step === 8 && profile.reason === 'trabalho' && (
             <motion.div
               key="step8_work_duration"
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              variants={wizardStep} initial="initial" animate="animate" exit="exit"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Quanto tempo livre você tem por dia para passear?</h2>
@@ -906,7 +907,7 @@ const RouteGenerator = () => {
           {step === 8 && profile.reason !== 'trabalho' && (
             <motion.div
               key="step8_days"
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              variants={wizardStep} initial="initial" animate="animate" exit="exit"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -944,7 +945,7 @@ const RouteGenerator = () => {
           {step === 9 && profile.reason === 'trabalho' && (
             <motion.div
               key="step9_period"
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              variants={wizardStep} initial="initial" animate="animate" exit="exit"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Qual horário do dia você costuma ter livre?</h2>
@@ -968,7 +969,7 @@ const RouteGenerator = () => {
           {step === 9 && profile.reason !== 'trabalho' && (
             <motion.div
               key="step9_budget"
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              variants={wizardStep} initial="initial" animate="animate" exit="exit"
               className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Qual o orçamento total da sua viagem?</h2>
@@ -1019,8 +1020,9 @@ const RouteGenerator = () => {
 
       {step === 10 && route && (
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
+          variants={fadeUp}
+          initial="initial"
+          animate="animate"
           style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '28px', maxWidth: '860px', margin: '0 auto' }}
         >
           <div className="liquid-glass" style={{ padding: 'clamp(16px, 3vw, 24px)', borderRadius: '20px' }}>
@@ -1042,7 +1044,13 @@ const RouteGenerator = () => {
               const dayDistanceKm = totalRouteDistanceKm(dayStops.map(p => getPlaceCoordinates(p)));
 
               return (
-                <div key={index} style={{ background: '#ffffff', borderRadius: '20px', border: '1px solid var(--card-border)', boxShadow: '0 6px 24px rgba(27, 94, 60, 0.07)', padding: 'clamp(18px, 4vw, 28px)' }}>
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={stagger(index)}
+                  style={{ background: '#ffffff', borderRadius: '20px', border: '1px solid var(--card-border)', boxShadow: '0 6px 24px rgba(27, 94, 60, 0.07)', padding: 'clamp(18px, 4vw, 28px)' }}
+                >
                   {/* Cabeçalho do dia, estilo recibo de viagem */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', paddingBottom: '18px', marginBottom: '22px', borderBottom: '1px solid var(--card-border)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -1121,7 +1129,7 @@ const RouteGenerator = () => {
                       </p>
                     </div>
                   )}
-                </div>
+                </motion.div>
               );
             })}
           </div>
@@ -1140,8 +1148,9 @@ const RouteGenerator = () => {
 
       {step === 10 && workRoute && (
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
+          variants={fadeUp}
+          initial="initial"
+          animate="animate"
           style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '40px' }}
         >
           <div style={{ textAlign: 'center' }}>

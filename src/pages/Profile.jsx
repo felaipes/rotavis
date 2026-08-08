@@ -9,6 +9,7 @@ import {
 import SavedRouteCard from '../components/SavedRouteCard';
 import ActiveRouteCard from '../components/ActiveRouteCard';
 import Financas from './Financas';
+import { T, cssTransition, DUR } from '../motion';
 
 const BRAZILIAN_STATES = [
   'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS',
@@ -142,7 +143,7 @@ const Profile = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
+        transition={T.base}
       >
         {/* ── Header do Perfil ── */}
         <div className="liquid-glass" style={{ padding: '40px', marginBottom: '24px', position: 'relative', overflow: 'hidden' }}>
@@ -248,7 +249,7 @@ const Profile = () => {
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
+            transition={T.base}
           >
             <Financas />
           </motion.div>
@@ -256,7 +257,7 @@ const Profile = () => {
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
+            transition={T.base}
           >
             {user.activeRoute ? (
               <ActiveRouteCard 
@@ -282,7 +283,7 @@ const Profile = () => {
           style={{ padding: '30px', marginBottom: '24px' }}
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.4 }}
+          transition={T.base}
         >
           <h2 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Shield size={20} style={{ color: 'var(--green-dark)' }} />
@@ -409,7 +410,7 @@ const Profile = () => {
           style={{ padding: '30px', marginBottom: '24px' }}
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.4 }}
+          transition={T.base}
         >
           <h2 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Route size={20} style={{ color: 'var(--green-dark)' }} />
@@ -455,7 +456,7 @@ const Profile = () => {
               color: '#ef4444', borderRadius: '10px', padding: '12px 30px',
               cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600,
               display: 'inline-flex', alignItems: 'center', gap: '8px',
-              transition: 'all 0.2s ease'
+              transition: cssTransition(['background', 'border-color'], DUR.fast)
             }}
             onMouseEnter={(e) => { e.currentTarget.style.background = '#ef444411'; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { cssTransition } from '../motion';
 
 const COLORS = ['#3d9b4f', '#f2b70a', '#1e88e5', '#e91e63', '#9c27b0', '#ff9800'];
 
@@ -41,7 +42,7 @@ const BudgetSummary = ({ totalBudget, totalSpent, chartData, onSetBudget }) => {
                     width: `${Math.min(percentage, 100)}%`, 
                     height: '100%', 
                     background: percentage > 100 ? '#ef4444' : 'var(--green)',
-                    transition: 'width 0.3s ease'
+                    transition: cssTransition(['width'])
                   }} 
                 />
               </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { Map, MapPinned, Menu, X, User, LogOut, LogIn, Wallet, Route as RouteIcon, Trophy } from 'lucide-react';
 import Home from './pages/Home';
 import Mapa from './pages/Mapa';
@@ -13,6 +13,7 @@ import Conquistas from './pages/Conquistas';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CheckInProvider, useCheckIns } from './context/CheckInContext';
 import { TIERS } from './data/achievements';
+import { T, scaleIn, pageTransition } from './motion';
 import './index.css';
 
 // Aviso de troféu novo. Fica no App para aparecer de qualquer tela — inclusive quando o
@@ -30,10 +31,10 @@ const UnlockToast = () => {
     <AnimatePresence>
       {recentUnlock && (
         <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.94 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 20, scale: 0.96 }}
-          transition={{ duration: 0.28, ease: 'easeOut' }}
+          variants={scaleIn}
+          initial="initial"
+          animate="animate"
+          exit="exit"
           role="status"
           onClick={dismissUnlock}
           style={{
@@ -136,10 +137,10 @@ const Header = () => {
               <AnimatePresence>
                 {showProfileMenu && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.97 }}
+                    transition={T.fast}
                     style={{
                       position: 'absolute', top: '100%', right: 0, marginTop: '8px',
                       background: 'var(--card-bg)', border: '1px solid var(--card-border)',
@@ -188,7 +189,7 @@ const Header = () => {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            transition={T.inOut}
             style={{ overflow: 'hidden', borderTop: '1px solid var(--card-border)' }}
             className="mobile-menu"
           >
@@ -261,31 +262,61 @@ const Header = () => {
   );
 };
 
+// Troca de página animada: só a entrada é animada, a página que sai é desmontada na
+// hora. Sem AnimatePresence de propósito — com mode="wait" a tela nova só monta depois
+// de a antiga terminar de sair, e se essa saída não roda (aba em segundo plano, que o
+// navegador congela, ou cliques mais rápidos que a animação) a navegação trava
+// mostrando a página anterior com a URL já trocada. Animar só a entrada nunca trava e
+// ainda corta o tempo total da transição pela metade.
+const AnimatedRoutes = () => {
+  const location = useLocation();
+
+  // Página nova começa do topo — sem isso a rota trocada herda o scroll da anterior.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [location.pathname]);
+
+  return (
+    <motion.div
+      key={location.pathname}
+      variants={pageTransition}
+      initial="initial"
+      animate="animate"
+    >
+      <Routes location={location}>
+        <Route path="/" element={<RouteGenerator />} />
+        <Route path="/catalogo" element={<Home />} />
+        <Route path="/mapa" element={<Mapa />} />
+        <Route path="/rota" element={<RouteGenerator />} />
+        <Route path="/conquistas" element={<Conquistas />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/cadastro" element={<Register />} />
+        <Route path="/perfil" element={<Profile />} />
+        <Route path="/sua-rota" element={<SuaRota />} />
+      </Routes>
+    </motion.div>
+  );
+};
+
 function App() {
   return (
-    <AuthProvider>
-      <CheckInProvider>
-        <Router>
-          <div className="app-container">
-            <Header />
-            <main>
-              <Routes>
-                <Route path="/" element={<RouteGenerator />} />
-                <Route path="/catalogo" element={<Home />} />
-                <Route path="/mapa" element={<Mapa />} />
-                <Route path="/rota" element={<RouteGenerator />} />
-                <Route path="/conquistas" element={<Conquistas />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/cadastro" element={<Register />} />
-                <Route path="/perfil" element={<Profile />} />
-                <Route path="/sua-rota" element={<SuaRota />} />
-              </Routes>
-            </main>
-            <UnlockToast />
-          </div>
-        </Router>
-      </CheckInProvider>
-    </AuthProvider>
+    // reducedMotion="user" desliga as animações do Framer Motion para quem pediu
+    // "menos movimento" no sistema operacional, sem precisar checar em cada tela.
+    <MotionConfig reducedMotion="user" transition={T.base}>
+      <AuthProvider>
+        <CheckInProvider>
+          <Router>
+            <div className="app-container">
+              <Header />
+              <main>
+                <AnimatedRoutes />
+              </main>
+              <UnlockToast />
+            </div>
+          </Router>
+        </CheckInProvider>
+      </AuthProvider>
+    </MotionConfig>
   );
 }
 

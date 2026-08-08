@@ -7,6 +7,7 @@ import 'leaflet/dist/leaflet.css';
 import { Sun, Sunset, Moon, MapPin, Wallet, ChevronRight, CheckCircle2, Circle } from 'lucide-react';
 import { getPlaceCoordinates } from '../data/zoneCoordinates';
 import { useAuth } from '../context/AuthContext';
+import { T, cssTransition, DUR } from '../motion';
 
 const DAY_COLORS = ['#1e88e5', '#3d9b4f', '#f2b70a', '#8b5cf6', '#ef4444'];
 const WEEKDAY_LABELS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -107,7 +108,7 @@ const ActiveRouteDashboard = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={T.base}
       className="liquid-glass"
       style={{ padding: '0', marginBottom: '35px', overflow: 'hidden', border: '2px solid var(--accent-gold)' }}
     >
@@ -149,7 +150,7 @@ const ActiveRouteDashboard = () => {
           <motion.div
             initial={false}
             animate={{ width: `${stats.progress}%` }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
+            transition={T.slow}
             style={{
               height: '100%', borderRadius: '99px',
               background: stats.progress === 100
@@ -177,7 +178,7 @@ const ActiveRouteDashboard = () => {
                 padding: '16px', borderRadius: '12px',
                 background: dayDone ? 'rgba(61, 155, 79, 0.06)' : 'var(--primary-dark)',
                 border: `1px solid ${dayDone ? 'var(--green)' : 'var(--card-border)'}`,
-                transition: 'all 0.3s'
+                transition: cssTransition(['background', 'border-color'])
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -215,7 +216,7 @@ const ActiveRouteDashboard = () => {
                           display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer',
                           padding: '6px 8px', borderRadius: '8px',
                           opacity: place.visited ? 0.6 : 1,
-                          transition: 'opacity 0.2s'
+                          transition: cssTransition(['opacity'], DUR.fast)
                         }}
                       >
                         {place.visited ? <CheckCircle2 size={14} style={{ color: 'var(--green)', flexShrink: 0 }} /> : <Circle size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />}

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { cssTransition, DUR } from '../motion';
 
 const WEEKDAY_INITIALS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 const MONTH_NAMES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
@@ -53,7 +54,7 @@ const DateCalendar = ({ value, min, max, rangeStart, onChange }) => {
     background: 'transparent', color: enabled ? 'var(--green-dark)' : 'var(--card-border)',
     cursor: enabled ? 'pointer' : 'not-allowed',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    transition: 'background 0.2s ease'
+    transition: cssTransition(['background'], DUR.fast)
   });
 
   return (
@@ -137,7 +138,7 @@ const DateCalendar = ({ value, min, max, rangeStart, onChange }) => {
                         : 'var(--text-main)',
                 opacity: disabled ? 0.6 : outsideMonth ? 0.45 : 1,
                 boxShadow: isToday && !selected ? 'inset 0 0 0 1.5px var(--green)' : 'none',
-                transition: 'background 0.15s ease, transform 0.15s ease'
+                transition: cssTransition(['background', 'transform'], DUR.fast)
               }}
               onMouseEnter={e => { if (!disabled && !selected) e.currentTarget.style.background = 'var(--card-highlight)'; }}
               onMouseLeave={e => {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Sun, Sunset, Moon, CheckCircle2, Circle } from 'lucide-react';
+import { cssTransition, DUR } from '../motion';
 
 const PERIOD_COLORS = {
   manha: '#1e88e5',
@@ -100,7 +101,7 @@ const ActiveRouteCard = ({ route, onToggleVisited, onEndRoute }) => {
                           display: 'flex', alignItems: 'center', gap: '14px',
                           padding: '12px 16px', background: place.visited ? 'rgba(61, 155, 79, 0.05)' : 'var(--primary-dark)',
                           borderRadius: '10px', border: `1px solid ${place.visited ? 'var(--green)' : 'var(--card-border)'}`,
-                          transition: 'all 0.2s', cursor: 'pointer'
+                          transition: cssTransition(['background', 'border-color'], DUR.fast), cursor: 'pointer'
                         }}
                         onClick={() => onToggleVisited(di, period, place.id)}
                       >

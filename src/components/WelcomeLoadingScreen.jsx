@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Map, MapPin, Route, Sparkles } from 'lucide-react';
+import { T } from '../motion';
 
 const WELCOME_TIPS = [
   'Gere um roteiro personalizado em menos de 1 minuto!',
@@ -25,34 +26,30 @@ const FloatingIcon = ({ Icon, style }) => (
 
 const WelcomeLoadingScreen = ({ userName, onComplete }) => {
   const [progress, setProgress] = useState(0);
-  const [tipIndex, setTipIndex] = useState(0);
   const [dots, setDots] = useState('');
+  // Uma dica só, sorteada na entrada: a tela dura menos de 1s, então rotacionar texto
+  // nesse intervalo só piscaria na cara de quem está lendo.
+  const [tip] = useState(() => WELCOME_TIPS[Math.floor(Math.random() * WELCOME_TIPS.length)]);
 
   useEffect(() => {
-    // Animated dots
     const dotsInterval = setInterval(() => {
       setDots(prev => (prev.length >= 3 ? '' : prev + '.'));
-    }, 400);
+    }, 300);
 
-    // Tip rotation
-    const tipInterval = setInterval(() => {
-      setTipIndex(prev => (prev + 1) % WELCOME_TIPS.length);
-    }, 1200);
-
-    // Progress bar
+    // Barra de progresso: ~900ms no total. É uma transição de entrada, não uma espera
+    // real — o login mockado já resolveu antes desta tela aparecer.
     let p = 0;
     const progressInterval = setInterval(() => {
-      p += 2;
+      p += 5;
       setProgress(Math.min(p, 100));
       if (p >= 100) {
         clearInterval(progressInterval);
-        setTimeout(() => onComplete?.(), 300);
+        setTimeout(() => onComplete?.(), 140);
       }
-    }, 30);
+    }, 40);
 
     return () => {
       clearInterval(dotsInterval);
-      clearInterval(tipInterval);
       clearInterval(progressInterval);
     };
   }, []);
@@ -61,7 +58,7 @@ const WelcomeLoadingScreen = ({ userName, onComplete }) => {
     <motion.div
       initial={{ opacity: 1 }}
       exit={{ opacity: 0, scale: 1.02 }}
-      transition={{ duration: 0.4 }}
+      transition={T.fast}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
         background: 'var(--primary-dark)',
@@ -177,18 +174,14 @@ const WelcomeLoadingScreen = ({ userName, onComplete }) => {
           }}>
             <Sparkles size={16} color="#fff" />
           </div>
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={tipIndex}
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.3 }}
-              style={{ fontSize: '0.83rem', color: 'var(--text-muted)', fontWeight: 500, lineHeight: 1.4 }}
-            >
-              💡 {WELCOME_TIPS[tipIndex]}
-            </motion.p>
-          </AnimatePresence>
+          <motion.p
+            initial={{ opacity: 0, x: 8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ ...T.base, delay: 0.12 }}
+            style={{ fontSize: '0.83rem', color: 'var(--text-muted)', fontWeight: 500, lineHeight: 1.4 }}
+          >
+            💡 {tip}
+          </motion.p>
         </div>
 
       </div>

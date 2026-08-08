@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { cssTransition, DUR } from '../motion';
 
 const CATEGORIES = ['Alimentação', 'Transporte', 'Atrações', 'Compras', 'Hospedagem', 'Outros'];
 const CURRENCIES = ['BRL', 'USD', 'ARS', 'PYG'];
@@ -110,7 +111,7 @@ const AddExpenseModal = ({ isOpen, onClose, onAdd }) => {
                         border: `1px solid ${category === cat ? 'var(--green)' : 'var(--card-border)'}`,
                         background: category === cat ? 'var(--green-dark)' : 'var(--secondary-dark)',
                         color: category === cat ? '#fff' : 'var(--text-main)',
-                        transition: 'all 0.2s'
+                        transition: cssTransition(['background', 'border-color'], DUR.fast)
                       }}
                     >
                       {cat}

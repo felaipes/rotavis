@@ -1,42 +1,46 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Brain, Thermometer, Navigation, Route, Sparkles } from 'lucide-react';
+import { T, DUR, stagger, cssTransition } from '../motion';
 
+// A rota já está pronta quando esta tela aparece — ela existe para dar contexto do que
+// foi levado em conta, não para simular processamento. Por isso os passos são curtos:
+// ~1,7s no total, o suficiente para ler o passo atual sem virar espera.
 const LOADING_STEPS = [
   {
     icon: Brain,
     title: 'Analisando suas preferências...',
     subtitle: 'Processando seu perfil de viajante',
     color: 'var(--green-dark)',
-    duration: 1400,
+    duration: 420,
   },
   {
     icon: Thermometer,
     title: 'Consultando condições climáticas...',
     subtitle: 'Verificando previsão dos próximos dias em Foz',
     color: 'var(--blue)',
-    duration: 1200,
+    duration: 320,
   },
   {
     icon: Navigation,
     title: 'Calculando rotas otimizadas...',
     subtitle: 'Agrupando locais por proximidade e período',
     color: '#8b5cf6',
-    duration: 1300,
+    duration: 340,
   },
   {
     icon: MapPin,
     title: 'Selecionando os melhores locais...',
     subtitle: 'Cruzando avaliações, horários e seu orçamento',
     color: 'var(--accent-gold)',
-    duration: 1100,
+    duration: 300,
   },
   {
     icon: Sparkles,
     title: 'Finalizando seu roteiro perfeito...',
     subtitle: 'Tudo pronto para uma experiência inesquecível!',
     color: 'var(--green)',
-    duration: 800,
+    duration: 280,
   },
 ];
 
@@ -84,7 +88,7 @@ const AIProgressBar = ({ progress, color }) => (
     <motion.div
       initial={{ width: 0 }}
       animate={{ width: `${progress}%` }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
+      transition={T.base}
       style={{
         height: '100%',
         borderRadius: '99px',
@@ -166,7 +170,8 @@ const RouteLoadingScreen = ({ onComplete }) => {
             advance();
           } else {
             setOverallProgress(100);
-            setTimeout(() => onComplete?.(), 350);
+            // Só o tempo de a barra chegar visualmente a 100% antes de sair.
+            setTimeout(() => onComplete?.(), 160);
           }
         }
       }, intervalMs);
@@ -183,8 +188,8 @@ const RouteLoadingScreen = ({ onComplete }) => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0, scale: 0.97 }}
-      transition={{ duration: 0.35 }}
+      exit={{ opacity: 0, scale: 0.98 }}
+      transition={T.fast}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
         background: 'var(--primary-dark)',
@@ -225,10 +230,12 @@ const RouteLoadingScreen = ({ onComplete }) => {
           <AnimatePresence mode="wait">
             <motion.div
               key={currentStepIndex}
-              initial={{ opacity: 0, scale: 0.6 }}
+              initial={{ opacity: 0, scale: 0.7 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.6 }}
-              transition={{ duration: 0.25 }}
+              exit={{ opacity: 0, scale: 0.7 }}
+              // Passo dura ~300ms; com mode="wait" a saída + entrada precisam caber
+              // dentro disso, senão o ícone atrasa em relação ao texto do passo.
+              transition={{ duration: DUR.instant }}
               style={{
                 position: 'absolute', inset: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -251,10 +258,10 @@ const RouteLoadingScreen = ({ onComplete }) => {
           <AnimatePresence mode="wait">
             <motion.div
               key={`title-${currentStepIndex}`}
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.25 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: DUR.instant }}
             >
               <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '6px' }}>
                 {currentStepIndex < LOADING_STEPS.length ? currentStep.title : LOADING_STEPS[LOADING_STEPS.length - 1].title}
@@ -307,7 +314,7 @@ const RouteLoadingScreen = ({ onComplete }) => {
                 key={i}
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: isPending ? 0.35 : 1, x: 0 }}
-                transition={{ delay: i * 0.07, duration: 0.3 }}
+                transition={stagger(i)}
                 style={{ display: 'flex', alignItems: 'center', gap: '12px' }}
               >
                 {/* Step indicator */}
@@ -318,7 +325,7 @@ const RouteLoadingScreen = ({ onComplete }) => {
                     : isActive ? `${step.color}18` : 'var(--card-highlight)',
                   border: `1.5px solid ${isDone ? 'var(--green)' : isActive ? step.color : 'var(--card-border)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'all 0.3s ease',
+                  transition: cssTransition(['background', 'border-color', 'color']),
                 }}>
                   {isDone ? (
                     <motion.svg

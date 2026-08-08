@@ -4,6 +4,7 @@ import { Trophy, Search, Plus, Minus, MapPin, Lock, Check, RotateCcw } from 'luc
 import { places, categories } from '../data';
 import { useCheckIns } from '../context/CheckInContext';
 import { TIERS, ACHIEVEMENT_GROUPS } from '../data/achievements';
+import { T, fadeUp, stagger } from '../motion';
 
 const StatTile = ({ label, value, sub }) => (
   <div style={{
@@ -16,7 +17,7 @@ const StatTile = ({ label, value, sub }) => (
   </div>
 );
 
-const TrophyCard = ({ achievement }) => {
+const TrophyCard = ({ achievement, index }) => {
   const tier = TIERS[achievement.tier];
   const Icon = achievement.icon;
   const { unlocked, current, goal, percent } = achievement;
@@ -25,6 +26,7 @@ const TrophyCard = ({ achievement }) => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={stagger(index)}
       style={{
         border: `1px solid ${unlocked ? tier.color : 'var(--card-border)'}`,
         background: unlocked ? tier.soft : 'var(--card-bg)',
@@ -64,7 +66,7 @@ const TrophyCard = ({ achievement }) => {
           <motion.div
             initial={false}
             animate={{ width: `${percent}%` }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
+            transition={T.slow}
             style={{ height: '100%', borderRadius: '99px', background: unlocked ? tier.color : 'var(--green)' }}
           />
         </div>
@@ -98,7 +100,7 @@ const Conquistas = () => {
 
   return (
     <div className="container" style={{ padding: '40px 20px 60px', maxWidth: '960px', minHeight: '80vh' }}>
-      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+      <motion.div variants={fadeUp} initial="initial" animate="animate">
         <h1 style={{ fontSize: 'clamp(1.6rem, 5vw, 2.2rem)', fontWeight: 800, marginBottom: '6px' }} className="text-gradient">
           Suas <span className="gold-gradient">Conquistas</span>
         </h1>
@@ -118,7 +120,7 @@ const Conquistas = () => {
             <motion.div
               initial={false}
               animate={{ width: `${stats.percent}%` }}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
+              transition={T.slow}
               style={{
                 height: '100%', borderRadius: '99px',
                 background: 'linear-gradient(90deg, var(--blue), var(--green), var(--accent-gold))'
@@ -153,7 +155,7 @@ const Conquistas = () => {
                 <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{group.hint}</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: '12px' }}>
-                {items.map(a => <TrophyCard key={a.id} achievement={a} />)}
+                {items.map((a, i) => <TrophyCard key={a.id} achievement={a} index={i} />)}
               </div>
             </div>
           );

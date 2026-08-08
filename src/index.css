@@ -21,6 +21,30 @@
   --card-border: #e6e0cf;
   --card-highlight: #f2eee0;
   --card-shadow: 0 4px 10px rgba(27, 94, 60, 0.08);
+
+  /* Movimento — mesmos valores de src/motion.js, para CSS e Framer Motion
+     não divergirem. Ver o comentário daquele arquivo para os princípios. */
+  --dur-instant: 100ms;
+  --dur-fast: 160ms;
+  --dur-base: 220ms;
+  --dur-slow: 320ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Acessibilidade: quem pede menos movimento no sistema recebe a interface sem
+   animação, mas ainda funcional (as transições viram instantâneas, não somem). */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 * {
@@ -42,13 +66,36 @@ a {
   color: inherit;
 }
 
+/* Placeholder de carregamento: ocupa o espaço final do conteúdo enquanto ele não
+   chega, para a página não "pular" quando a imagem carrega. */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--card-highlight);
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  animation: skeleton-sweep 1.1s var(--ease-in-out) infinite;
+}
+
+@keyframes skeleton-sweep {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 /* Solid Elements (Replacing Liquid Glass) */
 .liquid-glass {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: 12px;
   box-shadow: var(--card-shadow);
-  transition: all 0.3s ease;
+  transition: background var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
 }
 
 .liquid-glass:hover {
@@ -71,7 +118,7 @@ a {
   border-radius: 8px;
   padding: 12px 28px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
   box-shadow: 0 4px 8px rgba(27, 94, 60, 0.25);
   display: inline-flex;
   align-items: center;
@@ -85,6 +132,13 @@ a {
   box-shadow: 0 6px 12px rgba(27, 94, 60, 0.35);
 }
 
+/* Feedback de toque: o botão "afunda" ao ser pressionado. */
+.btn-gold:active,
+.btn-glass:active {
+  transform: translateY(1px) scale(0.985);
+  transition-duration: var(--dur-instant);
+}
+
 .btn-glass {
   background: var(--secondary-dark);
   border: 1px solid var(--card-border);
@@ -93,7 +147,7 @@ a {
   border-radius: 8px;
   padding: 10px 20px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 }
 
 .btn-glass:hover,
@@ -105,7 +159,7 @@ a {
 
 /* Opções do assistente de roteiro: resposta tátil ao passar o mouse/tocar, para reforçar que são clicáveis. */
 .wizard-option {
-  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
 }
 
 .wizard-option:hover {
@@ -115,6 +169,7 @@ a {
 
 .wizard-option:active {
   transform: translateY(-1px) scale(1.01);
+  transition-duration: var(--dur-instant);
 }
 
 .wizard-option.active {

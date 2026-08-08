@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Route, ChevronDown, ChevronUp, Sun, Sunset, Moon, MapPin, Wallet, Map as MapIcon } from 'lucide-react';
 import { getPlaceCoordinates } from '../data/zoneCoordinates';
+import { T, cssTransition, DUR } from '../motion';
 
 const FOZ_CENTER = [-25.5478, -54.5658];
 
@@ -166,7 +167,7 @@ const SavedRouteCard = ({ route, index }) => {
           width: '100%', background: 'none', border: 'none', cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: '14px',
           padding: '16px 18px', textAlign: 'left',
-          transition: 'background 0.2s ease',
+          transition: cssTransition(['background'], DUR.fast),
         }}
         onMouseEnter={e => e.currentTarget.style.background = 'var(--card-highlight)'}
         onMouseLeave={e => e.currentTarget.style.background = 'none'}
@@ -198,7 +199,7 @@ const SavedRouteCard = ({ route, index }) => {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            transition={T.inOut}
             style={{ overflow: 'hidden' }}
           >
             <div style={{ padding: '0 18px 20px', borderTop: '1px solid var(--card-border)' }}>
@@ -253,7 +254,7 @@ const SavedRouteCard = ({ route, index }) => {
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.3 }}
+                            transition={T.base}
                           >
                             <RouteMap allPlaces={allPlaces} />
                           </motion.div>
