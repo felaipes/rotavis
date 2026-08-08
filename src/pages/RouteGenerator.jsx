@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { places } from '../data';
-import { Calendar, CheckCircle2, ChevronRight, Sun, Sunset, Moon, Briefcase, Map as MapIcon, Wallet, Star, Coffee, Tent, History, Utensils, GlassWater, Car, Footprints, Download, X, Activity, Rocket, Clock, Timer, Hourglass, MapPinned, Users, Heart, Route } from 'lucide-react';
+import { Calendar, CheckCircle2, ChevronRight, Sun, Sunset, Moon, Briefcase, Map as MapIcon, Wallet, Star, Coffee, Tent, History, Utensils, GlassWater, Car, Footprints, Download, X, Activity, Rocket, Clock, Timer, Hourglass, MapPinned, Users, Heart, Route, Plus, Minus } from 'lucide-react';
 
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -8,6 +8,7 @@ import PlaceCard from '../components/PlaceCard';
 import RouteMapView, { DAY_COLORS, DayRouteMap } from '../components/RouteMapView';
 import DateCalendar, { toISODate, addDaysISO } from '../components/DateCalendar';
 import CountryFlag from '../components/CountryFlag';
+import StateSelect from '../components/StateSelect';
 import { T, wizardStep, fadeUp, stagger } from '../motion';
 import { getPlaceCoordinates, totalRouteDistanceKm, formatDistanceKm, haversineDistanceKm } from '../data/zoneCoordinates';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
@@ -98,6 +99,11 @@ const summarizeItinerary = (dayPlans) => {
   const highlight = stops.find(p => p.category === 'passeios') || stops[0];
   return { stopCount: stops.length, cost, km, highlight: highlight?.name || '' };
 };
+// Grupos cujo tamanho já está no nome — não faz sentido perguntar quantas pessoas são.
+const FIXED_GROUP_SIZES = { solo: 1, casal: 2 };
+// Chute inicial do contador para os grupos de tamanho aberto, só para não começar em 1.
+const DEFAULT_GROUP_SIZES = { familia: 4, amigos: 3, corporativo: 4, colaboradores: 3 };
+
 const PERIOD_LABELS = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' };
 const DURATION_LABELS = { ate2h: 'até 2 horas', '2a4h': '2 a 4 horas', mais4h: 'mais de 4 horas' };
 const TOTAL_INPUT_STEPS = 8;
@@ -256,6 +262,21 @@ const RouteGenerator = () => {
   const [startDay, setStartDay] = useState(new Date().getDay());
   const [arrivalDate, setArrivalDate] = useState('');
   const [departureDate, setDepartureDate] = useState('');
+  // Quantas pessoas viajam ao todo (incluindo quem está preenchendo). O orçamento total
+  // é dividido por esse número e pelos dias, porque os preços do catálogo são por pessoa.
+  const [travelers, setTravelers] = useState(1);
+
+  // Solo/casal avançam direto; os demais param para informar quantas pessoas são.
+  const handleGroupTypeSelect = (groupId) => {
+    setProfile(prev => ({ ...prev, groupType: groupId }));
+    const fixed = FIXED_GROUP_SIZES[groupId];
+    if (fixed) {
+      setTravelers(fixed);
+      setStep(4);
+    } else {
+      setTravelers(DEFAULT_GROUP_SIZES[groupId] || 2);
+    }
+  };
   const todayISO = toISODate(new Date());
 
   // Deriva o dia da semana da chegada e a quantidade de dias (contagem inclusiva: chegada e
@@ -608,6 +629,8 @@ const RouteGenerator = () => {
         manha: [mCafe, mPasseio].filter(Boolean),
         tarde: [tRest, tPasseio].filter(Boolean),
         noite: [nLugar].filter(Boolean),
+        // Ambos por pessoa, como os preços do catálogo. A tela multiplica pelo número
+        // de viajantes quando precisa mostrar o valor do grupo.
         dailyBudget,
         estimatedCost
       });
@@ -617,10 +640,13 @@ const RouteGenerator = () => {
   };
 
   const generateRoute = () => {
-    // O orçamento total, dividido pelos dias, faz o papel que a pergunta de gasto diário
-    // fazia antes: dá o nível de preço que o scorePlaces usa para ordenar os lugares.
-    const dailyBudget = profile.totalBudget && days > 0 ? Number(profile.totalBudget) / days : null;
-    const scoringProfile = { ...profile, budget: budgetTierFromDaily(dailyBudget) };
+    // Os preços do catálogo são por pessoa ("~R$ 90 / pessoa", "R$ 30 / ingresso"), então
+    // o orçamento total precisa ser dividido pelos dias E pelo número de viajantes para
+    // virar o teto de gasto de uma pessoa num dia — que é com o que os preços se comparam.
+    const dailyBudget = profile.totalBudget && days > 0 && travelers > 0
+      ? Number(profile.totalBudget) / days / travelers
+      : null;
+    const scoringProfile = { ...profile, travelers, budget: budgetTierFromDaily(dailyBudget) };
     const scoredPlaces = scorePlaces(places, scoringProfile);
 
     // Duas opções para a pessoa escolher: a segunda evita os lugares da primeira.
@@ -762,23 +788,13 @@ const RouteGenerator = () => {
               {profile.originCountry === 'brasil' && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-                  style={{ width: '100%', maxWidth: '500px', display: 'flex', flexDirection: 'column', gap: '14px' }}
+                  style={{ width: '100%', maxWidth: '560px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}
                 >
-                  <label style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-muted)' }}>Qual estado?</label>
-                  <select
+                  <label style={{ alignSelf: 'flex-start', fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-muted)' }}>Qual estado?</label>
+                  <StateSelect
                     value={profile.originState || ''}
-                    onChange={(e) => setProfile({ ...profile, originState: e.target.value, origin: e.target.value })}
-                    className="input-field"
-                    style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', background: 'var(--primary-dark)', color: 'var(--text-main)', fontSize: '1rem', appearance: 'auto', border: '1px solid var(--card-border)', cursor: 'pointer' }}
-                  >
-                    <option value="">Selecione seu estado...</option>
-                    {['Acre','Alagoas','Amapá','Amazonas','Bahia','Ceará','Distrito Federal','Espírito Santo','Goiás','Maranhão',
-                      'Mato Grosso','Mato Grosso do Sul','Minas Gerais','Pará','Paraíba','Paraná','Pernambuco','Piauí',
-                      'Rio de Janeiro','Rio Grande do Norte','Rio Grande do Sul','Rondônia','Roraima',
-                      'Santa Catarina','São Paulo','Sergipe','Tocantins'].map(s => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
+                    onSelect={(uf) => setProfile({ ...profile, originState: uf, origin: uf })}
+                  />
                   {profile.originState && (
                     <motion.button
                       initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -846,7 +862,7 @@ const RouteGenerator = () => {
                 ).map(g => (
                   <button
                     key={g.id}
-                    onClick={() => { setProfile({...profile, groupType: g.id}); setStep(4); }}
+                    onClick={() => handleGroupTypeSelect(g.id)}
                     className={`btn-glass wizard-option ${profile.groupType === g.id ? 'active' : ''}`}
                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '25px' }}
                   >
@@ -855,6 +871,47 @@ const RouteGenerator = () => {
                   </button>
                 ))}
               </div>
+
+              {/* Sozinho e casal já dizem quantas pessoas são, então avançam direto. Nos
+                  demais o número é aberto, e ele importa: o orçamento é dividido por pessoa. */}
+              {profile.groupType && !FIXED_GROUP_SIZES[profile.groupType] && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', width: '100%' }}
+                >
+                  <label style={{ fontWeight: 600, fontSize: '0.95rem' }}>Quantas pessoas no total?</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <button
+                      onClick={() => setTravelers(n => Math.max(1, n - 1))}
+                      disabled={travelers <= 1}
+                      aria-label="Uma pessoa a menos"
+                      className="btn-glass icon-btn"
+                      style={{ borderRadius: '50%', opacity: travelers <= 1 ? 0.4 : 1 }}
+                    >
+                      <Minus size={18} />
+                    </button>
+                    <span style={{ fontSize: '2rem', fontWeight: 800, minWidth: '54px', textAlign: 'center', color: 'var(--green-dark)' }}>
+                      {travelers}
+                    </span>
+                    <button
+                      onClick={() => setTravelers(n => Math.min(20, n + 1))}
+                      disabled={travelers >= 20}
+                      aria-label="Uma pessoa a mais"
+                      className="btn-glass icon-btn"
+                      style={{ borderRadius: '50%', opacity: travelers >= 20 ? 0.4 : 1 }}
+                    >
+                      <Plus size={18} />
+                    </button>
+                  </div>
+                  <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', textAlign: 'center' }}>
+                    Contando você. Usamos para dividir o orçamento por pessoa.
+                  </p>
+                  <button onClick={() => setStep(4)} className="btn-gold" style={{ padding: '13px 32px' }}>
+                    Próximo <ChevronRight size={18} />
+                  </button>
+                </motion.div>
+              )}
+
               <button onClick={() => setStep(2)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
             </motion.div>
           )}
@@ -1081,7 +1138,8 @@ const RouteGenerator = () => {
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Qual o orçamento total da sua viagem?</h2>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '-15px', textAlign: 'center' }}>
-                Dividimos esse valor entre os {days} {days === 1 ? 'dia' : 'dias'} do seu roteiro para sugerir lugares que cabem no bolso.
+                O valor de todo o grupo. Dividimos pelos {days} {days === 1 ? 'dia' : 'dias'}
+                {travelers > 1 && <> e pelas {travelers} pessoas</>} para sugerir lugares que cabem no bolso.
               </p>
               <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
                 {[500, 1000, 2000, 3500].map(val => (
@@ -1109,8 +1167,16 @@ const RouteGenerator = () => {
                 />
               </div>
               {profile.totalBudget > 0 && (
-                <p style={{ color: 'var(--green-dark)', fontWeight: 600 }}>
+                <p style={{ color: 'var(--green-dark)', fontWeight: 600, textAlign: 'center', lineHeight: 1.6 }}>
                   ≈ R$ {Math.round(profile.totalBudget / days).toLocaleString('pt-BR')} por dia
+                  {travelers > 1 && (
+                    <>
+                      <br />
+                      <span style={{ fontWeight: 500, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                        ou R$ {Math.round(profile.totalBudget / days / travelers).toLocaleString('pt-BR')} por pessoa, por dia
+                      </span>
+                    </>
+                  )}
                 </p>
               )}
               <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
@@ -1171,7 +1237,8 @@ const RouteGenerator = () => {
                       </div>
                       <div style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
                         {s.stopCount} paradas · {formatDistanceKm(s.km)}<br />
-                        ~R$ {Math.round(s.cost).toLocaleString('pt-BR')} no total<br />
+                        ~R$ {Math.round(s.cost * travelers).toLocaleString('pt-BR')} no total
+                        {travelers > 1 && ` (${travelers} pessoas)`}<br />
                         Destaque: {s.highlight}
                       </div>
                     </button>
@@ -1234,14 +1301,22 @@ const RouteGenerator = () => {
                         </div>
                       )}
                       {dayPlan.dailyBudget != null && (
-                        <div style={{
-                          display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600,
-                          padding: '6px 14px', borderRadius: '99px',
-                          background: dayPlan.estimatedCost > dayPlan.dailyBudget ? 'rgba(220, 38, 38, 0.1)' : 'var(--accent-gold-glow)',
-                          color: dayPlan.estimatedCost > dayPlan.dailyBudget ? '#dc2626' : 'var(--green-dark)'
-                        }}>
+                        <div
+                          title={`~R$ ${Math.round(dayPlan.estimatedCost).toLocaleString('pt-BR')} por pessoa`}
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600,
+                            padding: '6px 14px', borderRadius: '99px',
+                            background: dayPlan.estimatedCost > dayPlan.dailyBudget ? 'rgba(220, 38, 38, 0.1)' : 'var(--accent-gold-glow)',
+                            color: dayPlan.estimatedCost > dayPlan.dailyBudget ? '#dc2626' : 'var(--green-dark)'
+                          }}
+                        >
                           <Wallet size={13} />
-                          ~R$ {Math.round(dayPlan.estimatedCost).toLocaleString('pt-BR')} de R$ {Math.round(dayPlan.dailyBudget).toLocaleString('pt-BR')}
+                          ~R$ {Math.round(dayPlan.estimatedCost * travelers).toLocaleString('pt-BR')} de R$ {Math.round(dayPlan.dailyBudget * travelers).toLocaleString('pt-BR')}
+                          {travelers > 1 && (
+                            <span style={{ fontWeight: 500, opacity: 0.75 }}>
+                              · {travelers} pessoas
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>
