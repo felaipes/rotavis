@@ -9,6 +9,7 @@ import RouteMapView, { DAY_COLORS, DayRouteMap } from '../components/RouteMapVie
 import DateCalendar, { toISODate, addDaysISO } from '../components/DateCalendar';
 import CountryFlag from '../components/CountryFlag';
 import StateSelect from '../components/StateSelect';
+import { useRouteHistory } from '../hooks/useRouteHistory';
 import { T, wizardStep, fadeUp, stagger } from '../motion';
 import { getPlaceCoordinates, totalRouteDistanceKm, formatDistanceKm, haversineDistanceKm } from '../data/zoneCoordinates';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -74,6 +75,21 @@ const flattenStops = (dayPlans) =>
   dayPlans.flatMap(d => [...(d.manha || []), ...(d.tarde || []), ...(d.noite || [])].filter(Boolean));
 
 const collectPlaceIds = (dayPlans) => flattenStops(dayPlans).map(p => p.id);
+
+// Só os campos que as telas de leitura usam. Guardar o objeto inteiro do lugar encheria
+// o localStorage com descrição, galeria de fotos e tags que ninguém lê ali.
+const trimPlace = (p) => ({
+  id: p.id, name: p.name, category: p.category, address: p.address,
+  zone: p.zone, image: p.image, avgPrice: p.avgPrice, entryFee: p.entryFee, icon: p.icon
+});
+
+const serializeDays = (dayPlans) => dayPlans.map(d => ({
+  day: d.day,
+  weekday: d.weekday,
+  manha: (d.manha || []).map(trimPlace),
+  tarde: (d.tarde || []).map(trimPlace),
+  noite: (d.noite || []).map(trimPlace)
+}));
 
 // Faixas de gasto por dia usadas pelo scorePlaces. Antes vinham de uma pergunta própria;
 // agora saem do orçamento total dividido pelos dias, para não perguntar dinheiro duas vezes.
@@ -229,6 +245,28 @@ const RouteGenerator = () => {
   const [showNps, setShowNps] = useState(false);
   const [npsScore, setNpsScore] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Todo roteiro gerado entra no histórico automaticamente, para a pessoa reencontrá-lo
+  // depois em "Meus Roteiros" mesmo sem salvar nem estar logada.
+  const { saveRoute: saveToHistory } = useRouteHistory();
+  // Uma geração = uma entrada. Trocar entre o roteiro A e o B atualiza a mesma entrada
+  // em vez de criar outra, porque continua sendo a mesma viagem planejada.
+  const generationIdRef = useRef(null);
+
+  useEffect(() => {
+    if (step !== 9 || !route || !generationIdRef.current) return;
+    saveToHistory({
+      id: generationIdRef.current,
+      name: `Roteiro em Foz (${days} ${days === 1 ? 'dia' : 'dias'})`,
+      date: (arrivalDate || toISODate(new Date())),
+      createdAt: new Date().toISOString(),
+      option: String.fromCharCode(65 + selectedRouteIndex),
+      travelers,
+      totalBudget: profile.totalBudget ?? null,
+      transport: profile.transport,
+      days: serializeDays(route)
+    });
+  }, [step, route, selectedRouteIndex, saveToHistory, days, arrivalDate, travelers, profile.totalBudget, profile.transport]);
 
   const handlePreferenceToggle = (pref) => {
     setProfile(prev => {
@@ -560,6 +598,7 @@ const RouteGenerator = () => {
 
     setRouteOptions([optionA, optionB]);
     setSelectedRouteIndex(0);
+    generationIdRef.current = Date.now();
 
     // Track the generated route for the admin observatory
     trackRouteGenerated(scoringProfile, optionA, days, startDay);

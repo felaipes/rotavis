@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
-import { Map, MapPinned, Menu, X, User, LogOut, LogIn, Wallet, Route as RouteIcon, Trophy } from 'lucide-react';
+import { Map, MapPinned, Menu, X, User, LogOut, LogIn, Wallet, Route as RouteIcon, Trophy, ListChecks } from 'lucide-react';
 import Home from './pages/Home';
 import Mapa from './pages/Mapa';
 import RouteGenerator from './pages/RouteGenerator';
@@ -10,6 +10,7 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import SuaRota from './pages/SuaRota';
 import Conquistas from './pages/Conquistas';
+import MeusRoteiros from './pages/MeusRoteiros';
 import FallsBackground from './components/FallsBackground';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CheckInProvider, useCheckIns } from './context/CheckInContext';
@@ -91,6 +92,10 @@ const Header = () => {
             Gerar Rota
           </Link>
           <Link to="/catalogo" className={`btn-glass ${location.pathname === '/catalogo' ? 'active' : ''}`}>Catálogo</Link>
+          <Link to="/meus-roteiros" className={`btn-glass ${location.pathname === '/meus-roteiros' ? 'active' : ''}`}>
+            <ListChecks size={18} style={{ display: 'inline', marginRight: '5px' }} />
+            Meus Roteiros
+          </Link>
           {user?.activeRoute && (
             <Link to="/sua-rota" className={`btn-glass ${location.pathname === '/sua-rota' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
               <RouteIcon size={18} />
@@ -202,6 +207,10 @@ const Header = () => {
               <Link to="/catalogo" onClick={closeMenu} className={`btn-glass ${location.pathname === '/catalogo' ? 'active' : ''}`} style={{ textAlign: 'center' }}>
                 Catálogo
               </Link>
+              <Link to="/meus-roteiros" onClick={closeMenu} className={`btn-glass ${location.pathname === '/meus-roteiros' ? 'active' : ''}`} style={{ textAlign: 'center' }}>
+                <ListChecks size={18} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'text-bottom' }} />
+                Meus Roteiros
+              </Link>
               {user?.activeRoute && (
                 <Link to="/sua-rota" onClick={closeMenu} className={`btn-glass ${location.pathname === '/sua-rota' ? 'active' : ''}`} style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                   <RouteIcon size={18} style={{ verticalAlign: 'text-bottom' }} />
@@ -290,6 +299,7 @@ const AnimatedRoutes = () => {
         <Route path="/mapa" element={<Mapa />} />
         <Route path="/rota" element={<RouteGenerator />} />
         <Route path="/conquistas" element={<Conquistas />} />
+        <Route path="/meus-roteiros" element={<MeusRoteiros />} />
         <Route path="/login" element={<Login />} />
         <Route path="/cadastro" element={<Register />} />
         <Route path="/perfil" element={<Profile />} />
