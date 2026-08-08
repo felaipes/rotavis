@@ -108,14 +108,17 @@ const PERIOD_LABELS = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' };
 const DURATION_LABELS = { ate2h: 'até 2 horas', '2a4h': '2 a 4 horas', mais4h: 'mais de 4 horas' };
 const TOTAL_INPUT_STEPS = 8;
 
-// Fundo do questionário: um mapa em movimento por trás das perguntas. Fixo (não rola
-// com a página), atrás de todo o conteúdo, sem capturar cliques.
+// Fundo do questionário: as Cataratas por trás das perguntas. Fixo (não rola com a
+// página), atrás de todo o conteúdo, sem capturar cliques.
 //
-// Duas camadas por um motivo de desempenho: a textura de baixo é um <pattern> repetido
-// pela viewport inteira e fica parada — animar conteúdo dentro de um pattern obriga o
-// navegador a rasterizar o ladrilho todo a cada quadro. O movimento fica só na camada de
-// cima, que tem meia dúzia de formas: tracejado correndo pela rota, marcador pulsando e
-// um ponto percorrendo o trajeto.
+// Três camadas:
+// 1. a foto das Cataratas, desfocada e com uma deriva lenta de zoom, que dá o movimento;
+// 2. um véu creme por cima, mais forte no topo, onde ficam título e subtítulo — texto
+//    escuro sobre foto de água ao sol não tem contraste suficiente para ser lido;
+// 3. o traçado de rota animado, agora em branco para aparecer sobre a foto.
+//
+// O desfoque não é só estética: é o que mantém o fundo como cenário em vez de disputar
+// atenção com o formulário, e de quebra some com artefato de compressão da imagem.
 const MAP_ROUTES = [
   { id: 'rota-bg-1', d: 'M-40,620 C220,560 300,380 520,340 C740,300 820,150 1240,90', flowClass: 'map-route-flow', dur: '17s' },
   { id: 'rota-bg-2', d: 'M-40,180 C180,240 260,300 420,300 C620,300 700,470 1240,520', flowClass: 'map-route-flow map-route-flow--slow', dur: '23s' },
@@ -131,37 +134,31 @@ const MAP_WAYPOINTS = [
   { cx: 1010, cy: 470, delay: '1.7s' }
 ];
 
-const SAND = '#b8a888';
+// Traçado desenhado sobre a foto: branco, porque sobre a água e a mata o tom de areia
+// que servia no fundo creme sumiria.
+const ROUTE_INK = '#ffffff';
 
 const MapBackground = () => {
   // SMIL (<animateMotion>) não obedece à media query de movimento reduzido, então quem
-  // pediu menos movimento recebe só a textura parada.
+  // pediu menos movimento recebe a foto parada, sem deriva e sem traçado correndo.
   const reduceMotion = useReducedMotion();
 
   const layerStyle = { position: 'fixed', inset: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none' };
 
   return (
-    <>
-      <svg aria-hidden="true" style={layerStyle}>
-        <defs>
-          <pattern id="rotavisMapPattern" width="420" height="420" patternUnits="userSpaceOnUse">
-            <path d="M10,400 C90,360 110,260 190,240 C270,220 290,140 410,70" fill="none" stroke={SAND} strokeWidth="2" strokeDasharray="6 10" opacity="0.4" />
-            <path d="M420,300 C360,320 340,220 260,210" fill="none" stroke={SAND} strokeWidth="2" strokeDasharray="6 10" opacity="0.3" />
-            <circle cx="10" cy="400" r="5" fill={SAND} opacity="0.45" />
-            <circle cx="190" cy="240" r="5" fill={SAND} opacity="0.5" />
-            <circle cx="410" cy="70" r="5" fill={SAND} opacity="0.45" />
-            <circle cx="260" cy="210" r="4" fill={SAND} opacity="0.4" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#rotavisMapPattern)" />
-      </svg>
+    <div aria-hidden="true" style={{ ...layerStyle, overflow: 'hidden' }}>
+      <img
+        src="/hero_cataratas.jpg"
+        alt=""
+        className={`falls-bg ${reduceMotion ? '' : 'falls-bg--drifting'}`}
+      />
+      <div className="falls-scrim" />
 
       {!reduceMotion && (
         <svg
-          aria-hidden="true"
           viewBox="0 0 1200 800"
           preserveAspectRatio="xMidYMid slice"
-          style={layerStyle}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
         >
           <g className="map-bg-layer">
             {MAP_ROUTES.map(r => (
@@ -170,11 +167,11 @@ const MapBackground = () => {
                 id={r.id}
                 d={r.d}
                 fill="none"
-                stroke={SAND}
+                stroke={ROUTE_INK}
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeDasharray="10 14"
-                opacity="0.5"
+                opacity="0.45"
                 className={r.flowClass}
               />
             ))}
@@ -185,7 +182,7 @@ const MapBackground = () => {
                 cx={w.cx}
                 cy={w.cy}
                 r="5"
-                fill={SAND}
+                fill={ROUTE_INK}
                 className="map-waypoint"
                 style={{ animationDelay: w.delay }}
               />
@@ -193,7 +190,7 @@ const MapBackground = () => {
 
             {/* Ponto percorrendo cada rota, como o "você está aqui" andando pelo trajeto. */}
             {MAP_ROUTES.map(r => (
-              <circle key={`${r.id}-dot`} r="5.5" fill={SAND} opacity="0.75">
+              <circle key={`${r.id}-dot`} r="5.5" fill={ROUTE_INK} opacity="0.7">
                 <animateMotion dur={r.dur} repeatCount="indefinite" rotate="auto">
                   <mpath href={`#${r.id}`} />
                 </animateMotion>
@@ -202,7 +199,7 @@ const MapBackground = () => {
           </g>
         </svg>
       )}
-    </>
+    </div>
   );
 };
 
@@ -212,7 +209,9 @@ const WizardProgress = ({ step }) => {
   const percent = Math.round((step / TOTAL_INPUT_STEPS) * 100);
   return (
     <div style={{ maxWidth: '420px', margin: '0 auto 30px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+      {/* text-main em vez de text-muted: este texto fica sobre a foto das Cataratas, e o
+          tom apagado não alcança contraste AA ali (ver .falls-scrim no index.css). */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: 600 }}>
         <span>Passo {step} de {TOTAL_INPUT_STEPS}</span>
         <span>{percent}%</span>
       </div>
@@ -722,7 +721,7 @@ const RouteGenerator = () => {
         <h1 style={{ fontSize: 'clamp(1.9rem, 7vw, 3rem)', fontWeight: 800, marginBottom: '20px' }} className="text-gradient">
           Sua <span className="gold-gradient">Rota Perfeita</span>
         </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', marginBottom: '30px' }}>
+        <p style={{ color: 'var(--text-main)', fontSize: '1.2rem', marginBottom: '30px' }}>
           Conte-nos um pouco sobre você e criaremos um roteiro sob medida para a sua experiência em Foz do Iguaçu.
         </p>
 

@@ -201,10 +201,55 @@ a {
   pointer-events: none;
 }
 
-/* Fundo animado do questionário: um mapa vivo por trás das perguntas.
-   Movimento longo e de baixa amplitude — é cenário, não pode competir com o
-   conteúdo nem pesar. Tudo aqui é decorativo e desliga sozinho em
-   prefers-reduced-motion (regra no topo do arquivo). */
+/* Fundo do questionário: foto das Cataratas com deriva lenta, véu creme por cima e o
+   traçado de rota animado por último. Movimento longo e de baixa amplitude — é cenário,
+   não pode competir com o conteúdo nem pesar. Tudo aqui é decorativo e desliga sozinho
+   em prefers-reduced-motion (regra no topo do arquivo). */
+
+.falls-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* O desfoque mantém a foto como cenário e disfarça compressão. A escala > 1 evita a
+     borda transparente que o blur cria nas beiradas. */
+  /* 4px é o ponto de equilíbrio: some com a compressão e impede que a foto dispute
+     atenção, mas ainda dá para reconhecer as Cataratas. Mais que isso vira borrão bege. */
+  filter: blur(4px) saturate(1.12) contrast(1.04);
+  transform: scale(1.14);
+  will-change: transform;
+}
+
+/* Zoom lento, como uma câmera se aproximando das quedas. Só transform: não repinta o
+   desfoque a cada quadro, a GPU só reaproveita a camada já rasterizada. */
+.falls-bg--drifting {
+  animation: falls-drift 40s var(--ease-in-out) infinite alternate;
+}
+
+@keyframes falls-drift {
+  from {
+    transform: scale(1.14) translate3d(-1.4%, -1%, 0);
+  }
+
+  to {
+    transform: scale(1.26) translate3d(1.4%, 1%, 0);
+  }
+}
+
+/* Véu creme: mais denso no topo, onde ficam título, subtítulo e barra de progresso —
+   texto verde-escuro sobre água ensolarada não teria contraste. Mais aberto embaixo,
+   onde os cartões (opacos) já garantem a leitura e a foto pode aparecer. */
+.falls-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg,
+      rgba(250, 247, 239, 0.8) 0%,
+      rgba(250, 247, 239, 0.72) 25%,
+      rgba(250, 247, 239, 0.62) 60%,
+      rgba(250, 247, 239, 0.6) 100%);
+}
 
 /* Tracejado correndo ao longo da rota, como o trajeto sendo percorrido. */
 @keyframes map-dash-flow {
