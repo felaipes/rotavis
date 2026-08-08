@@ -11,7 +11,7 @@ import CountryFlag from '../components/CountryFlag';
 import StateSelect from '../components/StateSelect';
 import { T, wizardStep, fadeUp, stagger } from '../motion';
 import { getPlaceCoordinates, totalRouteDistanceKm, formatDistanceKm, haversineDistanceKm } from '../data/zoneCoordinates';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { scorePlaces } from '../services/recommendationService';
 import { trackRouteGenerated, trackNps } from '../services/analyticsService';
 import { WEEKDAY_LABELS, isPlaceAvailable, isOpenOnDay } from '../services/availabilityService';
@@ -107,34 +107,6 @@ const DEFAULT_GROUP_SIZES = { familia: 4, amigos: 3, corporativo: 4, colaborador
 const PERIOD_LABELS = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' };
 const DURATION_LABELS = { ate2h: 'até 2 horas', '2a4h': '2 a 4 horas', mais4h: 'mais de 4 horas' };
 const TOTAL_INPUT_STEPS = 8;
-
-// Fundo do questionario: as Cataratas por tras das perguntas. Fixo (nao rola com a
-// pagina), atras de todo o conteudo, sem capturar cliques.
-//
-// Duas camadas: a foto, com um zoom lento que da o movimento, e um veu creme por cima.
-// O veu nao e enfeite — e o que garante contraste do texto do cabecalho, que fica
-// direto sobre a foto. 0,55 e o piso medido: abaixo disso o titulo cai de 3,0 de
-// contraste sobre os trechos escuros da imagem (pedra molhada, mata na sombra).
-//
-// O desfoque leve mantem a foto como cenario em vez de disputar atencao com o
-// formulario, e disfarca a ampliacao da imagem em telas grandes.
-const FallsBackground = () => {
-  const reduceMotion = useReducedMotion();
-
-  return (
-    <div
-      aria-hidden="true"
-      style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}
-    >
-      <img
-        src="/hero_cataratas.jpg"
-        alt=""
-        className={`falls-bg ${reduceMotion ? '' : 'falls-bg--drifting'}`}
-      />
-      <div className="falls-scrim" />
-    </div>
-  );
-};
 
 // Indicador de progresso do questionário (não aparece na tela de resultado).
 const WizardProgress = ({ step }) => {
@@ -649,7 +621,6 @@ const RouteGenerator = () => {
       </AnimatePresence>
 
       <div className="container" style={{ padding: '60px 20px', minHeight: '80vh', position: 'relative' }}>
-      <FallsBackground />
       <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: '800px', margin: '0 auto 40px' }}>
         <h1 style={{ fontSize: 'clamp(1.9rem, 7vw, 3rem)', fontWeight: 800, marginBottom: '20px' }} className="text-gradient">
           Sua <span className="gold-gradient">Rota Perfeita</span>

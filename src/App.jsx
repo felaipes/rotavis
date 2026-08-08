@@ -10,6 +10,7 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import SuaRota from './pages/SuaRota';
 import Conquistas from './pages/Conquistas';
+import FallsBackground from './components/FallsBackground';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CheckInProvider, useCheckIns } from './context/CheckInContext';
 import { TIERS } from './data/achievements';
@@ -307,8 +308,11 @@ function App() {
         <CheckInProvider>
           <Router>
             <div className="app-container">
+              {/* Fica antes de tudo e é position:fixed com z-index 0; o conteúdo vem por
+                  cima via .app-main (position:relative, z-index 1). */}
+              <FallsBackground />
               <Header />
-              <main>
+              <main className="app-main">
                 <AnimatedRoutes />
               </main>
               <UnlockToast />
