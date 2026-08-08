@@ -264,19 +264,6 @@ a {
   z-index: 1;
 }
 
-/* Halo claro atrás dos títulos que ficam direto sobre a foto: separa a letra do fundo
-   sem mexer na cor dela. No .gold-gradient tem de ser drop-shadow, e não text-shadow —
-   o texto ali é transparente (background-clip: text) e a sombra apareceria através
-   dele; o drop-shadow acompanha o desenho visível do glifo. */
-.text-gradient {
-  text-shadow: 0 1px 0 rgba(250, 247, 239, 0.75), 0 0 12px rgba(250, 247, 239, 0.6);
-}
-
-.gold-gradient {
-  filter:
-    drop-shadow(0 1px 1px rgba(250, 247, 239, 0.9)) drop-shadow(0 0 10px rgba(250, 247, 239, 0.7));
-}
-
 /* Remove o fundo branco/borda padrão que o Leaflet aplica a todo divIcon; o pino já
    desenha seu próprio fundo colorido e borda no HTML do ícone. */
 .rotavis-map-icon {
@@ -289,8 +276,13 @@ a {
   color: var(--green-dark);
 }
 
+/* Versões escuras do azul/verde/dourado da logo. O gradiente claro original mal
+   aparecia: o dourado #f2b70a dá 1,7 de contraste até no fundo creme liso, e sobre a
+   foto some de vez. Estes tons mantêm a mesma sequência de cores da marca com 3,3 a
+   5,5 de contraste — acima do mínimo de 3,0 para texto grande, que é onde a classe é
+   usada (só em h1/h2 de display). */
 .gold-gradient {
-  background: linear-gradient(90deg, var(--blue), var(--green), var(--accent-gold));
+  background: linear-gradient(90deg, #1565c0, var(--green-dark), #8a6100);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
