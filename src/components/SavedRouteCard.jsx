@@ -130,8 +130,14 @@ const RouteMap = ({ allPlaces }) => {
   );
 };
 
-const SavedRouteCard = ({ route, index }) => {
-  const [expanded, setExpanded] = useState(false);
+// `expanded`/`onToggle` são opcionais: sem eles o cartão continua cuidando do próprio
+// estado, como sempre fez no perfil. Em "Meus Roteiros" quem manda é a pasta, e os dois
+// precisam abrir juntos — daí o modo controlado.
+const SavedRouteCard = ({ route, index, expanded: expandedProp, onToggle }) => {
+  const [expandedState, setExpandedState] = useState(false);
+  const isControlled = expandedProp !== undefined;
+  const expanded = isControlled ? expandedProp : expandedState;
+  const toggle = () => (isControlled ? onToggle?.(!expanded) : setExpandedState(e => !e));
   const [showMap, setShowMap] = useState(false);
 
   const hasDays = route.days && route.days.length > 0;
@@ -162,7 +168,7 @@ const SavedRouteCard = ({ route, index }) => {
     >
       {/* ── Cabeçalho clicável ── */}
       <button
-        onClick={() => setExpanded(e => !e)}
+        onClick={toggle}
         style={{
           width: '100%', background: 'none', border: 'none', cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: '14px',

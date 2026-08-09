@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Route, Trash2, RotateCcw, MapPinned, Users, Wallet, Car, Footprints } from 'lucide-react';
 import SavedRouteCard from '../components/SavedRouteCard';
+import Folder from '../components/Folder';
 import { useRouteHistory } from '../hooks/useRouteHistory';
 import { getPlaceCoordinates, totalRouteDistanceKm, formatDistanceKm } from '../data/zoneCoordinates';
 import { fadeUp, stagger, T } from '../motion';
@@ -21,8 +22,18 @@ const summarize = (entry) => {
   return { stopCount: stops.length, km, cost: perPerson * (entry.travelers || 1) };
 };
 
+// Texto miúdo dentro dos papéis da pasta: um resumo de relance quando ela abre.
+const paperTextStyle = {
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  width: '100%', height: '100%',
+  fontSize: '13px', fontWeight: 800, color: 'var(--green-dark)'
+};
+
 const MeusRoteiros = () => {
   const { routes, removeRoute, clearRoutes } = useRouteHistory();
+  // Um roteiro aberto por vez. A pasta e o cartão compartilham este estado, senão dava
+  // para ficar com a pasta aberta e o roteiro fechado.
+  const [openId, setOpenId] = useState(null);
 
   if (routes.length === 0) {
     return (
@@ -73,12 +84,33 @@ const MeusRoteiros = () => {
                 transition={stagger(i)}
               >
                 {/* Faixa de resumo acima do cartão: dá para comparar os roteiros sem
-                    abrir um por um. */}
+                    abrir um por um. A pasta fica aqui, e não no cabeçalho do cartão,
+                    porque o cartão tem overflow:hidden — os papéis voando para fora
+                    seriam cortados. Aqui sobra espaço acima para eles. */}
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap',
                   fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600,
                   padding: '0 4px 6px'
                 }}>
+                  <div
+                    style={{
+                      width: '62px', height: '52px', flexShrink: 0, position: 'relative',
+                      display: 'flex', alignItems: 'flex-end', justifyContent: 'center'
+                    }}
+                  >
+                    <Folder
+                      size={0.55}
+                      color="#3d9b4f"
+                      open={openId === entry.id}
+                      onToggle={(next) => setOpenId(next ? entry.id : null)}
+                      ariaLabel={openId === entry.id ? `Fechar ${entry.name}` : `Abrir ${entry.name}`}
+                      items={[
+                        <span key="d" style={paperTextStyle}>{entry.days?.length}d</span>,
+                        <span key="p" style={paperTextStyle}>{s.stopCount}</span>,
+                        <span key="k" style={paperTextStyle}>{Math.round(s.km)}km</span>
+                      ]}
+                    />
+                  </div>
                   {entry.option && (
                     <span style={{
                       background: 'var(--card-highlight)', color: 'var(--green-dark)',
@@ -116,7 +148,12 @@ const MeusRoteiros = () => {
                   </button>
                 </div>
 
-                <SavedRouteCard route={entry} index={0} />
+                <SavedRouteCard
+                  route={entry}
+                  index={0}
+                  expanded={openId === entry.id}
+                  onToggle={(next) => setOpenId(next ? entry.id : null)}
+                />
               </motion.div>
             );
           })}
