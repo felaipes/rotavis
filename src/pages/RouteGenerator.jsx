@@ -10,9 +10,10 @@ import DateCalendar, { toISODate, addDaysISO } from '../components/DateCalendar'
 import CountryFlag from '../components/CountryFlag';
 import StateSelect from '../components/StateSelect';
 import { useRouteHistory } from '../hooks/useRouteHistory';
+import MagicRings from '../components/MagicRings';
 import { T, wizardStep, fadeUp, stagger } from '../motion';
 import { getPlaceCoordinates, totalRouteDistanceKm, formatDistanceKm, haversineDistanceKm } from '../data/zoneCoordinates';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { scorePlaces } from '../services/recommendationService';
 import { trackRouteGenerated, trackNps } from '../services/analyticsService';
 import { WEEKDAY_LABELS, isPlaceAvailable, isOpenOnDay } from '../services/availabilityService';
@@ -178,6 +179,7 @@ const SUB_FILTERS = {
 
 const RouteGenerator = () => {
   const { user, updateProfile } = useAuth();
+  const prefersReducedMotion = useReducedMotion();
   const [days, setDays] = useState(1);
   const [startDay, setStartDay] = useState(new Date().getDay());
   const [arrivalDate, setArrivalDate] = useState('');
@@ -660,6 +662,37 @@ const RouteGenerator = () => {
       </AnimatePresence>
 
       <div className="container" style={{ padding: '60px 20px', minHeight: '80vh', position: 'relative' }}>
+      {/* Anéis atrás do questionário, sobre a foto das Cataratas. pointerEvents none para
+          não roubar clique dos botões do formulário — por isso também não usamos os modos
+          de interação do componente (followMouse/clickBurst ficam desligados).
+          Desligado inteiro em prefers-reduced-motion: é WebGL animando sem parar. */}
+      {!prefersReducedMotion && (
+        <div
+          aria-hidden="true"
+          style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}
+        >
+          <MagicRings
+            color="#234832"
+            colorTwo="#ca9023"
+            ringCount={6}
+            speed={0.5}
+            attenuation={10}
+            lineThickness={2}
+            baseRadius={0.25}
+            radiusStep={0.1}
+            scaleRate={0.1}
+            opacity={0.45}
+            blur={0}
+            noiseAmount={0}
+            rotation={0}
+            ringGap={1.5}
+            fadeIn={0.7}
+            fadeOut={0.5}
+            followMouse={false}
+            clickBurst={false}
+          />
+        </div>
+      )}
       <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: '800px', margin: '0 auto 40px' }}>
         <h1 style={{ fontSize: 'clamp(1.9rem, 7vw, 3rem)', fontWeight: 800, marginBottom: '20px' }} className="text-gradient">
           Sua <span className="gold-gradient">Rota Perfeita</span>
