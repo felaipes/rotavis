@@ -437,6 +437,7 @@ export const places = [
     image: '/bar_capitao.jpg',
     zone: 'Centro',
     priceRange: '$$',
+    avgPrice: 70,
     specialty: 'Picanha grelhada e nachos mexicanos',
     differential: 'Ponto de encontro tradicional do Centro desde 1999, com música ao vivo'
   },
@@ -451,6 +452,7 @@ export const places = [
     image: '/bar_277craft.jpg',
     zone: 'Centro',
     priceRange: '$$',
+    avgPrice: 80,
     specialty: 'Cervejas artesanais de produção própria',
     differential: 'Fábrica de cerveja funcionando no próprio local, com rótulos exclusivos'
   },
@@ -464,6 +466,7 @@ export const places = [
     image: '/bar_eden.jpg',
     zone: 'Avenida das Cataratas',
     priceRange: '$$',
+    avgPrice: 95,
     specialty: 'Chopps da casa e carnes grelhadas com salsichas',
     differential: 'Beer garden ao ar livre com mesas comunais, inspirado nos biergartens alemães'
   },
@@ -477,6 +480,7 @@ export const places = [
     image: '/bar_bendito.jpg',
     zone: 'Centro',
     priceRange: '$$',
+    avgPrice: 75,
     specialty: 'Bolinhos autorais (mandioca com costela, abóbora com carne seca)',
     differential: 'Drinks autorais e releitura contemporânea da gastronomia brasileira'
   },
@@ -491,6 +495,7 @@ export const places = [
     image: '/bar_skybar.webp',
     zone: 'Centro',
     priceRange: '$$$',
+    avgPrice: 120,
     specialty: 'Drinks autorais com vista panorâmica',
     differential: 'Único rooftop da cidade, no 17º andar com piscina de borda infinita'
   },
@@ -505,6 +510,7 @@ export const places = [
     image: '/bar_zeppelin.jpg',
     zone: 'Vila Yolanda',
     priceRange: '$$',
+    avgPrice: 85,
     specialty: 'Shows de rock ao vivo com bandas e tributos',
     differential: 'Point tradicional do rock em Foz do Iguaçu, com line-up de shows quase todo fim de semana'
   },
@@ -520,6 +526,7 @@ export const places = [
     image: '/cafe_roma.jpg',
     zone: 'Centro',
     priceRange: '$',
+    avgPrice: 25,
     specialty: 'Pães artesanais e café da manhã completo',
     differential: 'Quase 50 anos de tradição no Centro de Foz do Iguaçu'
   },
@@ -534,6 +541,7 @@ export const places = [
     image: '/cafe_maran.jpg',
     zone: 'Centro',
     priceRange: '$$',
+    avgPrice: 45,
     specialty: 'Pães frescos e buffet a qualquer hora',
     differential: 'Funciona 24 horas por dia, todos os dias da semana'
   },
@@ -548,6 +556,7 @@ export const places = [
     image: '/cafe_jauense.jpg',
     zone: 'Centro',
     priceRange: '$',
+    avgPrice: 28,
     specialty: 'Coxinha considerada a melhor da cidade',
     differential: 'Tradição desde 1979, com mais de 45 anos de história'
   },
@@ -563,6 +572,7 @@ export const places = [
     image: '/cafe_coar.jpg',
     zone: 'Centro',
     priceRange: '$$',
+    avgPrice: 35,
     specialty: 'Cafés especiais e bolos artesanais',
     differential: 'Ambiente aconchegante pensado para tardes tranquilas de trabalho ou leitura'
   },
@@ -576,6 +586,7 @@ export const places = [
     image: '/cafe_chocolato.jpg',
     zone: 'Centro',
     priceRange: '$$',
+    avgPrice: 30,
     specialty: 'Bombons e chocolate belga artesanal',
     differential: 'A única chocolateria de Foz do Iguaçu'
   },
@@ -589,6 +600,7 @@ export const places = [
     image: '/cafe_oficinasorvete.png',
     zone: 'Centro',
     priceRange: '$',
+    avgPrice: 20,
     specialty: 'Sorvetes de frutas nativas da Mata Atlântica',
     differential: 'Mais de 30 anos de tradição, vencedora do Prêmio Nacional de Inovação em Sustentabilidade'
   },
@@ -602,6 +614,7 @@ export const places = [
     image: '/cafe_compassagem.jpg',
     zone: 'Centro',
     priceRange: '$$',
+    avgPrice: 38,
     specialty: 'Cafés especiais em ambiente de coworking',
     differential: 'Une cafeteria, agência de viagens e espaço de trabalho compartilhado em um só lugar'
   },
@@ -615,6 +628,7 @@ export const places = [
     image: '/cafe_bellafoz.jpg',
     zone: 'Centro',
     priceRange: '$',
+    avgPrice: 26,
     specialty: 'Pães e salgados fresquinhos com cardápio completo de cafés',
     differential: 'Padaria de bairro querida pela vizinhança, com ambiente simples e acolhedor'
   },
@@ -629,7 +643,8 @@ export const places = [
     tags: ['hotel', 'dormir', 'luxo', 'exclusivo', 'romantico', 'vista', 'natureza'],
     image: '/cataratas.jpg',
     zone: 'Parque Nacional',
-    priceRange: '$$$'
+    priceRange: '$$$',
+    avgPrice: 1400,
   },
   {
     id: 'bourbon-cataratas-resort',
@@ -640,7 +655,8 @@ export const places = [
     tags: ['hotel', 'dormir', 'resort', 'piscina', 'spa', 'conforto', 'familia'],
     image: '/foz_do_iguacu.jpg',
     zone: 'Avenida das Cataratas',
-    priceRange: '$$$'
+    priceRange: '$$$',
+    avgPrice: 400,
   },
   {
     id: 'wish-foz-do-iguacu',
@@ -651,7 +667,8 @@ export const places = [
     tags: ['hotel', 'dormir', 'piscina', 'familia', 'kids', 'conforto'],
     image: '/foz_do_iguacu.jpg',
     zone: 'Avenida das Cataratas',
-    priceRange: '$$$'
+    priceRange: '$$$',
+    avgPrice: 350,
   },
   {
     id: 'del-rey-quality-hotel',
@@ -662,7 +679,8 @@ export const places = [
     tags: ['hotel', 'dormir', 'conforto', 'centro', 'economico'],
     image: '/foz_do_iguacu.jpg',
     zone: 'Centro',
-    priceRange: '$$'
+    priceRange: '$$',
+    avgPrice: 160,
   },
   {
     id: 'hostel-natura-iguassu',
@@ -673,7 +691,8 @@ export const places = [
     tags: ['hostel', 'dormir', 'barato', 'economico', 'mochileiro'],
     image: '/foz_do_iguacu.jpg',
     zone: 'Centro',
-    priceRange: '$'
+    priceRange: '$',
+    avgPrice: 70,
   },
 
   // ==================== LANCHES ====================
@@ -686,7 +705,8 @@ export const places = [
     tags: ['lanche', 'hamburger', 'burger', 'comidinhas', 'noite', 'kids'],
     image: '/food_placeholder.webp',
     zone: 'Centro',
-    priceRange: '$$'
+    priceRange: '$$',
+    avgPrice: 45,
   },
   {
     id: 'lanchonete-do-porto',
@@ -697,7 +717,8 @@ export const places = [
     tags: ['lanche', 'barato', 'rapido', 'economico'],
     image: '/food_placeholder.webp',
     zone: 'Porto Meira',
-    priceRange: '$'
+    priceRange: '$',
+    avgPrice: 25,
   },
   {
     id: 'pastelaria-fronteira',
@@ -708,7 +729,8 @@ export const places = [
     tags: ['lanche', 'pastel', 'barato', 'comidinhas'],
     image: '/food_placeholder.webp',
     zone: 'Centro',
-    priceRange: '$'
+    priceRange: '$',
+    avgPrice: 20,
   },
   {
     id: 'espetinho-da-praca',
@@ -720,7 +742,8 @@ export const places = [
     tags: ['lanche', 'espetinho', 'noite', 'barato', 'amigos'],
     image: '/food_placeholder.webp',
     zone: 'Centro',
-    priceRange: '$'
+    priceRange: '$',
+    avgPrice: 22,
   },
   {
     id: 'crepe-e-cia',
@@ -731,7 +754,8 @@ export const places = [
     tags: ['lanche', 'doce', 'salgado', 'tarde', 'comidinhas'],
     image: '/food_placeholder.webp',
     zone: 'Avenida das Cataratas',
-    priceRange: '$$'
+    priceRange: '$$',
+    avgPrice: 40,
   },
 
   // ==================== MERCADOS ====================
@@ -745,7 +769,8 @@ export const places = [
     tags: ['mercado', 'compras', 'regional', 'artesanato', 'centro'],
     image: '/foz_do_iguacu.jpg',
     zone: 'Centro',
-    priceRange: '$'
+    priceRange: '$',
+    avgPrice: 40,
   },
   {
     id: 'supermercado-condor',
@@ -756,7 +781,8 @@ export const places = [
     tags: ['mercado', 'compras', 'supermercado'],
     image: '/foz_do_iguacu.jpg',
     zone: 'Vila Portes',
-    priceRange: '$$'
+    priceRange: '$$',
+    avgPrice: 90,
   },
 
   // ==================== COMPRAS E FRONTEIRA ====================
@@ -770,7 +796,8 @@ export const places = [
     tags: ['compras', 'shopping', 'lazer', 'familia', 'cinema'],
     image: '/foz_do_iguacu.jpg',
     zone: 'Vila Yolanda',
-    priceRange: '$$'
+    priceRange: '$$',
+    avgPrice: 150,
   },
   {
     id: 'duty-free-iguassu',
@@ -781,7 +808,8 @@ export const places = [
     tags: ['compras', 'fronteira', 'importados', 'internacional'],
     image: '/ponte_amizade.jpg',
     zone: 'Fronteira',
-    priceRange: '$$$'
+    priceRange: '$$$',
+    avgPrice: 300,
   },
   {
     id: 'shopping-cidade-do-leste',
@@ -792,7 +820,8 @@ export const places = [
     tags: ['compras', 'fronteira', 'internacional', 'eletronicos'],
     image: '/ponte_amizade.jpg',
     zone: 'Fronteira',
-    priceRange: '$$'
+    priceRange: '$$',
+    avgPrice: 200,
   },
 
   // ==================== ACADEMIAS E ESPORTES ====================
@@ -805,7 +834,8 @@ export const places = [
     tags: ['academia', 'treino', 'musculacao', 'esporte'],
     image: '/foz_do_iguacu.jpg',
     zone: 'Centro',
-    priceRange: '$$'
+    priceRange: '$$',
+    avgPrice: 30,
   },
   {
     id: 'trilha-refugio-bela-vista-esporte',
@@ -816,7 +846,8 @@ export const places = [
     tags: ['esporte', 'trilha', 'natureza', 'caminhada', 'aventura'],
     image: '/foz_do_iguacu.jpg',
     zone: 'Rodovia das Cataratas',
-    priceRange: '$'
+    priceRange: '$',
+    entryFee: 45,
   },
   {
     id: 'rafting-rio-melissa',
@@ -827,7 +858,8 @@ export const places = [
     tags: ['esporte', 'aventura', 'rafting', 'natureza', 'adrenalina'],
     image: '/foz_do_iguacu.jpg',
     zone: 'Zona Rural',
-    priceRange: '$$'
+    priceRange: '$$',
+    entryFee: 180,
   },
 
   // ==================== CONVENIÊNCIAS ====================
@@ -840,7 +872,8 @@ export const places = [
     tags: ['farmacia', 'saude', 'centro', 'conveniencia'],
     image: '/foz_do_iguacu.jpg',
     zone: 'Centro',
-    priceRange: '$$'
+    priceRange: '$$',
+    entryFee: 'Gratuito',
   },
   {
     id: 'hospitais-saude-foz',
@@ -851,7 +884,8 @@ export const places = [
     tags: ['saude', 'hospital', 'emergencia', 'upa'],
     image: '/foz_do_iguacu.jpg',
     zone: 'Diversas',
-    priceRange: '$$'
+    priceRange: '$$',
+    entryFee: 'Gratuito',
   },
   {
     id: 'apps-transporte-foz',
@@ -862,6 +896,7 @@ export const places = [
     tags: ['transporte', 'app', 'taxi', 'carro'],
     image: '/foz_do_iguacu.jpg',
     zone: 'Todas',
-    priceRange: '$'
+    priceRange: '$',
+    avgPrice: 25,
   }
 ];
