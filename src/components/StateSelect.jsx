@@ -27,8 +27,10 @@ const StateChip = ({ name, selected, onSelect }) => (
     className={`btn-glass wizard-option ${selected ? 'active' : ''}`}
     style={{
       padding: '8px 14px', borderRadius: '30px', fontSize: '0.88rem', fontWeight: 500,
-      display: 'inline-flex', alignItems: 'center', gap: '6px',
-      borderColor: selected ? 'var(--green)' : undefined
+      display: 'inline-flex', alignItems: 'center', gap: '6px'
+      // Sem borderColor inline: o estado selecionado é desenhado por .wizard-option.active,
+      // no index.css, e um valor inline aqui venceria a regra e deixaria a borda de uma cor
+      // diferente da sombra.
     }}
   >
     {selected && <Check size={14} />}

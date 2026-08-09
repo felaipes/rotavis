@@ -800,7 +800,7 @@ const RouteGenerator = () => {
                     <motion.button
                       initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                       onClick={() => setStep(3)}
-                      className="btn-gold"
+                      className="btn-gold btn-wizard"
                       style={{ padding: '14px 30px' }}
                     >
                       Próximo <ChevronRight size={18} />
@@ -836,7 +836,7 @@ const RouteGenerator = () => {
                 </motion.div>
               )}
 
-              <button onClick={() => setStep(1)} className="btn-glass">Voltar</button>
+              <button onClick={() => setStep(1)} className="btn-glass wizard-option">Voltar</button>
             </motion.div>
           )}
 
@@ -907,13 +907,13 @@ const RouteGenerator = () => {
                   <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', textAlign: 'center' }}>
                     Contando você. Usamos para dividir o orçamento por pessoa.
                   </p>
-                  <button onClick={() => setStep(4)} className="btn-gold" style={{ padding: '13px 32px' }}>
+                  <button onClick={() => setStep(4)} className="btn-gold btn-wizard" style={{ padding: '13px 32px' }}>
                     Próximo <ChevronRight size={18} />
                   </button>
                 </motion.div>
               )}
 
-              <button onClick={() => setStep(2)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+              <button onClick={() => setStep(2)} className="btn-glass wizard-option" style={{ marginTop: '10px' }}>Voltar</button>
             </motion.div>
           )}
 
@@ -945,7 +945,7 @@ const RouteGenerator = () => {
                   </span>
                 </button>
               </div>
-              <button onClick={() => setStep(3)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+              <button onClick={() => setStep(3)} className="btn-glass wizard-option" style={{ marginTop: '10px' }}>Voltar</button>
             </motion.div>
           )}
 
@@ -1000,8 +1000,8 @@ const RouteGenerator = () => {
               ))}
 
               <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
-                <button onClick={() => setStep(4)} className="btn-glass">Voltar</button>
-                <button onClick={() => setStep(6)} className="btn-gold" style={{ padding: '15px 30px' }}>Próximo <ChevronRight size={18} /></button>
+                <button onClick={() => setStep(4)} className="btn-glass wizard-option">Voltar</button>
+                <button onClick={() => setStep(6)} className="btn-gold btn-wizard" style={{ padding: '15px 30px' }}>Próximo <ChevronRight size={18} /></button>
               </div>
             </motion.div>
           )}
@@ -1029,11 +1029,11 @@ const RouteGenerator = () => {
                 </p>
               )}
               <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
-                <button onClick={() => setStep(5)} className="btn-glass">Voltar</button>
+                <button onClick={() => setStep(5)} className="btn-glass wizard-option">Voltar</button>
                 <button
                   onClick={() => setStep(7)}
                   disabled={!arrivalDate}
-                  className="btn-gold"
+                  className="btn-gold btn-wizard"
                   style={{ padding: '15px 30px', opacity: arrivalDate ? 1 : 0.5, cursor: arrivalDate ? 'pointer' : 'not-allowed' }}
                 >
                   Próximo <ChevronRight size={18} />
@@ -1065,7 +1065,7 @@ const RouteGenerator = () => {
                   </button>
                 ))}
               </div>
-              <button onClick={() => setStep(6)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+              <button onClick={() => setStep(6)} className="btn-glass wizard-option" style={{ marginTop: '10px' }}>Voltar</button>
             </motion.div>
           )}
 
@@ -1094,11 +1094,11 @@ const RouteGenerator = () => {
                 </p>
               )}
               <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
-                <button onClick={() => setStep(6)} className="btn-glass">Voltar</button>
+                <button onClick={() => setStep(6)} className="btn-glass wizard-option">Voltar</button>
                 <button
                   onClick={() => setStep(8)}
                   disabled={!departureDate}
-                  className="btn-gold"
+                  className="btn-gold btn-wizard"
                   style={{ padding: '15px 30px', opacity: departureDate ? 1 : 0.5, cursor: departureDate ? 'pointer' : 'not-allowed' }}
                 >
                   Próximo <ChevronRight size={18} />
@@ -1127,7 +1127,7 @@ const RouteGenerator = () => {
                   </button>
                 ))}
               </div>
-              <button onClick={() => setStep(7)} className="btn-glass" style={{ marginTop: '10px' }}>Voltar</button>
+              <button onClick={() => setStep(7)} className="btn-glass wizard-option" style={{ marginTop: '10px' }}>Voltar</button>
             </motion.div>
           )}
 
@@ -1181,8 +1181,8 @@ const RouteGenerator = () => {
                 </p>
               )}
               <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
-                <button onClick={() => setStep(7)} className="btn-glass">Voltar</button>
-                <button onClick={generateRoute} className="btn-gold" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
+                <button onClick={() => setStep(7)} className="btn-glass wizard-option">Voltar</button>
+                <button onClick={generateRoute} className="btn-gold btn-wizard" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
                   <Calendar style={{ marginRight: '10px' }} />
                   Gerar Meu Roteiro
                 </button>

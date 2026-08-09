@@ -161,23 +161,65 @@ a {
   color: var(--green-dark);
 }
 
-/* Opções do assistente de roteiro: resposta tátil ao passar o mouse/tocar, para reforçar que são clicáveis. */
-.wizard-option {
-  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+/* Botões do questionário — efeito inspirado no site da Gumroad: ao passar o mouse o
+   botão pula para cima e para a esquerda e deixa uma sombra dura atrás, exatamente no
+   lugar de onde saiu; ao ser pressionado ele volta e a sombra some, como se afundasse.
+   Vem depois de .btn-gold/.btn-glass de propósito: mesma especificidade, então estas
+   regras é que valem nos botões do assistente.
+
+   Duração pelo token do app (160ms) em vez dos 0,2s do original, para o questionário
+   inteiro responder no mesmo tempo — ver src/motion.js. */
+.wizard-option,
+.btn-wizard {
+  --wz-shadow: #234832;
+  --wz-hover-bg: #ffb654;
+  --wz-hover-text: #14210f;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
 }
 
-.wizard-option:hover {
-  transform: translateY(-4px) scale(1.03);
-  box-shadow: 0 12px 24px rgba(27, 94, 60, 0.16);
+/* Estado de repouso dos botões de ação (Voltar, Próximo, Gerar): verde da marca. */
+.btn-wizard {
+  color: #ffffff;
+  background: var(--wz-shadow);
+  border: 1px solid var(--wz-shadow);
+  border-radius: 8px;
+  cursor: pointer;
+  /* Sem sombra parada: a sombra é o que aparece no hover, e é ela que dá o efeito. */
+  box-shadow: none;
 }
 
-.wizard-option:active {
-  transform: translateY(-1px) scale(1.01);
+.wizard-option:hover,
+.btn-wizard:hover {
+  color: var(--wz-hover-text);
+  background: var(--wz-hover-bg);
+  border-color: var(--wz-shadow);
+  transform: translate(-0.25rem, -0.25rem);
+  box-shadow: 0.25rem 0.25rem 0 var(--wz-shadow);
+}
+
+/* Os ícones vêm com a cor verde fixa no próprio SVG; sem isto ficariam verdes sobre o
+   âmbar. currentColor faz cada um seguir a cor do texto do botão. */
+.wizard-option:hover svg,
+.btn-wizard:hover svg {
+  stroke: currentColor;
+}
+
+.wizard-option:active,
+.btn-wizard:active {
+  transform: translate(0);
+  box-shadow: none;
   transition-duration: var(--dur-instant);
 }
 
+/* Opção já escolhida: fica marcada sem depender do mouse estar em cima. */
 .wizard-option.active {
-  box-shadow: 0 8px 20px rgba(27, 94, 60, 0.18);
+  border-color: var(--wz-shadow);
+  box-shadow: 0.25rem 0.25rem 0 var(--wz-shadow);
 }
 
 /* Cartão de cada pergunta do assistente: leva o mesmo motivo de mapa (rota pontilhada + marcadores)
