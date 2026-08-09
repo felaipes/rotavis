@@ -1182,9 +1182,11 @@ const RouteGenerator = () => {
               )}
               <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
                 <button onClick={() => setStep(7)} className="btn-glass wizard-option">Voltar</button>
-                <button onClick={generateRoute} className="btn-gold btn-wizard" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
-                  <Calendar style={{ marginRight: '10px' }} />
-                  Gerar Meu Roteiro
+                <button onClick={generateRoute} className="btn-generate">
+                  <span className="btn-generate__icon" aria-hidden="true">
+                    <Calendar size={22} />
+                  </span>
+                  <span className="btn-generate__text">Gerar Meu Roteiro</span>
                 </button>
               </div>
             </motion.div>

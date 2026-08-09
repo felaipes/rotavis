@@ -222,6 +222,87 @@ a {
   box-shadow: 0.25rem 0.25rem 0 var(--wz-shadow);
 }
 
+/* Botão "Gerar Meu Roteiro" — modelo do Uiverse (JaydipPrajapati1910). Ao passar o
+   mouse o texto some e o ícone desliza para o centro, ocupando o botão inteiro.
+   Tudo aninhado em .btn-generate porque .icon e .text são nomes genéricos demais para
+   soltar no CSS global (já existe um .icon no App.css).
+
+   Duas correções em relação ao original:
+   - o .icon é position:absolute mas o botão não era position:relative, então ele se
+     posicionaria por algum ancestral distante;
+   - o background vinha "#2348326", sete dígitos, que não é cor válida — o navegador
+     descartaria e o botão ficaria transparente. Ficou o verde da marca com alpha. */
+.btn-generate {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 52px;
+  padding: 0;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  overflow: hidden;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #234832;
+  background: rgba(35, 72, 50, 0.15);
+  transition: box-shadow var(--dur-slow) var(--ease-out), background var(--dur-slow) var(--ease-out);
+}
+
+.btn-generate:hover {
+  background: rgba(35, 72, 50, 0.22);
+  box-shadow: 0 0 20px 0 rgba(46, 46, 46, 0.23);
+}
+
+.btn-generate .btn-generate__icon {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 5px;
+  width: 62px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  /* Largura em %, e não os 175px fixos do original, para o botão poder acompanhar o
+     tamanho do rótulo em português sem o ícone parar no meio do caminho. */
+  transition: width var(--dur-slow) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+
+.btn-generate .btn-generate__text {
+  padding-left: 74px;
+  padding-right: 22px;
+  white-space: nowrap;
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+.btn-generate:hover .btn-generate__icon {
+  width: calc(100% - 10px);
+}
+
+.btn-generate:hover .btn-generate__text {
+  opacity: 0;
+}
+
+.btn-generate:focus {
+  outline: none;
+}
+
+.btn-generate:focus-visible {
+  outline: 2px solid var(--green-dark);
+  outline-offset: 3px;
+}
+
+.btn-generate:active .btn-generate__icon {
+  transform: scale(0.85);
+}
+
+.btn-generate:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Cartão de cada pergunta do assistente: leva o mesmo motivo de mapa (rota pontilhada + marcadores)
    como textura de fundo própria, sutil o bastante para não brigar com o texto. */
 .wizard-card {
