@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { places } from '../data';
 import { Calendar, CheckCircle2, ChevronRight, Sun, Sunset, Moon, Briefcase, Map as MapIcon, Wallet, Star, Coffee, Tent, History, Utensils, GlassWater, Car, Footprints, Download, X, Activity, Rocket, Clock, Timer, Hourglass, MapPinned, Users, Heart, Route, Plus, Minus } from 'lucide-react';
 
@@ -76,6 +77,13 @@ const flattenStops = (dayPlans) =>
   dayPlans.flatMap(d => [...(d.manha || []), ...(d.tarde || []), ...(d.noite || [])].filter(Boolean));
 
 const collectPlaceIds = (dayPlans) => flattenStops(dayPlans).map(p => p.id);
+
+// Preço por pessoa de uma parada. Os preços do catálogo já são por pessoa.
+const priceOf = (p) => p?.avgPrice ?? (typeof p?.entryFee === 'number' ? p.entryFee : 0);
+
+// Domingo e sábado são masculinos; de segunda a sexta são "feiras", femininas.
+const weekdayComArtigo = (dayIndex) =>
+  (dayIndex === 0 || dayIndex === 6 ? 'no ' : 'na ') + (WEEKDAY_LABELS[dayIndex] || '').toLowerCase();
 
 // Só os campos que as telas de leitura usam. Guardar o objeto inteiro do lugar encheria
 // o localStorage com descrição, galeria de fotos e tags que ninguém lê ali.
@@ -229,7 +237,6 @@ const RouteGenerator = () => {
   const [routeOptions, setRouteOptions] = useState(null);
   const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
   const route = routeOptions ? routeOptions[selectedRouteIndex] : null;
-  const [workRoute, setWorkRoute] = useState(null);
   const [step, setStep] = useState(1);
   const [modalStage, setModalStage] = useState(null);
   const routeRef = useRef(null);
@@ -248,18 +255,23 @@ const RouteGenerator = () => {
   const [npsScore, setNpsScore] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Todo roteiro gerado entra no histórico automaticamente, para a pessoa reencontrá-lo
-  // depois em "Meus Roteiros" mesmo sem salvar nem estar logada.
   const { saveRoute: saveToHistory } = useRouteHistory();
-  // Uma geração = uma entrada. Trocar entre o roteiro A e o B atualiza a mesma entrada
-  // em vez de criar outra, porque continua sendo a mesma viagem planejada.
+  // Uma geração = uma entrada no histórico. Trocar entre o roteiro A e o B atualiza a
+  // mesma entrada em vez de criar outra, porque continua sendo a mesma viagem planejada.
   const generationIdRef = useRef(null);
+  // Id da geração já enviada para "Meus Roteiros". O envio é explícito: antes o roteiro
+  // ia sozinho assim que era gerado, o que enchia o histórico de tentativas descartadas.
+  const [chosenId, setChosenId] = useState(null);
+  const isChosen = chosenId !== null && chosenId === generationIdRef.current;
 
-  useEffect(() => {
-    if (step !== 9 || !route || !generationIdRef.current) return;
+  const handleChooseRoute = () => {
+    if (!route || !generationIdRef.current) return;
+    const ehTrabalho = profile.reason === 'trabalho';
     saveToHistory({
       id: generationIdRef.current,
-      name: `Roteiro em Foz (${days} ${days === 1 ? 'dia' : 'dias'})`,
+      name: ehTrabalho
+        ? `Roteiro de trabalho · ${PERIOD_LABELS[profile.period] || ''}`.trim()
+        : `Roteiro em Foz (${days} ${days === 1 ? 'dia' : 'dias'})`,
       date: (arrivalDate || toISODate(new Date())),
       createdAt: new Date().toISOString(),
       option: String.fromCharCode(65 + selectedRouteIndex),
@@ -268,7 +280,8 @@ const RouteGenerator = () => {
       transport: profile.transport,
       days: serializeDays(route)
     });
-  }, [step, route, selectedRouteIndex, saveToHistory, days, arrivalDate, travelers, profile.totalBudget, profile.transport]);
+    setChosenId(generationIdRef.current);
+  };
 
   const handlePreferenceToggle = (pref) => {
     setProfile(prev => {
@@ -456,8 +469,6 @@ const RouteGenerator = () => {
     const bares = scoredPlaces.filter(p => p.category === 'bares');
     const cafeterias = scoredPlaces.filter(p => p.category === 'cafeterias_docerias');
 
-    const priceOf = (p) => p?.avgPrice ?? (typeof p?.entryFee === 'number' ? p.entryFee : 0);
-
     let generatedDays = [];
     let usedIds = new Set();
 
@@ -601,6 +612,7 @@ const RouteGenerator = () => {
     setRouteOptions([optionA, optionB]);
     setSelectedRouteIndex(0);
     generationIdRef.current = Date.now();
+    setChosenId(null);
 
     // Track the generated route for the admin observatory
     trackRouteGenerated(scoringProfile, optionA, days, startDay);
@@ -618,7 +630,11 @@ const RouteGenerator = () => {
     setTimeout(() => setShowNps(true), 3000);
   };
 
-  // Gera 2 alternativas de roteiro curto para o horário livre de quem está em viagem de trabalho.
+  // Gera 2 alternativas de roteiro curto para o horário livre de quem está em viagem de
+  // trabalho. Devolve no MESMO formato do roteiro de passeio (lista de dias com manhã /
+  // tarde / noite), só que com um dia e um período preenchido. É o que faz a tela de
+  // resultado, o mapa, o PDF e o histórico funcionarem igual para os dois caminhos, em
+  // vez de o trabalho ter uma tela própria pela metade.
   const generateWorkRoute = (period, timeAvailable) => {
     const scoredPlaces = scorePlaces(places, profile);
     const cats = WORK_POOL_BY_PERIOD[period];
@@ -640,11 +656,21 @@ const RouteGenerator = () => {
       return chain;
     };
 
-    const optionA = pickChain();
-    const optionB = pickChain();
+    const toDays = (chain) => [{
+      day: 1,
+      weekday: startDay,
+      manha: period === 'manha' ? chain : [],
+      tarde: period === 'tarde' ? chain : [],
+      noite: period === 'noite' ? chain : [],
+      dailyBudget: null,
+      estimatedCost: chain.reduce((sum, p) => sum + priceOf(p), 0)
+    }];
 
-    setWorkRoute({ period, timeAvailable, optionA, optionB });
-    setStep(9);
+    setRouteOptions([toDays(pickChain()), toDays(pickChain())]);
+    setSelectedRouteIndex(0);
+    generationIdRef.current = Date.now();
+    setChosenId(null);
+    setIsGenerating(true);
   };
 
   return (
@@ -1176,10 +1202,14 @@ const RouteGenerator = () => {
           {routeOptions && routeOptions.length > 1 && (
             <div className="liquid-glass" style={{ padding: 'clamp(16px, 3vw, 22px)', borderRadius: '20px' }}>
               <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '6px' }}>
-                Montamos 2 roteiros para você
+                {profile.reason === 'trabalho'
+                  ? `2 roteiros para a sua ${PERIOD_LABELS[profile.period] || 'folga'}`
+                  : 'Montamos 2 roteiros para você'}
               </h2>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>
-                Escolha o que combina mais com a sua viagem — dá para trocar quando quiser.
+                {profile.reason === 'trabalho'
+                  ? <>Pensados para {DURATION_LABELS[profile.timeAvailable]} livres, {weekdayComArtigo(startDay)}. Escolha um — dá para trocar quando quiser.</>
+                  : 'Escolha o que combina mais com a sua viagem — dá para trocar quando quiser.'}
               </p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', gap: '14px' }}>
                 {routeOptions.map((option, i) => {
@@ -1340,59 +1370,40 @@ const RouteGenerator = () => {
             })}
           </div>
 
-          <div style={{ textAlign: 'center', marginTop: '12px', display: 'flex', gap: '20px', justifyContent: 'center' }}>
-            <button onClick={() => setStep(1)} className="btn-glass" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
+          <div style={{ marginTop: '12px', display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button onClick={() => setStep(1)} className="btn-glass" style={{ padding: '15px 32px', fontSize: '1rem' }}>
               Refazer Perfil
             </button>
-            <button onClick={handleSaveRoute} className="btn-gold" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
-              <Download style={{ marginRight: '10px' }} />
-              Salvar Meu Roteiro
-            </button>
-          </div>
-        </motion.div>
-      )}
 
-      {step === 9 && workRoute && (
-        <motion.div
-          variants={fadeUp}
-          initial="initial"
-          animate="animate"
-          style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '40px' }}
-        >
-          <div style={{ textAlign: 'center' }}>
-            <h2 style={{ fontSize: 'clamp(1.6rem, 5vw, 2rem)', marginBottom: '10px' }} className="gold-gradient">
-              2 opções de roteiro para a sua {PERIOD_LABELS[workRoute.period]}
-            </h2>
-            <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '1rem' }}>
-              <Clock size={16} /> Pensado para {DURATION_LABELS[workRoute.timeAvailable]} livres, na {WEEKDAY_LABELS[startDay]}
-            </p>
-          </div>
+            {/* Escolher = mandar para "Meus Roteiros". Antes isso acontecia sozinho na
+                geração, o que guardava também as tentativas que a pessoa descartou. */}
+            {isChosen ? (
+              <>
+                <span
+                  role="status"
+                  className="btn-glass"
+                  style={{
+                    padding: '15px 28px', fontSize: '1rem', fontWeight: 700,
+                    borderColor: 'var(--green)', color: 'var(--green-dark)',
+                    display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'default'
+                  }}
+                >
+                  <CheckCircle2 size={18} /> Roteiro {String.fromCharCode(65 + selectedRouteIndex)} escolhido
+                </span>
+                <Link to="/meus-roteiros" className="btn-gold" style={{ padding: '15px 32px', fontSize: '1rem' }}>
+                  Ver em Meus Roteiros <ChevronRight size={18} />
+                </Link>
+              </>
+            ) : (
+              <button onClick={handleChooseRoute} className="btn-gold" style={{ padding: '15px 32px', fontSize: '1rem' }}>
+                <CheckCircle2 size={18} style={{ marginRight: '8px' }} />
+                Escolher o roteiro {String.fromCharCode(65 + selectedRouteIndex)}
+              </button>
+            )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(340px, 100%), 1fr))', gap: '30px' }}>
-            {[
-              { label: 'Opção A', places: workRoute.optionA },
-              { label: 'Opção B', places: workRoute.optionB }
-            ].map(opt => (
-              <div key={opt.label} className="liquid-glass" style={{ padding: 'clamp(18px, 4vw, 25px)' }}>
-                <h3 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '20px' }} className="text-gradient">
-                  {opt.label}
-                </h3>
-                {opt.places.length === 0 ? (
-                  <p style={{ color: 'var(--text-muted)' }}>Nenhum local disponível para esse horário no momento.</p>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    {opt.places.map(place => (
-                      <PlaceCard key={place.id} place={place} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          <div style={{ textAlign: 'center' }}>
-            <button onClick={() => setStep(1)} className="btn-glass" style={{ padding: '15px 40px', fontSize: '1.1rem' }}>
-              Refazer Perfil
+            <button onClick={handleSaveRoute} className="btn-glass" style={{ padding: '15px 32px', fontSize: '1rem' }}>
+              <Download size={18} style={{ marginRight: '8px' }} />
+              Baixar PDF
             </button>
           </div>
         </motion.div>
