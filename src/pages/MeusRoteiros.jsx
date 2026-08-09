@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Route, Trash2, RotateCcw, MapPinned, Users, Wallet, Car, Footprints } from 'lucide-react';
 import SavedRouteCard from '../components/SavedRouteCard';
-import Folder from '../components/Folder';
 import { useRouteHistory } from '../hooks/useRouteHistory';
 import { getPlaceCoordinates, totalRouteDistanceKm, formatDistanceKm } from '../data/zoneCoordinates';
 import { fadeUp, stagger, T } from '../motion';
@@ -20,13 +19,6 @@ const summarize = (entry) => {
   );
   const perPerson = stops.reduce((s, p) => s + priceOf(p), 0);
   return { stopCount: stops.length, km, cost: perPerson * (entry.travelers || 1) };
-};
-
-// Texto miúdo dentro dos papéis da pasta: um resumo de relance quando ela abre.
-const paperTextStyle = {
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
-  width: '100%', height: '100%',
-  fontSize: '13px', fontWeight: 800, color: 'var(--green-dark)'
 };
 
 const MeusRoteiros = () => {
@@ -73,7 +65,7 @@ const MeusRoteiros = () => {
           {' '}toque em um deles para ver os dias, os locais e o mapa.
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '38px' }}>
           {routes.map((entry, i) => {
             const s = summarize(entry);
             return (
@@ -83,34 +75,21 @@ const MeusRoteiros = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={stagger(i)}
               >
-                {/* Faixa de resumo acima do cartão: dá para comparar os roteiros sem
-                    abrir um por um. A pasta fica aqui, e não no cabeçalho do cartão,
-                    porque o cartão tem overflow:hidden — os papéis voando para fora
-                    seriam cortados. Aqui sobra espaço acima para eles. */}
+                <SavedRouteCard
+                  route={entry}
+                  index={0}
+                  expanded={openId === entry.id}
+                  onToggle={(next) => setOpenId(next ? entry.id : null)}
+                />
+
+                {/* Faixa de resumo. Fica ABAIXO do cartão de propósito: a pasta, no cabeçalho,
+                    joga os papéis para cima quando abre, e eles cobririam este texto se
+                    ele estivesse em cima. Embaixo, os papéis sobem para espaço vazio. */}
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap',
                   fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600,
-                  padding: '0 4px 6px'
+                  padding: '8px 4px 0'
                 }}>
-                  <div
-                    style={{
-                      width: '62px', height: '52px', flexShrink: 0, position: 'relative',
-                      display: 'flex', alignItems: 'flex-end', justifyContent: 'center'
-                    }}
-                  >
-                    <Folder
-                      size={0.55}
-                      color="#3d9b4f"
-                      open={openId === entry.id}
-                      onToggle={(next) => setOpenId(next ? entry.id : null)}
-                      ariaLabel={openId === entry.id ? `Fechar ${entry.name}` : `Abrir ${entry.name}`}
-                      items={[
-                        <span key="d" style={paperTextStyle}>{entry.days?.length}d</span>,
-                        <span key="p" style={paperTextStyle}>{s.stopCount}</span>,
-                        <span key="k" style={paperTextStyle}>{Math.round(s.km)}km</span>
-                      ]}
-                    />
-                  </div>
                   {entry.option && (
                     <span style={{
                       background: 'var(--card-highlight)', color: 'var(--green-dark)',
@@ -147,13 +126,6 @@ const MeusRoteiros = () => {
                     <Trash2 size={13} /> Apagar
                   </button>
                 </div>
-
-                <SavedRouteCard
-                  route={entry}
-                  index={0}
-                  expanded={openId === entry.id}
-                  onToggle={(next) => setOpenId(next ? entry.id : null)}
-                />
               </motion.div>
             );
           })}

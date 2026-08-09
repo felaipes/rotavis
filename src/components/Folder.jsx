@@ -19,17 +19,21 @@ const darkenColor = (hex, percent) => {
   return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
 };
 
-// Duas props foram acrescentadas ao componente original do React Bits:
+// Três props foram acrescentadas ao componente original do React Bits:
 //
 // `open`        — deixa a pasta controlada por quem a usa. Sem ela, a pasta continua
 //                 cuidando do próprio estado, exatamente como antes. Aqui é preciso
 //                 porque abrir a pasta e abrir o roteiro têm de ser a mesma coisa: se
 //                 cada um guardasse seu estado, dava para ter pasta aberta com roteiro
 //                 fechado.
+// `interactive` — com false, a pasta vira só desenho: sem clique, sem foco e sem role.
+//                 Necessário porque ela mora dentro do <button> do cabeçalho do cartão,
+//                 e botão dentro de botão é HTML inválido além de disparar o toggle
+//                 duas vezes. Quem abre é o cabeçalho; a pasta só reflete o estado.
 // `ariaLabel`   — o rótulo original era fixo em inglês ("Open folder").
 //
 // O resto é a fonte original.
-const Folder = ({ color = '#5227FF', size = 1, items = [], className = '', open: openProp, onToggle, ariaLabel }) => {
+const Folder = ({ color = '#5227FF', size = 1, items = [], className = '', open: openProp, onToggle, ariaLabel, interactive = true }) => {
   const maxItems = 3;
   const papers = items.slice(0, maxItems);
   while (papers.length < maxItems) {
@@ -96,18 +100,22 @@ const Folder = ({ color = '#5227FF', size = 1, items = [], className = '', open:
       <div
         className={folderClassName}
         style={folderStyle}
-        onClick={handleClick}
-        onKeyDown={e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
+        {...(interactive
+          ? {
+              onClick: handleClick,
+              onKeyDown: e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
 
-            handleClick();
-          }
-        }}
-        tabIndex={0}
-        role="button"
-        aria-expanded={open}
-        aria-label={ariaLabel || (open ? 'Close folder' : 'Open folder')}
+                  handleClick();
+                }
+              },
+              tabIndex: 0,
+              role: 'button',
+              'aria-expanded': open,
+              'aria-label': ariaLabel || (open ? 'Close folder' : 'Open folder')
+            }
+          : { 'aria-hidden': true })}
       >
         <div className="folder__back">
           {papers.map((item, i) => (

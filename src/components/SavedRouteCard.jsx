@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Route, ChevronDown, ChevronUp, Sun, Sunset, Moon, MapPin, Wallet, Map as MapIcon } from 'lucide-react';
 import { getPlaceCoordinates } from '../data/zoneCoordinates';
+import Folder from './Folder';
 import { T, cssTransition, DUR } from '../motion';
 
 const FOZ_CENTER = [-25.5478, -54.5658];
@@ -42,6 +43,14 @@ const buildIcon = (color, label) => {
 };
 
 const WEEKDAY_LABELS = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+
+// Texto miúdo dentro dos papéis da pasta. Em px, e não rem, porque o conteúdo é
+// escalado junto com a pasta (size 0.44) e precisa de um tamanho previsível.
+const FOLDER_PAPER_TEXT = {
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  width: '100%', height: '100%',
+  fontSize: '20px', fontWeight: 800, color: 'var(--green-dark)'
+};
 
 const PeriodSection = ({ label, icon: Icon, color, places }) => {
   if (!places || places.length === 0) return null;
@@ -154,6 +163,16 @@ const SavedRouteCard = ({ route, index, expanded: expandedProp, onToggle }) => {
 
   const totalPlaces = allPlaces.length;
 
+  // Resumo de relance nos papéis que saem da pasta: dias e paradas.
+  const folderItems = useMemo(() => {
+    if (!hasDays) return [];
+    return [
+      <span key="d" style={FOLDER_PAPER_TEXT}>{route.days.length}d</span>,
+      <span key="p" style={FOLDER_PAPER_TEXT}>{totalPlaces}</span>,
+      null
+    ];
+  }, [hasDays, route.days, totalPlaces]);
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
@@ -162,7 +181,9 @@ const SavedRouteCard = ({ route, index, expanded: expandedProp, onToggle }) => {
       style={{
         border: '1px solid var(--card-border)',
         borderRadius: '12px',
-        overflow: 'hidden',
+        // Sem overflow:hidden de propósito: os papéis da pasta saem para fora do
+        // cabeçalho quando ela abre, e seriam cortados. Quem recorta o painel que
+        // expande é o próprio painel, que já tem overflow:hidden.
         background: 'var(--card-bg)',
       }}
     >
@@ -173,17 +194,26 @@ const SavedRouteCard = ({ route, index, expanded: expandedProp, onToggle }) => {
           width: '100%', background: 'none', border: 'none', cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: '14px',
           padding: '16px 18px', textAlign: 'left',
+          // Acompanha o arredondamento do cartão: sem o overflow:hidden do pai, o
+          // fundo do hover vazaria quadrado por cima dos cantos.
+          borderRadius: expanded ? '12px 12px 0 0' : '12px',
           transition: cssTransition(['background'], DUR.fast),
         }}
         onMouseEnter={e => e.currentTarget.style.background = 'var(--card-highlight)'}
         onMouseLeave={e => e.currentTarget.style.background = 'none'}
       >
-        <div style={{
-          width: '42px', height: '42px', borderRadius: '10px', flexShrink: 0,
-          background: 'linear-gradient(135deg, var(--green-dark), var(--green))',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff',
-        }}>
-          <Route size={20} />
+        <div style={{ width: '46px', height: '38px', flexShrink: 0, position: 'relative' }}>
+          {/* O elemento da pasta ocupa 100x80 no layout mesmo escalado, então fica
+              absoluto e centrado dentro de uma caixa do tamanho certo. */}
+          <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
+            <Folder
+              size={0.44}
+              color="#3d9b4f"
+              open={expanded}
+              interactive={false}
+              items={folderItems}
+            />
+          </div>
         </div>
         <div style={{ flex: 1 }}>
           <p style={{ fontWeight: 700, fontSize: '0.95rem' }}>{route.name}</p>
