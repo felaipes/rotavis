@@ -12,6 +12,7 @@ import SuaRota from './pages/SuaRota';
 import Conquistas from './pages/Conquistas';
 import MeusRoteiros from './pages/MeusRoteiros';
 import FallsBackground from './components/FallsBackground';
+import ErrorBoundary from './components/ErrorBoundary';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CheckInProvider, useCheckIns } from './context/CheckInContext';
 import { TIERS } from './data/achievements';
@@ -323,7 +324,11 @@ function App() {
               <FallsBackground />
               <Header />
               <main className="app-main">
-                <AnimatedRoutes />
+                {/* Dentro do Router: assim a tela de erro mantém o cabeçalho e a
+                    navegação, e dá para sair da rota quebrada sem recarregar. */}
+                <ErrorBoundary>
+                  <AnimatedRoutes />
+                </ErrorBoundary>
               </main>
               <UnlockToast />
             </div>

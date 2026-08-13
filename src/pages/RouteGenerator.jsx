@@ -185,9 +185,24 @@ const SUB_FILTERS = {
   ]
 };
 
+// Tela estreita = celular. Serve para não montar enfeite pesado onde ele custa caro.
+const useIsSmallScreen = () => {
+  const [small, setSmall] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const onChange = (e) => setSmall(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return small;
+};
+
 const RouteGenerator = () => {
   const { user, updateProfile } = useAuth();
   const prefersReducedMotion = useReducedMotion();
+  const isSmallScreen = useIsSmallScreen();
   const [days, setDays] = useState(1);
   const [startDay, setStartDay] = useState(new Date().getDay());
   const [arrivalDate, setArrivalDate] = useState('');
@@ -691,8 +706,12 @@ const RouteGenerator = () => {
       {/* Anéis atrás do questionário, sobre a foto das Cataratas. pointerEvents none para
           não roubar clique dos botões do formulário — por isso também não usamos os modos
           de interação do componente (followMouse/clickBurst ficam desligados).
-          Desligado inteiro em prefers-reduced-motion: é WebGL animando sem parar. */}
-      {!prefersReducedMotion && (
+          Desligado inteiro em prefers-reduced-motion: é WebGL animando sem parar.
+
+          Também desligado no celular: é enfeite que não se vê direito numa tela estreita
+          e, em troca, mantém um contexto WebGL vivo o tempo todo atrás do formulário —
+          bateria e memória que o aparelho não tem de sobra. */}
+      {!prefersReducedMotion && !isSmallScreen && (
         <div
           aria-hidden="true"
           style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}
