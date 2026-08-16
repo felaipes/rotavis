@@ -11,6 +11,7 @@ import Profile from './pages/Profile';
 import SuaRota from './pages/SuaRota';
 import Conquistas from './pages/Conquistas';
 import MeusRoteiros from './pages/MeusRoteiros';
+import Diagnostico from './pages/Diagnostico';
 import FallsBackground from './components/FallsBackground';
 import ErrorBoundary from './components/ErrorBoundary';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -301,6 +302,8 @@ const AnimatedRoutes = () => {
         <Route path="/rota" element={<RouteGenerator />} />
         <Route path="/conquistas" element={<Conquistas />} />
         <Route path="/meus-roteiros" element={<MeusRoteiros />} />
+        {/* Sem link no menu: é tela de suporte, para abrir quando algo quebra. */}
+        <Route path="/diagnostico" element={<Diagnostico />} />
         <Route path="/login" element={<Login />} />
         <Route path="/cadastro" element={<Register />} />
         <Route path="/perfil" element={<Profile />} />

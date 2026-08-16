@@ -1,4 +1,5 @@
 import React from 'react';
+import { registrarErro } from '../services/errorLog';
 
 // Sem isto, qualquer erro de renderização derruba a árvore inteira e sobra uma tela
 // branca, sem nenhuma pista do que aconteceu — que foi exatamente o relato no celular.
@@ -17,20 +18,13 @@ class ErrorBoundary extends React.Component {
     this.setState({ info });
     // Fica no console do aparelho, para quem estiver depurando pelo navegador.
     console.error('[RotaVis] erro de renderização:', error, info?.componentStack);
-    // Guarda o último erro para poder ser consultado depois de recarregar a página —
-    // no celular não dá para abrir o console no meio do uso.
-    try {
-      localStorage.setItem('rotavis_last_error', JSON.stringify({
-        mensagem: String(error?.message || error),
-        pilha: String(error?.stack || '').slice(0, 2000),
-        componente: String(info?.componentStack || '').slice(0, 2000),
-        quando: new Date().toISOString(),
-        tela: `${window.innerWidth}x${window.innerHeight}`,
-        navegador: navigator.userAgent
-      }));
-    } catch {
-      // localStorage cheio ou bloqueado: não é motivo para esconder o erro original.
-    }
+    // Vai para o mesmo registro da captura global, para /diagnostico mostrar erro de
+    // renderização e erro de handler lado a lado, na ordem em que aconteceram.
+    registrarErro('renderizacao', {
+      mensagem: String(error?.message || error),
+      pilha: String(error?.stack || '').slice(0, 1500),
+      componente: String(info?.componentStack || '').slice(0, 1500)
+    });
   }
 
   render() {
@@ -62,6 +56,9 @@ class ErrorBoundary extends React.Component {
             </button>
             <button onClick={() => { window.location.href = '/'; }} className="btn-glass" style={{ padding: '12px 26px' }}>
               Voltar ao início
+            </button>
+            <button onClick={() => { window.location.href = '/diagnostico'; }} className="btn-glass" style={{ padding: '12px 26px' }}>
+              Ver detalhes
             </button>
           </div>
         </div>
