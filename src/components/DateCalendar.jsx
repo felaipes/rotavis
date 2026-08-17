@@ -32,8 +32,29 @@ const buildMonthGrid = (year, month) => {
   );
 };
 
-const DateCalendar = ({ value, min, max, rangeStart, onChange }) => {
-  const anchor = value || rangeStart || min || toISODate(new Date());
+/**
+ * Calendário de data única ou de intervalo.
+ *
+ * No modo intervalo (`range`), o mesmo calendário recebe as duas pontas: o primeiro
+ * toque marca a chegada, o segundo marca a saída. Tocar numa data anterior à chegada
+ * recomeça a seleção a partir dela, em vez de recusar o toque — é o que a pessoa quer
+ * dizer quando volta para trás no calendário.
+ *
+ * `onRangeChange(inicio, fim)` é chamado a cada mudança; `fim` vem vazio enquanto só
+ * uma ponta estiver escolhida.
+ */
+const DateCalendar = ({ value, min, max, rangeStart, onChange, range = false, start = '', end = '', onRangeChange }) => {
+  const [hover, setHover] = useState('');
+
+  const escolherNoIntervalo = (iso) => {
+    // Sem início, ou já com as duas pontas fechadas: começa um intervalo novo.
+    if (!start || (start && end)) return onRangeChange(iso, '');
+    // Data anterior ao início: a pessoa está remarcando a chegada.
+    if (iso < start) return onRangeChange(iso, '');
+    return onRangeChange(start, iso);
+  };
+
+  const anchor = value || start || rangeStart || min || toISODate(new Date());
   const anchorDate = new Date(`${anchor}T12:00:00`);
   const [view, setView] = useState({ year: anchorDate.getFullYear(), month: anchorDate.getMonth() });
 
@@ -103,16 +124,25 @@ const DateCalendar = ({ value, min, max, rangeStart, onChange }) => {
           const iso = toISODate(date);
           const outsideMonth = date.getMonth() !== view.month;
           const disabled = (min && iso < min) || (max && iso > max);
-          const selected = iso === value;
           const isToday = iso === todayISO;
-          const inRange = rangeStart && value && iso > rangeStart && iso < value;
-          const isRangeStart = rangeStart && iso === rangeStart;
+
+          // No modo intervalo as duas pontas são "selected"; o miolo fica preenchido.
+          // Enquanto só a chegada está marcada, o miolo segue o dedo/cursor, para a
+          // pessoa ver o intervalo se formando antes de confirmar.
+          const fimEfetivo = range ? (end || (start && hover > start ? hover : '')) : value;
+          const selected = range
+            ? (iso === start || (!!end && iso === end))
+            : iso === value;
+          const inicioRef = range ? start : rangeStart;
+          const inRange = inicioRef && fimEfetivo && iso > inicioRef && iso < fimEfetivo;
+          const isRangeStart = !range && rangeStart && iso === rangeStart;
 
           return (
             <button
               key={iso}
               type="button"
-              onClick={() => !disabled && onChange(iso)}
+              onClick={() => { if (disabled) return; range ? escolherNoIntervalo(iso) : onChange(iso); }}
+              onMouseOver={() => { if (range && !disabled) setHover(iso); }}
               disabled={disabled}
               aria-current={selected ? 'date' : undefined}
               style={{

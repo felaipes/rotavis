@@ -132,18 +132,21 @@ const DEFAULT_GROUP_SIZES = { familia: 4, amigos: 3, corporativo: 4, colaborador
 
 const PERIOD_LABELS = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' };
 const DURATION_LABELS = { ate2h: 'até 2 horas', '2a4h': '2 a 4 horas', mais4h: 'mais de 4 horas' };
-const TOTAL_INPUT_STEPS = 8;
+// Passeio tem um passo a menos: ida e volta saem no mesmo calendario, enquanto
+// trabalho ainda precisa de data, duracao e periodo em telas separadas.
+const totalSteps = (reason) => (reason === 'trabalho' ? 8 : 7);
 
 // Indicador de progresso do questionário (não aparece na tela de resultado).
-const WizardProgress = ({ step }) => {
-  if (step > TOTAL_INPUT_STEPS) return null;
-  const percent = Math.round((step / TOTAL_INPUT_STEPS) * 100);
+const WizardProgress = ({ step, reason }) => {
+  const total = totalSteps(reason);
+  if (step > total) return null;
+  const percent = Math.round((step / total) * 100);
   return (
     <div style={{ maxWidth: '420px', margin: '0 auto 30px' }}>
       {/* text-main em vez de text-muted: este texto fica sobre a foto das Cataratas, e o
           tom apagado não alcança contraste AA ali (ver .falls-scrim no index.css). */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: 600 }}>
-        <span>Passo {step} de {TOTAL_INPUT_STEPS}</span>
+        <span>Passo {step} de {total}</span>
         <span>{percent}%</span>
       </div>
       <div style={{ height: '6px', background: 'var(--card-border)', borderRadius: '99px', overflow: 'hidden' }}>
@@ -247,13 +250,17 @@ const RouteGenerator = () => {
     }
   }, [arrivalDate, departureDate]);
 
-  // Se a chegada muda para depois da saída já escolhida (ou o intervalo passa de 5 dias,
-  // limite do gerador), limpa a saída para forçar uma nova escolha válida.
+  // Se a chegada muda para depois da saída já escolhida, limpa a saída para forçar uma
+  // escolha válida. Não há mais teto de duração: o gerador monta quantos dias forem.
   const handleArrivalChange = (val) => {
     setArrivalDate(val);
-    if (departureDate && val && (departureDate < val || departureDate > addDaysISO(val, 4))) {
-      setDepartureDate('');
-    }
+    if (departureDate && val && departureDate < val) setDepartureDate('');
+  };
+
+  // Chegada e saída no mesmo calendário.
+  const handleRangeChange = (inicio, fim) => {
+    setArrivalDate(inicio);
+    setDepartureDate(fim);
   };
   // Duas opções de roteiro; `route` é sempre a que está selecionada, então o resto da
   // tela (mapa, PDF, salvar) continua trabalhando com um roteiro só.
@@ -770,7 +777,7 @@ const RouteGenerator = () => {
           Conte-nos um pouco sobre você e criaremos um roteiro sob medida para a sua experiência em Foz do Iguaçu.
         </p>
 
-        <WizardProgress step={step} />
+        <WizardProgress step={step} reason={profile.reason} />
 
           {step === 1 && (
             <motion.div
@@ -1049,7 +1056,9 @@ const RouteGenerator = () => {
             </motion.div>
           )}
 
-          {step === 6 && (
+          {/* Trabalho continua com data única: quem vem trabalhar informa o dia e, em
+              seguida, quanto tempo livre tem — não há intervalo a definir. */}
+          {step === 6 && profile.reason === 'trabalho' && (
             <motion.div
               key="data-chegada"
               variants={wizardStep} initial="initial" animate="animate"
@@ -1085,6 +1094,59 @@ const RouteGenerator = () => {
             </motion.div>
           )}
 
+          {/* Passeio: ida e volta no mesmo calendário, em vez de duas telas. */}
+          {step === 6 && profile.reason !== 'trabalho' && (
+            <motion.div
+              key="datas-viagem"
+              variants={wizardStep} initial="initial" animate="animate"
+              className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
+            >
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Calendar size={24} /> Quando você vai?
+              </h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '-15px', textAlign: 'center' }}>
+                {!arrivalDate
+                  ? 'Toque no dia da chegada e depois no da saída.'
+                  : !departureDate
+                    ? 'Agora toque no dia da saída.'
+                    : 'Só recomendamos lugares abertos em cada dia do roteiro.'}
+              </p>
+              <DateCalendar
+                range
+                start={arrivalDate}
+                end={departureDate}
+                min={todayISO}
+                onRangeChange={handleRangeChange}
+              />
+              <p style={{
+                color: arrivalDate && departureDate ? 'var(--green-dark)' : 'var(--text-muted)',
+                fontWeight: 600, fontSize: '0.95rem', marginTop: '-10px', textAlign: 'center',
+                textTransform: 'capitalize', minHeight: '1.4em'
+              }}>
+                {arrivalDate && departureDate
+                  ? `${formatShortDate(arrivalDate)} até ${formatShortDate(departureDate)} · ${days} ${days === 1 ? 'dia' : 'dias'}`
+                  : arrivalDate
+                    ? formatFullDate(arrivalDate)
+                    : ''}
+              </p>
+              <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
+                <button onClick={() => setStep(5)} className="btn-glass wizard-option">Voltar</button>
+                <button
+                  onClick={() => setStep(7)}
+                  disabled={!arrivalDate || !departureDate}
+                  className="btn-gold btn-wizard"
+                  style={{
+                    padding: '15px 30px',
+                    opacity: arrivalDate && departureDate ? 1 : 0.5,
+                    cursor: arrivalDate && departureDate ? 'pointer' : 'not-allowed'
+                  }}
+                >
+                  Próximo <ChevronRight size={18} />
+                </button>
+              </div>
+            </motion.div>
+          )}
+
           {step === 7 && profile.reason === 'trabalho' && (
             <motion.div
               key="duracao-trabalho"
@@ -1112,44 +1174,6 @@ const RouteGenerator = () => {
             </motion.div>
           )}
 
-          {step === 7 && profile.reason !== 'trabalho' && (
-            <motion.div
-              key="data-saida"
-              variants={wizardStep} initial="initial" animate="animate"
-              className="liquid-glass wizard-card" style={{ padding: 'clamp(20px, 6vw, 40px)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}
-            >
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Calendar size={24} /> Qual a data de saída?
-              </h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '-15px', textAlign: 'center' }}>
-                Roteiros de até 5 dias · Chegada em {formatShortDate(arrivalDate)}
-              </p>
-              <DateCalendar
-                value={departureDate}
-                min={arrivalDate || todayISO}
-                max={arrivalDate ? addDaysISO(arrivalDate, 4) : undefined}
-                rangeStart={arrivalDate}
-                onChange={setDepartureDate}
-              />
-              {departureDate && (
-                <p style={{ color: 'var(--green-dark)', fontWeight: 600, fontSize: '0.95rem', marginTop: '-10px', textAlign: 'center', textTransform: 'capitalize' }}>
-                  {formatFullDate(departureDate)} · {days} {days === 1 ? 'dia' : 'dias'} de viagem
-                </p>
-              )}
-              <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
-                <button onClick={() => setStep(6)} className="btn-glass wizard-option">Voltar</button>
-                <button
-                  onClick={() => setStep(8)}
-                  disabled={!departureDate}
-                  className="btn-gold btn-wizard"
-                  style={{ padding: '15px 30px', opacity: departureDate ? 1 : 0.5, cursor: departureDate ? 'pointer' : 'not-allowed' }}
-                >
-                  Próximo <ChevronRight size={18} />
-                </button>
-              </div>
-            </motion.div>
-          )}
-
           {step === 8 && profile.reason === 'trabalho' && (
             <motion.div
               key="periodo-trabalho"
@@ -1174,7 +1198,7 @@ const RouteGenerator = () => {
             </motion.div>
           )}
 
-          {step === 8 && profile.reason !== 'trabalho' && (
+          {step === 7 && profile.reason !== 'trabalho' && (
             <motion.div
               key="orcamento-total"
               variants={wizardStep} initial="initial" animate="animate"
@@ -1224,7 +1248,7 @@ const RouteGenerator = () => {
                 </p>
               )}
               <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
-                <button onClick={() => setStep(7)} className="btn-glass wizard-option">Voltar</button>
+                <button onClick={() => setStep(6)} className="btn-glass wizard-option">Voltar</button>
                 <button onClick={generateRoute} className="btn-generate">
                   <span className="btn-generate__icon" aria-hidden="true">
                     <Calendar size={22} />
