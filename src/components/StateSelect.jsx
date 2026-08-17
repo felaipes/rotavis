@@ -33,8 +33,15 @@ const StateChip = ({ name, selected, onSelect }) => (
       // diferente da sombra.
     }}
   >
+    {/* O ícone entra e sai conforme a seleção, e o nome fica num <span> em vez de solto.
+        Texto solto ao lado de um elemento condicional é o que quebra quando o tradutor
+        do navegador está ligado: ele troca o nó de texto por um <font> dele, e aí o
+        React tenta remover um nó que não é mais filho daquele pai — o erro
+        "The node to be removed is not a child of this node", que derruba a tela inteira
+        ao tocar num estado. Com o nome dentro de um elemento estável, o React nunca
+        precisa mexer no nó de texto que o tradutor trocou. */}
     {selected && <Check size={14} />}
-    {name}
+    <span translate="no">{name}</span>
   </button>
 );
 

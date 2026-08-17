@@ -71,8 +71,11 @@ const TrophyCard = ({ achievement, index }) => {
           />
         </div>
         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+          {/* Texto num <span>, e não solto ao lado do ícone condicional: com o tradutor
+              do navegador ligado, o nó de texto vira um <font> dele e o React quebra ao
+              inserir o ícone. Mesmo motivo do StateSelect. */}
           {unlocked && <Check size={12} color={tier.color} />}
-          {current} / {goal} {achievement.unit}
+          <span>{current} / {goal} {achievement.unit}</span>
         </div>
       </div>
     </motion.div>
