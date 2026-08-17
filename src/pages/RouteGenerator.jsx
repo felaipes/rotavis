@@ -11,6 +11,7 @@ import DateCalendar, { toISODate, addDaysISO } from '../components/DateCalendar'
 import CountryFlag from '../components/CountryFlag';
 import StateSelect from '../components/StateSelect';
 import { useRouteHistory } from '../hooks/useRouteHistory';
+import { useRouteSession, lerSessao } from '../hooks/useRouteSession';
 import MagicRings from '../components/MagicRings';
 import { T, wizardStep, fadeUp, stagger } from '../motion';
 import { getPlaceCoordinates, totalRouteDistanceKm, formatDistanceKm, haversineDistanceKm } from '../data/zoneCoordinates';
@@ -203,13 +204,20 @@ const RouteGenerator = () => {
   const { user, updateProfile } = useAuth();
   const prefersReducedMotion = useReducedMotion();
   const isSmallScreen = useIsSmallScreen();
-  const [days, setDays] = useState(1);
-  const [startDay, setStartDay] = useState(new Date().getDay());
-  const [arrivalDate, setArrivalDate] = useState('');
-  const [departureDate, setDepartureDate] = useState('');
+
+  // Estado da sessão anterior, para quando a pessoa sai desta tela e volta. Lido uma vez
+  // só, no primeiro render, para servir de valor inicial — restaurar depois faria a tela
+  // piscar vazia antes de aparecer o roteiro.
+  const sessaoRef = useRef(lerSessao());
+  const sessao = sessaoRef.current;
+
+  const [days, setDays] = useState(sessao?.days ?? 1);
+  const [startDay, setStartDay] = useState(sessao?.startDay ?? new Date().getDay());
+  const [arrivalDate, setArrivalDate] = useState(sessao?.arrivalDate ?? '');
+  const [departureDate, setDepartureDate] = useState(sessao?.departureDate ?? '');
   // Quantas pessoas viajam ao todo (incluindo quem está preenchendo). O orçamento total
   // é dividido por esse número e pelos dias, porque os preços do catálogo são por pessoa.
-  const [travelers, setTravelers] = useState(1);
+  const [travelers, setTravelers] = useState(sessao?.travelers ?? 1);
 
   // Solo/casal avançam direto; os demais param para informar quantas pessoas são.
   const handleGroupTypeSelect = (groupId) => {
@@ -249,14 +257,16 @@ const RouteGenerator = () => {
   };
   // Duas opções de roteiro; `route` é sempre a que está selecionada, então o resto da
   // tela (mapa, PDF, salvar) continua trabalhando com um roteiro só.
-  const [routeOptions, setRouteOptions] = useState(null);
-  const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
+  const [routeOptions, setRouteOptions] = useState(sessao?.routeOptions ?? null);
+  const [selectedRouteIndex, setSelectedRouteIndex] = useState(sessao?.selectedRouteIndex ?? 0);
   const route = routeOptions ? routeOptions[selectedRouteIndex] : null;
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(sessao?.step ?? 1);
   const [modalStage, setModalStage] = useState(null);
   const routeRef = useRef(null);
   const mapSnapshotRef = useRef(null);
-  const [profile, setProfile] = useState({
+  // Destino da rolagem quando o roteiro fica pronto.
+  const resultRef = useRef(null);
+  const [profile, setProfile] = useState(sessao?.profile ?? {
     reason: '',
     transport: '',
     preferences: [],
@@ -269,6 +279,13 @@ const RouteGenerator = () => {
   const [showNps, setShowNps] = useState(false);
   const [npsScore, setNpsScore] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Mantém o roteiro e as respostas vivos ao navegar para outra tela e voltar. Só o que
+  // é serializável entra aqui.
+  useRouteSession({
+    routeOptions, selectedRouteIndex, step, profile,
+    days, startDay, arrivalDate, departureDate, travelers
+  });
 
   const { saveRoute: saveToHistory } = useRouteHistory();
   // Uma geração = uma entrada no histórico. Trocar entre o roteiro A e o B atualiza a
@@ -697,6 +714,13 @@ const RouteGenerator = () => {
             onComplete={() => {
               setIsGenerating(false);
               setStep(9);
+              // Sem isto a página fica onde estava, mostrando o fim do questionário, e o
+              // roteiro nasce ~1500px abaixo da dobra. No celular parece que o "Gerar"
+              // não fez nada. O rAF duplo espera o passo 9 estar no DOM para haver
+              // destino para onde rolar.
+              requestAnimationFrame(() => requestAnimationFrame(() => {
+                resultRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+              }));
             }}
           />
         )}
@@ -1214,6 +1238,7 @@ const RouteGenerator = () => {
 
       {step === 9 && route && (
         <motion.div
+          ref={resultRef}
           variants={fadeUp}
           initial="initial"
           animate="animate"
