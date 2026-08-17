@@ -128,7 +128,7 @@ const summarizeItinerary = (dayPlans) => {
 // Grupos cujo tamanho já está no nome — não faz sentido perguntar quantas pessoas são.
 const FIXED_GROUP_SIZES = { solo: 1, casal: 2 };
 // Chute inicial do contador para os grupos de tamanho aberto, só para não começar em 1.
-const DEFAULT_GROUP_SIZES = { familia: 4, amigos: 3, corporativo: 4, colaboradores: 3 };
+const DEFAULT_GROUP_SIZES = { familia: 4, amigos: 3, colaboradores: 3 };
 
 const PERIOD_LABELS = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' };
 const DURATION_LABELS = { ate2h: 'até 2 horas', '2a4h': '2 a 4 horas', mais4h: 'mais de 4 horas' };
@@ -904,11 +904,12 @@ const RouteGenerator = () => {
                       { id: 'colaboradores', label: 'Com Colaboradores', icon: Briefcase }
                     ]
                   : [
+                      // Sem "Corporativo" aqui: viagem corporativa é o motivo "trabalho",
+                      // que tem o seu próprio conjunto de opções logo acima.
                       { id: 'familia', label: 'Família', icon: Users },
                       { id: 'casal', label: 'Casal', icon: Heart },
                       { id: 'solo', label: 'Sozinho(a)', icon: MapIcon },
-                      { id: 'amigos', label: 'Amigos', icon: Star },
-                      { id: 'corporativo', label: 'Corporativo', icon: Briefcase }
+                      { id: 'amigos', label: 'Amigos', icon: Star }
                     ]
                 ).map(g => (
                   <button
@@ -1210,7 +1211,10 @@ const RouteGenerator = () => {
                 {travelers > 1 && <> e pelas {travelers} pessoas</>} para sugerir lugares que cabem no bolso.
               </p>
               <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                {[500, 1000, 2000, 3500].map(val => (
+                {/* Faixa larga porque o valor é do grupo inteiro e a viagem deixou de ter
+                    teto de 5 dias: 18 dias em quatro pessoas passa fácil dos R$ 3.500 que
+                    eram o máximo antes. */}
+                {[500, 1000, 2000, 3500, 5000, 7500, 10000].map(val => (
                   <button
                     key={val}
                     onClick={() => setProfile({ ...profile, totalBudget: val })}
