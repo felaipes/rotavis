@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, Clock, Wallet, ChefHat, Sparkles, Check, Plus } from 'lucide-react';
+import { MapPin, Clock, Wallet, ChefHat, Sparkles, Check, Plus, Minus } from 'lucide-react';
 import { useCheckIns } from '../context/CheckInContext';
 import { cssTransition, CSS_EASE_OUT, DUR } from '../motion';
 
 const PlaceCard = ({ place }) => {
-  const { stats, addCheckIn } = useCheckIns();
+  const { stats, addCheckIn, undoCheckIn } = useCheckIns();
   const visitCount = stats.countByPlace[place.id] || 0;
   // A primeira imagem entra com fade sobre um skeleton, em vez de "pipocar" na tela.
   const [coverLoaded, setCoverLoaded] = useState(false);
@@ -168,20 +168,62 @@ const PlaceCard = ({ place }) => {
         </div>
 
         {/* Check-in: alimenta a porcentagem de Foz explorada e os troféus da aba Conquistas.
-            stopPropagation para o clique não abrir/fechar o card junto. */}
-        <button
-          onClick={(e) => { e.stopPropagation(); addCheckIn(place.id); }}
-          aria-label={visitCount > 0 ? `Visitei de novo: ${place.name}` : `Marcar ${place.name} como visitado`}
-          className={visitCount > 0 ? 'btn-glass' : 'btn-gold'}
-          style={{
-            marginTop: '15px', width: '100%', padding: '9px', fontSize: '0.84rem', gap: '6px',
-            ...(visitCount > 0 ? { borderColor: 'var(--green)', color: 'var(--green-dark)' } : {})
-          }}
-        >
-          {visitCount > 0
-            ? <><Check size={15} /> Visitado {visitCount}x · registrar de novo</>
-            : <><Plus size={15} /> Já visitei</>}
-        </button>
+            stopPropagation para o clique não abrir/fechar o card junto.
+
+            Antes era um botão só: já visitado, ele virava "registrar de novo", então quem
+            tinha clicado por engano e clicava outra vez para desmarcar registrava uma
+            SEGUNDA visita. Desfazer só existia numa tela diferente (Conquistas), num
+            ícone pequeno — quem errava não tinha como voltar atrás ali mesmo.
+
+            Agora, com visita registrada, vira um contador com os dois lados à mostra.
+            Ambos com 44px de alvo e 8px de folga, como pede a diretriz de toque. */}
+        {visitCount === 0 ? (
+          <button
+            onClick={(e) => { e.stopPropagation(); addCheckIn(place.id); }}
+            aria-label={`Marcar ${place.name} como visitado`}
+            className="btn-gold"
+            style={{ marginTop: '15px', width: '100%', minHeight: '44px', padding: '9px', fontSize: '0.84rem', gap: '6px' }}
+          >
+            <Plus size={15} /> Já visitei
+          </button>
+        ) : (
+          <div style={{ marginTop: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={(e) => { e.stopPropagation(); undoCheckIn(place.id); }}
+              aria-label={`Remover uma visita de ${place.name}`}
+              className="btn-glass"
+              style={{
+                minWidth: '44px', minHeight: '44px', padding: '0', flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                borderColor: 'var(--green)', color: 'var(--green-dark)'
+              }}
+            >
+              <Minus size={17} />
+            </button>
+
+            <span style={{
+              flex: 1, minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: '6px', fontSize: '0.84rem', fontWeight: 600, color: 'var(--green-dark)',
+              background: 'rgba(27, 94, 60, 0.07)', border: '1px solid rgba(27, 94, 60, 0.22)',
+              borderRadius: '10px'
+            }}>
+              <Check size={15} /> Visitado {visitCount}x
+            </span>
+
+            <button
+              onClick={(e) => { e.stopPropagation(); addCheckIn(place.id); }}
+              aria-label={`Registrar mais uma visita em ${place.name}`}
+              className="btn-glass"
+              style={{
+                minWidth: '44px', minHeight: '44px', padding: '0', flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                borderColor: 'var(--green)', color: 'var(--green-dark)'
+              }}
+            >
+              <Plus size={17} />
+            </button>
+          </div>
+        )}
 
         <div style={{ marginTop: '15px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
           {place.tags.slice(0, 3).map(tag => (

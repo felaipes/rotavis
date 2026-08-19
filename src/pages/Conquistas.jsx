@@ -257,32 +257,55 @@ const Conquistas = () => {
                   <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{place.zone}</div>
                 </div>
 
-                {count > 0 && (
-                  <>
-                    <span style={{
-                      background: 'var(--green-dark)', color: '#fff', fontSize: '0.75rem', fontWeight: 700,
-                      borderRadius: '99px', padding: '3px 10px', flexShrink: 0
-                    }}>
-                      {count}x
-                    </span>
+                {/* Com visita registrada, os dois lados ficam com o mesmo peso visual e
+                    44px de alvo. Antes o remover era um ícone de 27px colado num botão
+                    dourado de "Visitei": quem queria desmarcar acertava o dourado e
+                    registrava mais uma visita em vez de tirar. */}
+                {count > 0 ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
                     <button
                       onClick={() => undoCheckIn(place.id)}
                       aria-label={`Remover uma visita de ${place.name}`}
                       className="btn-glass"
-                      style={{ padding: '6px', display: 'flex', flexShrink: 0 }}
+                      style={{
+                        minWidth: '44px', minHeight: '44px', padding: 0, display: 'flex',
+                        alignItems: 'center', justifyContent: 'center',
+                        borderColor: 'var(--green)', color: 'var(--green-dark)'
+                      }}
                     >
-                      <Minus size={15} />
+                      <Minus size={17} />
                     </button>
-                  </>
+                    <span style={{
+                      minWidth: '58px', minHeight: '44px', display: 'flex', alignItems: 'center',
+                      justifyContent: 'center', gap: '5px', fontSize: '0.8rem', fontWeight: 700,
+                      color: 'var(--green-dark)', background: 'rgba(27, 94, 60, 0.07)',
+                      border: '1px solid rgba(27, 94, 60, 0.22)', borderRadius: '10px'
+                    }}>
+                      <Check size={14} /> {count}x
+                    </span>
+                    <button
+                      onClick={() => addCheckIn(place.id)}
+                      aria-label={`Registrar mais uma visita em ${place.name}`}
+                      className="btn-glass"
+                      style={{
+                        minWidth: '44px', minHeight: '44px', padding: 0, display: 'flex',
+                        alignItems: 'center', justifyContent: 'center',
+                        borderColor: 'var(--green)', color: 'var(--green-dark)'
+                      }}
+                    >
+                      <Plus size={17} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => addCheckIn(place.id)}
+                    aria-label={`Registrar visita em ${place.name}`}
+                    className="btn-gold"
+                    style={{ minHeight: '44px', padding: '7px 14px', fontSize: '0.8rem', flexShrink: 0, gap: '5px' }}
+                  >
+                    <Plus size={14} /> Visitei
+                  </button>
                 )}
-                <button
-                  onClick={() => addCheckIn(place.id)}
-                  aria-label={`Registrar visita em ${place.name}`}
-                  className="btn-gold"
-                  style={{ padding: '7px 12px', fontSize: '0.8rem', flexShrink: 0, gap: '5px' }}
-                >
-                  <Plus size={14} /> Visitei
-                </button>
               </div>
             );
           })}
