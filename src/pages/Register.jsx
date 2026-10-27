@@ -58,7 +58,7 @@ const Register = () => {
         style={{ width: '100%', maxWidth: '500px', padding: '40px' }}
       >
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <div style={{ background: 'var(--green-dark)', width: '60px', height: '60px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: '#ffffff' }}>
+          <div style={{ background: 'var(--tint)', width: '60px', height: '60px', borderRadius: 'var(--r-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: '#ffffff' }}>
             <UserPlus size={32} />
           </div>
           <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Crie sua conta</h1>
@@ -73,11 +73,11 @@ const Register = () => {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               style={{
-                background: 'rgba(27, 94, 60, 0.08)',
-                border: '1px solid rgba(27, 94, 60, 0.25)',
+                background: 'var(--tint-soft)',
+                border: '1px solid color-mix(in srgb, var(--leaf) 35%, transparent)',
                 color: 'var(--green-dark)',
                 padding: '16px',
-                borderRadius: '10px',
+                borderRadius: 'var(--r-sm)',
                 marginBottom: '20px',
                 display: 'flex',
                 alignItems: 'center',
@@ -92,7 +92,7 @@ const Register = () => {
         </AnimatePresence>
 
         {error && (
-          <div style={{ background: '#ef444422', border: '1px solid #ef4444', color: '#ef4444', padding: '12px', borderRadius: '8px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ background: 'var(--danger-soft)', border: '1px solid var(--danger)', color: 'var(--danger)', padding: '12px', borderRadius: 'var(--r-sm)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <AlertCircle size={18} />
             <span>{error}</span>
           </div>
@@ -111,7 +111,7 @@ const Register = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="input-field"
-                  style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', borderRadius: '8px', color: 'var(--text-main)' }}
+                  style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', borderRadius: 'var(--r-sm)', color: 'var(--text-main)' }}
                   placeholder="Seu nome completo"
                 />
               </div>
@@ -128,7 +128,7 @@ const Register = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="input-field"
-                  style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', borderRadius: '8px', color: 'var(--text-main)' }}
+                  style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', borderRadius: 'var(--r-sm)', color: 'var(--text-main)' }}
                   placeholder="exemplo@email.com"
                 />
               </div>
@@ -147,7 +147,7 @@ const Register = () => {
                     value={age}
                     onChange={(e) => setAge(e.target.value)}
                     className="input-field"
-                    style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', borderRadius: '8px', color: 'var(--text-main)' }}
+                    style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', borderRadius: 'var(--r-sm)', color: 'var(--text-main)' }}
                     placeholder="Ex: 28"
                   />
                 </div>
@@ -161,7 +161,7 @@ const Register = () => {
                     value={state}
                     onChange={(e) => setState(e.target.value)}
                     className="input-field"
-                    style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', borderRadius: '8px', color: 'var(--text-main)', appearance: 'auto' }}
+                    style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', borderRadius: 'var(--r-sm)', color: 'var(--text-main)', appearance: 'auto' }}
                   >
                     <option value="">UF</option>
                     {BRAZILIAN_STATES.map((uf) => (
@@ -183,7 +183,7 @@ const Register = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="input-field"
-                  style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', borderRadius: '8px', color: 'var(--text-main)' }}
+                  style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', borderRadius: 'var(--r-sm)', color: 'var(--text-main)' }}
                   placeholder="Mínimo 6 caracteres"
                 />
               </div>
@@ -200,7 +200,7 @@ const Register = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="input-field"
-                  style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', borderRadius: '8px', color: 'var(--text-main)' }}
+                  style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', borderRadius: 'var(--r-sm)', color: 'var(--text-main)' }}
                   placeholder="••••••••"
                 />
               </div>

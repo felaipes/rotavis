@@ -21,6 +21,7 @@ import { trackRouteGenerated, trackNps } from '../services/analyticsService';
 import { WEEKDAY_LABELS, isPlaceAvailable, isOpenOnDay } from '../services/availabilityService';
 import { useAuth } from '../context/AuthContext';
 import RouteLoadingScreen from '../components/RouteLoadingScreen';
+import Sheet from '../components/Sheet';
 
 
 // Filtra o grupo de locais pelos que estão abertos no período/dia-da-semana pedidos.
@@ -149,12 +150,12 @@ const WizardProgress = ({ step, reason }) => {
         <span>Passo {step} de {total}</span>
         <span>{percent}%</span>
       </div>
-      <div style={{ height: '6px', background: 'var(--card-border)', borderRadius: '99px', overflow: 'hidden' }}>
+      <div style={{ height: '6px', background: 'var(--card-border)', borderRadius: 'var(--r-pill)', overflow: 'hidden' }}>
         <motion.div
           initial={false}
           animate={{ width: `${percent}%` }}
           transition={T.slow}
-          style={{ height: '100%', background: 'linear-gradient(90deg, var(--blue), var(--green), var(--accent-gold))', borderRadius: '99px' }}
+          style={{ height: '100%', background: 'linear-gradient(90deg, var(--blue), var(--green), var(--accent-gold))', borderRadius: 'var(--r-pill)' }}
         />
       </div>
     </div>
@@ -877,7 +878,7 @@ const RouteGenerator = () => {
                         key={name}
                         onClick={() => { setProfile({ ...profile, origin: name, originState: name }); setStep(3); }}
                         className={`btn-glass wizard-option ${profile.origin === name ? 'active' : ''}`}
-                        style={{ padding: '10px 18px', borderRadius: '30px', fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}
+                        style={{ padding: '10px 18px', borderRadius: 'var(--r-pill)', fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}
                       >
                         <CountryFlag country={name} width={20} /> {name}
                       </button>
@@ -1013,7 +1014,7 @@ const RouteGenerator = () => {
                     key={pref.id}
                     onClick={() => handlePreferenceToggle(pref.id)}
                     className={`btn-glass wizard-option ${profile.preferences.includes(pref.id) ? 'active' : ''}`}
-                    style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 25px', borderRadius: '30px' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 25px', borderRadius: 'var(--r-pill)' }}
                   >
                     <pref.icon size={18} color="var(--green)" />
                     {pref.label}
@@ -1031,7 +1032,7 @@ const RouteGenerator = () => {
                       <button
                         onClick={() => setProfile(prev => ({ ...prev, preferences: prev.preferences.filter(p => !SUB_FILTERS.religiao.some(s => s.id === p)) }))}
                         className={`btn-glass ${SUB_FILTERS.religiao.every(sub => !profile.preferences.includes(sub.id)) ? 'active' : ''}`}
-                        style={{ padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem' }}
+                        style={{ padding: '8px 16px', borderRadius: 'var(--r-lg)', fontSize: '0.85rem' }}
                       >
                         Ver todas
                       </button>
@@ -1041,7 +1042,7 @@ const RouteGenerator = () => {
                         key={sub.id}
                         onClick={() => handlePreferenceToggle(sub.id)}
                         className={`btn-glass ${profile.preferences.includes(sub.id) ? 'active' : ''}`}
-                        style={{ padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem' }}
+                        style={{ padding: '8px 16px', borderRadius: 'var(--r-lg)', fontSize: '0.85rem' }}
                       >
                         {sub.label}
                       </button>
@@ -1235,7 +1236,7 @@ const RouteGenerator = () => {
                   className="input-field"
                   value={profile.totalBudget ?? ''}
                   onChange={(e) => setProfile({ ...profile, totalBudget: e.target.value === '' ? null : Number(e.target.value) })}
-                  style={{ width: '140px', padding: '10px 12px', borderRadius: '8px', fontSize: '1rem' }}
+                  style={{ width: '140px', padding: '10px 12px', borderRadius: 'var(--r-sm)', fontSize: '1rem' }}
                 />
               </div>
               {profile.totalBudget > 0 && (
@@ -1274,7 +1275,7 @@ const RouteGenerator = () => {
         >
           {/* Escolha entre as duas opções. Tudo abaixo (mapa, dias, PDF) segue a selecionada. */}
           {routeOptions && routeOptions.length > 1 && (
-            <div className="liquid-glass" style={{ padding: 'clamp(16px, 3vw, 22px)', borderRadius: '20px' }}>
+            <div className="liquid-glass" style={{ padding: 'clamp(16px, 3vw, 22px)', borderRadius: 'var(--r-lg)' }}>
               <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '6px' }}>
                 {profile.reason === 'trabalho'
                   ? `2 roteiros para a sua ${PERIOD_LABELS[profile.period] || 'folga'}`
@@ -1296,15 +1297,15 @@ const RouteGenerator = () => {
                       aria-pressed={isSelected}
                       className="wizard-option"
                       style={{
-                        textAlign: 'left', cursor: 'pointer', padding: '16px 18px', borderRadius: '16px',
+                        textAlign: 'left', cursor: 'pointer', padding: '16px 18px', borderRadius: 'var(--r-lg)',
                         border: `2px solid ${isSelected ? 'var(--green)' : 'var(--card-border)'}`,
-                        background: isSelected ? 'rgba(61, 155, 79, 0.07)' : 'var(--card-bg)'
+                        background: isSelected ? 'var(--tint-soft)' : 'var(--card-bg)'
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                         <span style={{
                           width: '26px', height: '26px', borderRadius: '50%', flexShrink: 0,
-                          background: isSelected ? 'var(--green-dark)' : 'var(--card-highlight)',
+                          background: isSelected ? 'var(--tint)' : 'var(--card-highlight)',
                           color: isSelected ? '#fff' : 'var(--text-muted)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontWeight: 800, fontSize: '0.8rem'
@@ -1327,7 +1328,7 @@ const RouteGenerator = () => {
             </div>
           )}
 
-          <div className="liquid-glass" style={{ padding: 'clamp(16px, 3vw, 24px)', borderRadius: '20px' }}>
+          <div className="liquid-glass" style={{ padding: 'clamp(16px, 3vw, 24px)', borderRadius: 'var(--r-lg)' }}>
             <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '16px' }}>
               Sua rota no mapa
             </h2>
@@ -1351,13 +1352,13 @@ const RouteGenerator = () => {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={stagger(index)}
-                  style={{ background: '#ffffff', borderRadius: '20px', border: '1px solid var(--card-border)', boxShadow: '0 6px 24px rgba(27, 94, 60, 0.07)', padding: 'clamp(18px, 4vw, 28px)' }}
+                  style={{ background: 'var(--card-bg)', borderRadius: 'var(--r-lg)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-1)', padding: 'clamp(18px, 4vw, 28px)' }}
                 >
                   {/* Cabeçalho do dia, estilo recibo de viagem */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', paddingBottom: '18px', marginBottom: '22px', borderBottom: '1px solid var(--card-border)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                       <div style={{
-                        width: '38px', height: '38px', borderRadius: '50%', background: 'var(--green-dark)', color: '#fff',
+                        width: '38px', height: '38px', borderRadius: '50%', background: 'var(--tint)', color: '#fff',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.95rem', flexShrink: 0
                       }}>
                         {dayPlan.day}
@@ -1372,7 +1373,7 @@ const RouteGenerator = () => {
                       {dayStops.length > 1 && (
                         <div style={{
                           display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600,
-                          padding: '6px 14px', borderRadius: '99px',
+                          padding: '6px 14px', borderRadius: 'var(--r-pill)',
                           background: 'var(--card-highlight)', color: 'var(--green-dark)'
                         }}>
                           <Route size={13} />
@@ -1384,7 +1385,7 @@ const RouteGenerator = () => {
                           title={`~R$ ${Math.round(dayPlan.estimatedCost).toLocaleString('pt-BR')} por pessoa`}
                           style={{
                             display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600,
-                            padding: '6px 14px', borderRadius: '99px',
+                            padding: '6px 14px', borderRadius: 'var(--r-pill)',
                             background: dayPlan.estimatedCost > dayPlan.dailyBudget ? 'rgba(220, 38, 38, 0.1)' : 'var(--accent-gold-glow)',
                             color: dayPlan.estimatedCost > dayPlan.dailyBudget ? '#dc2626' : 'var(--green-dark)'
                           }}
@@ -1483,55 +1484,39 @@ const RouteGenerator = () => {
         </motion.div>
       )}
 
-      {/* MODAL DE CONFIRMAÇÃO / AGRADECIMENTO */}
-      <AnimatePresence>
-        {modalStage && (
-          <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-            background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
-            padding: '20px'
-          }}>
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-              className="liquid-glass" style={{ padding: '40px', maxWidth: '500px', width: '100%', textAlign: 'center', position: 'relative' }}
-            >
-              {modalStage === 'confirm' && (
-                <>
-                  <button
-                    onClick={() => setModalStage(null)}
-                    className="icon-btn"
-                    aria-label="Fechar"
-                    style={{ position: 'absolute', top: '8px', right: '8px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-                  >
-                    <X size={24} />
-                  </button>
-                  <h2 style={{ fontSize: '1.8rem', fontWeight: 700, marginBottom: '20px' }} className="gold-gradient">Quase lá!</h2>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', marginBottom: '30px' }}>
-                    Você deseja confirmar e baixar este roteiro perfeito para sua viagem a Foz do Iguaçu em PDF?
-                  </p>
-                  <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-                    <button onClick={() => setModalStage(null)} className="btn-glass">Cancelar</button>
-                    <button onClick={handleConfirmSave} className="btn-gold">Sim, Baixar PDF</button>
-                  </div>
-                </>
-              )}
-
-              {modalStage === 'thankyou' && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-                  <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'var(--accent-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <CheckCircle2 size={40} color="var(--green-dark)" />
-                  </div>
-                  <h2 style={{ fontSize: '2rem', fontWeight: 700 }} className="gold-gradient">Obrigado!</h2>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>
-                    Seu roteiro foi gerado com sucesso. O download iniciará em instantes... Aproveite Foz do Iguaçu!
-                  </p>
-                </div>
-              )}
-            </motion.div>
+      {/* CONFIRMAÇÃO / AGRADECIMENTO — folha no celular, diálogo no desktop. Na etapa
+          de agradecimento não fecha por gesto: o download está começando. */}
+      <Sheet
+        open={!!modalStage}
+        onClose={() => setModalStage(null)}
+        dismissible={modalStage === 'confirm'}
+        hideClose={modalStage !== 'confirm'}
+      >
+        {modalStage === 'confirm' && (
+          <div style={{ textAlign: 'center', padding: '0 4px' }}>
+            <h2 style={{ fontSize: 'var(--text-title-1)', fontWeight: 700, marginBottom: '12px' }} className="gold-gradient">Quase lá!</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-body)', marginBottom: '24px' }}>
+              Você deseja confirmar e baixar este roteiro perfeito para sua viagem a Foz do Iguaçu em PDF?
+            </p>
+            <div className="sheet-actions">
+              <button onClick={handleConfirmSave} className="btn-gold">Sim, Baixar PDF</button>
+              <button onClick={() => setModalStage(null)} className="btn-glass">Cancelar</button>
+            </div>
           </div>
         )}
-      </AnimatePresence>
+
+        {modalStage === 'thankyou' && (
+          <div role="status" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', textAlign: 'center', padding: '8px 4px 0' }}>
+            <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'var(--accent-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <CheckCircle2 size={36} color="#17512f" />
+            </div>
+            <h2 style={{ fontSize: 'var(--text-title-1)', fontWeight: 700 }} className="gold-gradient">Obrigado!</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-body)' }}>
+              Seu roteiro foi gerado com sucesso. O download iniciará em instantes... Aproveite Foz do Iguaçu!
+            </p>
+          </div>
+        )}
+      </Sheet>
 
       {/* NPS Popup - Non-blocking */}
       <AnimatePresence>
@@ -1540,15 +1525,14 @@ const RouteGenerator = () => {
             initial={{ opacity: 0, y: 60 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 60 }}
-            style={{
-              position: 'fixed', bottom: '24px', right: '24px', zIndex: 999,
-              maxWidth: '340px', width: '100%',
-            }}
+            className="floating-card"
           >
             <div className="liquid-glass" style={{ padding: '24px', position: 'relative' }}>
               <button
                 onClick={() => setShowNps(false)}
-                style={{ position: 'absolute', top: '8px', right: '8px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                className="icon-btn"
+                aria-label="Fechar avaliação"
+                style={{ position: 'absolute', top: '4px', right: '4px' }}
               >
                 <X size={18} />
               </button>
@@ -1569,11 +1553,11 @@ const RouteGenerator = () => {
                     }}
                     className="btn-glass"
                     style={{
-                      width: '36px', height: '36px', padding: 0,
-                      fontSize: '0.85rem', fontWeight: 600, borderRadius: '10px',
+                      width: '40px', height: '40px', minHeight: 0, padding: 0,
+                      fontSize: 'var(--text-subhead)', fontWeight: 600, borderRadius: 'var(--r-sm)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      background: n >= 9 ? 'rgba(31, 80, 57, 0.2)' : n >= 7 ? 'rgba(210, 172, 52, 0.15)' : 'rgba(244, 63, 94, 0.1)',
-                      color: n >= 9 ? 'var(--green)' : n >= 7 ? '#d2ac34' : '#f43f5e'
+                      background: n >= 9 ? 'var(--tint-soft)' : n >= 7 ? 'rgba(210, 172, 52, 0.15)' : 'var(--danger-soft)',
+                      color: n >= 9 ? 'var(--green-dark)' : n >= 7 ? 'var(--grad-3)' : 'var(--danger)'
                     }}
                   >
                     {n}
@@ -1588,10 +1572,7 @@ const RouteGenerator = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, y: 60 }}
-            style={{
-              position: 'fixed', bottom: '24px', right: '24px', zIndex: 999,
-              maxWidth: '340px', width: '100%',
-            }}
+            className="floating-card"
           >
             <div className="liquid-glass" style={{ padding: '24px', textAlign: 'center' }}>
               <CheckCircle2 size={32} color="var(--green)" style={{ marginBottom: '8px' }} />

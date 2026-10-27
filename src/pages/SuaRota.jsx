@@ -20,7 +20,7 @@ const SuaRota = () => {
         >
           <div style={{
             width: '90px', height: '90px', borderRadius: '50%',
-            background: 'linear-gradient(135deg, var(--green-dark), var(--green))',
+            background: 'var(--tint)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 24px', opacity: 0.15
           }}>

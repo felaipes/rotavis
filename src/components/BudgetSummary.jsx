@@ -26,7 +26,7 @@ const BudgetSummary = ({ totalBudget, totalSpent, chartData, onSetBudget }) => {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'center' }}>
         <div style={{ flex: '1 1 200px' }}>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Total Gasto</p>
-          <p style={{ fontSize: '2rem', fontWeight: 'bold', color: percentage > 100 ? '#ef4444' : 'var(--text-main)' }}>
+          <p style={{ fontSize: '2rem', fontWeight: 'bold', color: percentage > 100 ? 'var(--danger)' : 'var(--text-main)' }}>
             R$ {totalSpent.toFixed(2)}
           </p>
           
@@ -36,12 +36,12 @@ const BudgetSummary = ({ totalBudget, totalSpent, chartData, onSetBudget }) => {
                 <span>Progresso do Orçamento</span>
                 <span>{percentage.toFixed(1)}%</span>
               </div>
-              <div style={{ width: '100%', height: '8px', background: 'var(--card-border)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ width: '100%', height: '8px', background: 'var(--card-border)', borderRadius: 'var(--r-xs)', overflow: 'hidden' }}>
                 <div 
                   style={{ 
                     width: `${Math.min(percentage, 100)}%`, 
                     height: '100%', 
-                    background: percentage > 100 ? '#ef4444' : 'var(--green)',
+                    background: percentage > 100 ? 'var(--danger)' : 'var(--green)',
                     transition: cssTransition(['width'])
                   }} 
                 />

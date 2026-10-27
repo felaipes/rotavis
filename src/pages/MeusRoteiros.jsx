@@ -33,7 +33,7 @@ const MeusRoteiros = () => {
         <motion.div variants={fadeUp} initial="initial" animate="animate" style={{ maxWidth: '520px', margin: '0 auto' }}>
           <div style={{
             width: '90px', height: '90px', borderRadius: '50%',
-            background: 'linear-gradient(135deg, var(--green-dark), var(--green))',
+            background: 'var(--tint)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 24px', opacity: 0.18
           }}>
@@ -93,7 +93,7 @@ const MeusRoteiros = () => {
                   {entry.option && (
                     <span style={{
                       background: 'var(--card-highlight)', color: 'var(--green-dark)',
-                      borderRadius: '99px', padding: '2px 9px', fontWeight: 700
+                      borderRadius: 'var(--r-pill)', padding: '2px 9px', fontWeight: 700
                     }}>
                       Opção {entry.option}
                     </span>
@@ -121,7 +121,7 @@ const MeusRoteiros = () => {
                     onClick={() => removeRoute(entry.id)}
                     aria-label={`Apagar ${entry.name}`}
                     className="btn-glass"
-                    style={{ marginLeft: 'auto', padding: '5px 10px', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                    style={{ marginLeft: 'auto', padding: '5px 10px', fontSize: 'var(--text-caption)', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
                   >
                     <Trash2 size={13} /> Apagar
                   </button>

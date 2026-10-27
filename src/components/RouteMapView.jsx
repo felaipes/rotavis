@@ -92,7 +92,7 @@ const RouteMapView = ({ route, mapRef }) => {
           {formatDistanceKm(totalKm)} no total
         </div>
       </div>
-      <div style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--card-border)', boxShadow: 'var(--card-shadow)' }}>
+      <div style={{ borderRadius: 'var(--r-lg)', overflow: 'hidden', border: '1px solid var(--card-border)', boxShadow: 'var(--card-shadow)' }}>
         <MapContainer center={allPositions[0]} zoom={12} style={{ height: '420px', width: '100%' }} scrollWheelZoom={true}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -140,7 +140,7 @@ export const DayRouteMap = ({ stops, color }) => {
   if (positions.length === 0) return null;
 
   return (
-    <div style={{ borderRadius: '14px', overflow: 'hidden', border: '1px solid var(--card-border)' }}>
+    <div style={{ borderRadius: 'var(--r-md)', overflow: 'hidden', border: '1px solid var(--card-border)' }}>
       <MapContainer
         center={positions[0]}
         zoom={13}

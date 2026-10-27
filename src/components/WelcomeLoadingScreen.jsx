@@ -104,7 +104,7 @@ const WelcomeLoadingScreen = ({ userName, onComplete }) => {
               border: '1.5px solid var(--accent-gold)',
             }}
           />
-          <img src="/logo.png" alt="RotaVis" style={{ height: '70px', mixBlendMode: 'multiply', position: 'relative', zIndex: 1 }} />
+          <img src="/logo-transparent.png" className="app-logo" alt="RotaVis" style={{ height: '70px', position: 'relative', zIndex: 1 }} />
         </div>
 
         {/* Welcome text */}
@@ -132,14 +132,14 @@ const WelcomeLoadingScreen = ({ userName, onComplete }) => {
           <div style={{
             height: '6px',
             background: 'rgba(0,0,0,0.07)',
-            borderRadius: '99px',
+            borderRadius: 'var(--r-pill)',
             overflow: 'hidden',
           }}>
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               style={{
-                height: '100%', borderRadius: '99px',
+                height: '100%', borderRadius: 'var(--r-pill)',
                 background: 'linear-gradient(90deg, var(--green-dark), var(--green), var(--accent-gold))',
                 position: 'relative', overflow: 'hidden',
               }}
@@ -162,14 +162,14 @@ const WelcomeLoadingScreen = ({ userName, onComplete }) => {
           width: '100%',
           background: 'var(--card-bg)',
           border: '1px solid var(--card-border)',
-          borderRadius: '12px',
+          borderRadius: 'var(--r-md)',
           padding: '16px 20px',
           minHeight: '56px',
           display: 'flex', alignItems: 'center', gap: '12px',
         }}>
           <div style={{
-            width: 32, height: 32, borderRadius: '8px', flexShrink: 0,
-            background: 'linear-gradient(135deg, var(--green-dark), var(--green))',
+            width: 32, height: 32, borderRadius: 'var(--r-sm)', flexShrink: 0,
+            background: 'var(--tint)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <Sparkles size={16} color="#fff" />

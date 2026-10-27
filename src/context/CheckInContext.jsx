@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { places } from '../data';
 import { evaluateAchievements } from '../data/achievements';
+import { haptic } from '../haptics';
 
 // Histórico de visitas do usuário. Guardado em localStorage (como a carteira de gastos),
 // para funcionar mesmo sem login. Cada visita é uma entrada própria, então voltar no mesmo
@@ -25,11 +26,13 @@ export const CheckInProvider = ({ children }) => {
   }, [checkIns]);
 
   const addCheckIn = useCallback((placeId) => {
+    haptic('success');
     setCheckIns(prev => [{ placeId, date: new Date().toISOString() }, ...prev]);
   }, []);
 
   // Desfaz a visita mais recente daquele lugar (não apaga o histórico inteiro dele).
   const undoCheckIn = useCallback((placeId) => {
+    haptic('selection');
     setCheckIns(prev => {
       const idx = prev.findIndex(c => c.placeId === placeId);
       if (idx === -1) return prev;

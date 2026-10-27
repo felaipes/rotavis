@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
-import { Map, MapPinned, Menu, X, User, LogOut, LogIn, Wallet, Route as RouteIcon, Trophy, ListChecks } from 'lucide-react';
+import { Map, MapPinned, User, LogOut, LogIn, Wallet, Route as RouteIcon, Trophy, ListChecks, Compass, ChevronRight } from 'lucide-react';
 import Home from './pages/Home';
 import Mapa from './pages/Mapa';
 import RouteGenerator from './pages/RouteGenerator';
@@ -17,261 +17,260 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CheckInProvider, useCheckIns } from './context/CheckInContext';
 import { TIERS } from './data/achievements';
-import { T, scaleIn, pageTransition } from './motion';
+import { T, SPRING, pageTransition } from './motion';
+import { haptic } from './haptics';
 import './index.css';
 
+// As cinco áreas principais. As mesmas no desktop (barra no topo) e no celular (tab
+// bar no rodapé), na mesma ordem, para quem troca de aparelho achar tudo no lugar.
+// Rótulos de uma palavra só no celular, como pede a HIG para tab bars.
+const NAV_ITEMS = [
+  { to: '/rota', label: 'Gerar Rota', short: 'Rota', icon: Map, match: ['/', '/rota'] },
+  { to: '/catalogo', label: 'Catálogo', short: 'Catálogo', icon: Compass },
+  { to: '/meus-roteiros', label: 'Meus Roteiros', short: 'Roteiros', icon: ListChecks },
+  { to: '/mapa', label: 'Mapa', short: 'Mapa', icon: MapPinned },
+  { to: '/conquistas', label: 'Conquistas', short: 'Conquistas', icon: Trophy }
+];
+
+const isActive = (item, pathname) => (item.match || [item.to]).includes(pathname);
+
 // Aviso de troféu novo. Fica no App para aparecer de qualquer tela — inclusive quando o
-// check-in é feito de dentro do catálogo, longe da aba de conquistas.
+// check-in é feito de dentro do catálogo, longe da aba de conquistas. Toque fecha;
+// arrastar para baixo também, como as notificações do iOS.
 const UnlockToast = () => {
   const { recentUnlock, dismissUnlock } = useCheckIns();
 
   useEffect(() => {
     if (!recentUnlock) return;
+    haptic('success');
     const t = setTimeout(dismissUnlock, 5000);
     return () => clearTimeout(t);
   }, [recentUnlock, dismissUnlock]);
 
   return (
-    <AnimatePresence>
-      {recentUnlock && (
-        <motion.div
-          variants={scaleIn}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          role="status"
-          onClick={dismissUnlock}
-          style={{
-            position: 'fixed', left: '50%', bottom: '24px', transform: 'translateX(-50%)',
-            zIndex: 200, cursor: 'pointer', maxWidth: 'calc(100vw - 32px)',
-            background: 'var(--card-bg)', border: `2px solid ${TIERS[recentUnlock.tier].color}`,
-            borderRadius: '16px', padding: '14px 20px', boxShadow: '0 12px 32px rgba(7,11,20,0.22)',
-            display: 'flex', alignItems: 'center', gap: '14px'
-          }}
-        >
-          <div style={{
-            width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
-            background: TIERS[recentUnlock.tier].color,
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>
-            <recentUnlock.icon size={22} color="#ffffff" />
-          </div>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: TIERS[recentUnlock.tier].color }}>
-              Novo troféu {TIERS[recentUnlock.tier].label}
+    <div className="toast-anchor">
+      <AnimatePresence>
+        {recentUnlock && (
+          <motion.div
+            key={recentUnlock.id}
+            initial={{ opacity: 0, y: 24, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1, transition: SPRING.pop }}
+            exit={{ opacity: 0, y: 24, transition: T.exit }}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0.1, bottom: 0.8 }}
+            onDragEnd={(_, info) => { if (info.offset.y > 40 || info.velocity.y > 400) dismissUnlock(); }}
+            role="status"
+            onClick={dismissUnlock}
+            style={{
+              cursor: 'pointer', maxWidth: '100%', touchAction: 'none',
+              background: 'var(--card-bg)', border: `2px solid ${TIERS[recentUnlock.tier].color}`,
+              borderRadius: 'var(--r-lg)', padding: '14px 20px', boxShadow: 'var(--shadow-2)',
+              display: 'flex', alignItems: 'center', gap: '14px'
+            }}
+          >
+            <div style={{
+              width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
+              background: TIERS[recentUnlock.tier].color,
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <recentUnlock.icon size={22} color="#ffffff" />
             </div>
-            <div style={{ fontWeight: 800, fontSize: '1rem' }}>{recentUnlock.title}</div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{recentUnlock.description}</div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 'var(--text-caption)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: TIERS[recentUnlock.tier].color }}>
+                Novo troféu {TIERS[recentUnlock.tier].label}
+              </div>
+              <div style={{ fontWeight: 700, fontSize: 'var(--text-body)' }}>{recentUnlock.title}</div>
+              <div style={{ fontSize: 'var(--text-footnote)', color: 'var(--text-muted)' }}>{recentUnlock.description}</div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+// Menu da conta no desktop. Abre com clique (e teclado), não só com o mouse por cima,
+// e fecha com Esc ou clique fora.
+const AccountMenu = ({ user, logout }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const location = useLocation();
+
+  useEffect(() => { setOpen(false); }, [location.pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('pointerdown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const itemStyle = { border: 'none', justifyContent: 'flex-start', padding: '8px 12px', width: '100%' };
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        className={`btn-glass ${(location.pathname === '/perfil' || open) ? 'active' : ''}`}
+        style={{ borderColor: 'transparent', padding: '6px 12px 6px 6px', gap: '10px' }}
+      >
+        <span className="avatar" style={{ width: '32px', height: '32px', fontSize: 'var(--text-footnote)' }}>
+          {user.name?.charAt(0)?.toUpperCase() || <User size={16} />}
+        </span>
+        <span style={{ fontWeight: 600, fontSize: 'var(--text-subhead)' }}>{user.name.split(' ')[0]}</span>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            role="menu"
+            initial={{ opacity: 0, y: -4, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            transition={T.fast}
+            style={{
+              position: 'absolute', top: '100%', right: 0, marginTop: '8px',
+              transformOrigin: 'top right',
+              background: 'var(--card-bg)', border: '1px solid var(--card-border)',
+              borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-2)',
+              padding: '6px', minWidth: '200px', display: 'flex', flexDirection: 'column',
+              gap: '2px', zIndex: 100
+            }}
+          >
+            <Link role="menuitem" to="/perfil" className="btn-glass" style={itemStyle}>
+              <User size={16} /> Meu Perfil
+            </Link>
+            <Link role="menuitem" to="/perfil#carteira" className="btn-glass" style={itemStyle}>
+              <Wallet size={16} /> Minha Carteira
+            </Link>
+            <div style={{ height: '1px', background: 'var(--card-border)', margin: '4px 0' }} />
+            <button role="menuitem" onClick={() => { logout(); setOpen(false); }} className="btn-glass btn-destructive" style={itemStyle}>
+              <LogOut size={16} /> Sair
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 
 const Header = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuth();
 
-  const closeMenu = () => setIsOpen(false);
-
-  useEffect(() => {
-    closeMenu();
-  }, [location.pathname]);
-
   return (
-    <header className="liquid-glass-header" style={{ position: 'sticky', top: 0, zIndex: 50, padding: '15px 0' }}>
-      <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Link to="/" style={{ display: 'flex', alignItems: 'center' }} onClick={closeMenu}>
-          <img src="/logo.png" alt="RotaVis" style={{ height: '58px', mixBlendMode: 'multiply' }} />
+    <header className="liquid-glass-header">
+      <div className="container header-row">
+        <Link to="/" style={{ display: 'flex', alignItems: 'center' }} aria-label="RotaVis — início">
+          <img src="/logo-transparent.png" alt="RotaVis" className="app-logo" />
         </Link>
 
-        <nav className="nav-desktop">
-          <Link to="/rota" className={`btn-glass ${(location.pathname === '/rota' || location.pathname === '/') ? 'active' : ''}`}>
-            <Map size={18} style={{ display: 'inline', marginRight: '5px' }} />
-            Gerar Rota
-          </Link>
-          <Link to="/catalogo" className={`btn-glass ${location.pathname === '/catalogo' ? 'active' : ''}`}>Catálogo</Link>
-          <Link to="/meus-roteiros" className={`btn-glass ${location.pathname === '/meus-roteiros' ? 'active' : ''}`}>
-            <ListChecks size={18} style={{ display: 'inline', marginRight: '5px' }} />
-            Meus Roteiros
-          </Link>
+        <nav className="nav-desktop" aria-label="Principal">
+          {NAV_ITEMS.map(item => (
+            <Link
+              key={item.to}
+              to={item.to}
+              aria-current={isActive(item, location.pathname) ? 'page' : undefined}
+              className={`btn-glass ${isActive(item, location.pathname) ? 'active' : ''}`}
+            >
+              <item.icon size={18} aria-hidden="true" />
+              {item.label}
+            </Link>
+          ))}
           {user?.activeRoute && (
-            <Link to="/sua-rota" className={`btn-glass ${location.pathname === '/sua-rota' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <RouteIcon size={18} />
+            <Link
+              to="/sua-rota"
+              aria-current={location.pathname === '/sua-rota' ? 'page' : undefined}
+              className={`btn-glass ${location.pathname === '/sua-rota' ? 'active' : ''}`}
+            >
+              <RouteIcon size={18} aria-hidden="true" />
               Sua Rota
             </Link>
           )}
-          <Link to="/mapa" className={`btn-glass ${location.pathname === '/mapa' ? 'active' : ''}`}>
-            <MapPinned size={18} style={{ display: 'inline', marginRight: '5px' }} />
-            Mapa
-          </Link>
-          <Link to="/conquistas" className={`btn-glass ${location.pathname === '/conquistas' ? 'active' : ''}`}>
-            <Trophy size={18} style={{ display: 'inline', marginRight: '5px' }} />
-            Conquistas
-          </Link>
 
-          <div style={{ width: '1px', height: '24px', background: 'var(--card-border)', margin: '0 5px' }}></div>
+          <div style={{ width: '1px', height: '24px', background: 'var(--card-border)', margin: '0 6px' }} />
 
           {user ? (
-            <div 
-              style={{ position: 'relative', display: 'flex', alignItems: 'center' }}
-              onMouseEnter={() => setShowProfileMenu(true)}
-              onMouseLeave={() => setShowProfileMenu(false)}
-            >
-              <Link
-                to="/perfil"
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '10px',
-                  color: 'var(--green-dark)', textDecoration: 'none',
-                  padding: '6px 14px', borderRadius: '8px',
-                  transition: 'background 0.2s ease',
-                  background: (location.pathname === '/perfil' || showProfileMenu) ? '#ecf5ee' : 'transparent'
-                }}
-              >
-                <div style={{
-                  background: 'linear-gradient(135deg, var(--green-dark), var(--green))',
-                  width: '32px', height: '32px', borderRadius: '50%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: '#fff', fontWeight: 700, fontSize: '0.8rem'
-                }}>
-                  {user.name?.charAt(0)?.toUpperCase() || <User size={16} />}
-                </div>
-                <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user.name.split(' ')[0]}</span>
-              </Link>
-
-              <AnimatePresence>
-                {showProfileMenu && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 6, scale: 0.97 }}
-                    transition={T.fast}
-                    style={{
-                      position: 'absolute', top: '100%', right: 0, marginTop: '8px',
-                      background: 'var(--card-bg)', border: '1px solid var(--card-border)',
-                      borderRadius: '12px', boxShadow: 'var(--card-shadow)',
-                      padding: '8px', minWidth: '180px', display: 'flex', flexDirection: 'column',
-                      gap: '4px', zIndex: 100
-                    }}
-                  >
-                    <Link to="/perfil" onClick={() => setShowProfileMenu(false)} className="btn-glass" style={{ border: 'none', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px' }}>
-                      <User size={16} /> Meu Perfil
-                    </Link>
-                    <Link to="/perfil#carteira" onClick={() => setShowProfileMenu(false)} className="btn-glass" style={{ border: 'none', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px' }}>
-                      <Wallet size={16} /> Minha Carteira
-                    </Link>
-                    <Link to="/mapa" onClick={() => setShowProfileMenu(false)} className="btn-glass" style={{ border: 'none', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px' }}>
-                      <MapPinned size={16} /> Mapa
-                    </Link>
-                    <div style={{ height: '1px', background: 'var(--card-border)', margin: '4px 0' }} />
-                    <button onClick={() => { logout(); setShowProfileMenu(false); }} className="btn-glass" style={{ border: 'none', textAlign: 'left', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px' }}>
-                      <LogOut size={16} /> Sair
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            <AccountMenu user={user} logout={logout} />
           ) : (
-            <Link to="/login" className="btn-gold" style={{ padding: '8px 20px', fontSize: '0.9rem' }}>
-              <LogIn size={16} style={{ marginRight: '8px' }} />
+            <Link to="/login" className="btn-gold" style={{ padding: '8px 18px', fontSize: 'var(--text-subhead)' }}>
+              <LogIn size={16} aria-hidden="true" />
               Entrar
             </Link>
           )}
         </nav>
 
-        <button
-          className="mobile-menu-btn"
-          onClick={() => setIsOpen(o => !o)}
-          aria-label={isOpen ? 'Fechar menu' : 'Abrir menu'}
-        >
-          {isOpen ? <X size={26} /> : <Menu size={26} />}
-        </button>
+        {/* Celular: a navegação fica na tab bar; aqui só o acesso à conta, no canto
+            superior direito, onde o iOS põe o botão de perfil. */}
+        <div className="header-account-mobile">
+          {user ? (
+            <Link to="/perfil" className="icon-btn" aria-label="Meu perfil">
+              <span className="avatar" style={{ width: '32px', height: '32px', fontSize: 'var(--text-footnote)' }}>
+                {user.name?.charAt(0)?.toUpperCase() || 'U'}
+              </span>
+            </Link>
+          ) : (
+            <Link to="/login" className="btn-plain" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <LogIn size={18} aria-hidden="true" /> Entrar
+            </Link>
+          )}
+        </div>
       </div>
-
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={T.inOut}
-            style={{ overflow: 'hidden', borderTop: '1px solid var(--card-border)' }}
-            className="mobile-menu"
-          >
-            <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px 20px' }}>
-              <Link to="/rota" onClick={closeMenu} className={`btn-glass ${(location.pathname === '/rota' || location.pathname === '/') ? 'active' : ''}`} style={{ textAlign: 'center' }}>
-                <Map size={18} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'text-bottom' }} />
-                Gerar Rota
-              </Link>
-              <Link to="/catalogo" onClick={closeMenu} className={`btn-glass ${location.pathname === '/catalogo' ? 'active' : ''}`} style={{ textAlign: 'center' }}>
-                Catálogo
-              </Link>
-              <Link to="/meus-roteiros" onClick={closeMenu} className={`btn-glass ${location.pathname === '/meus-roteiros' ? 'active' : ''}`} style={{ textAlign: 'center' }}>
-                <ListChecks size={18} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'text-bottom' }} />
-                Meus Roteiros
-              </Link>
-              {user?.activeRoute && (
-                <Link to="/sua-rota" onClick={closeMenu} className={`btn-glass ${location.pathname === '/sua-rota' ? 'active' : ''}`} style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                  <RouteIcon size={18} style={{ verticalAlign: 'text-bottom' }} />
-                  Sua Rota
-                </Link>
-              )}
-              <Link to="/mapa" onClick={closeMenu} className={`btn-glass ${location.pathname === '/mapa' ? 'active' : ''}`} style={{ textAlign: 'center' }}>
-                <MapPinned size={18} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'text-bottom' }} />
-                Mapa
-              </Link>
-              <Link to="/conquistas" onClick={closeMenu} className={`btn-glass ${location.pathname === '/conquistas' ? 'active' : ''}`} style={{ textAlign: 'center' }}>
-                <Trophy size={18} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'text-bottom' }} />
-                Conquistas
-              </Link>
-
-              {user ? (
-                <>
-                  <Link
-                    to="/perfil"
-                    onClick={closeMenu}
-                    className={`btn-glass ${location.pathname === '/perfil' ? 'active' : ''}`}
-                    style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
-                  >
-                    <div style={{
-                      background: 'linear-gradient(135deg, var(--green-dark), var(--green))',
-                      width: '28px', height: '28px', borderRadius: '50%',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: '#fff', fontWeight: 700, fontSize: '0.7rem', flexShrink: 0
-                    }}>
-                      {user.name?.charAt(0)?.toUpperCase() || 'U'}
-                    </div>
-                    Meu Perfil
-                  </Link>
-                  <button
-                    onClick={() => { logout(); closeMenu(); }}
-                    style={{
-                      background: 'transparent', border: '1px solid #ef444444',
-                      color: '#ef4444', cursor: 'pointer', display: 'flex',
-                      alignItems: 'center', justifyContent: 'center', gap: '8px',
-                      fontSize: '0.9rem', fontWeight: 500, padding: '10px',
-                      borderRadius: '8px'
-                    }}
-                  >
-                    <LogOut size={16} />
-                    Sair
-                  </button>
-                </>
-              ) : (
-                <Link to="/login" onClick={closeMenu} className="btn-gold" style={{ justifyContent: 'center' }}>
-                  <LogIn size={16} style={{ marginRight: '8px' }} />
-                  Entrar
-                </Link>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </header>
   );
+};
+
+const TabBar = () => {
+  const location = useLocation();
+  return (
+    <nav className="tab-bar" aria-label="Principal">
+      {NAV_ITEMS.map(item => {
+        const active = isActive(item, location.pathname);
+        return (
+          <Link key={item.to} to={item.to} className="tab-bar__item" aria-current={active ? 'page' : undefined}>
+            <item.icon size={24} strokeWidth={active ? 2.3 : 1.8} aria-hidden="true" />
+            <span>{item.short}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+};
+
+// Rota em andamento, acima da tab bar. Some na própria tela da rota.
+const RouteAccessory = () => {
+  const { user } = useAuth();
+  const location = useLocation();
+  if (!user?.activeRoute || location.pathname === '/sua-rota') return null;
+
+  return (
+    <Link to="/sua-rota" className="route-accessory">
+      <span className="avatar" style={{ width: '34px', height: '34px', borderRadius: 'var(--r-sm)' }}>
+        <RouteIcon size={18} aria-hidden="true" />
+      </span>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ display: 'block', fontWeight: 600, fontSize: 'var(--text-subhead)' }}>Sua rota em andamento</span>
+        <span style={{ display: 'block', fontSize: 'var(--text-footnote)', color: 'var(--text-muted)' }}>Toque para acompanhar o dia</span>
+      </span>
+      <ChevronRight size={20} color="var(--text-muted)" aria-hidden="true" />
+    </Link>
+  );
+};
+
+const AppMain = ({ children }) => {
+  const { user } = useAuth();
+  const location = useLocation();
+  const hasAccessory = !!user?.activeRoute && location.pathname !== '/sua-rota';
+  return <main className={`app-main ${hasAccessory ? 'has-accessory' : ''}`}>{children}</main>;
 };
 
 // Troca de página animada: só a entrada é animada, a página que sai é desmontada na
@@ -326,13 +325,15 @@ function App() {
                   cima via .app-main (position:relative, z-index 1). */}
               <FallsBackground />
               <Header />
-              <main className="app-main">
+              <AppMain>
                 {/* Dentro do Router: assim a tela de erro mantém o cabeçalho e a
                     navegação, e dá para sair da rota quebrada sem recarregar. */}
                 <ErrorBoundary>
                   <AnimatedRoutes />
                 </ErrorBoundary>
-              </main>
+              </AppMain>
+              <RouteAccessory />
+              <TabBar />
               <UnlockToast />
             </div>
           </Router>

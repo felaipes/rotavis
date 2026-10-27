@@ -65,22 +65,22 @@ const PeriodSection = ({ label, icon: Icon, color, places }) => {
           <div key={place.id || i} style={{
             display: 'flex', alignItems: 'center', gap: '12px',
             padding: '10px 14px', background: 'var(--primary-dark)',
-            borderRadius: '8px', border: '1px solid var(--card-border)'
+            borderRadius: 'var(--r-sm)', border: '1px solid var(--card-border)'
           }}>
             {place.image && (
               <img src={place.image} alt={place.name}
-                style={{ width: '44px', height: '44px', objectFit: 'cover', borderRadius: '6px', flexShrink: 0 }} />
+                style={{ width: '44px', height: '44px', objectFit: 'cover', borderRadius: 'var(--r-xs)', flexShrink: 0 }} />
             )}
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ fontWeight: 600, fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {place.name}
               </p>
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <p style={{ fontSize: 'var(--text-caption)', color: 'var(--text-muted)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <MapPin size={11} /> {place.address || place.zone}
               </p>
             </div>
             {(place.avgPrice || place.entryFee !== undefined) && (
-              <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--green-dark)', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ fontSize: 'var(--text-caption)', fontWeight: 600, color: 'var(--green-dark)', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <Wallet size={12} />
                 {place.avgPrice ? `R$${place.avgPrice}` : (place.entryFee === 0 || place.entryFee === 'Gratuito' ? 'Grátis' : `R$${place.entryFee}`)}
               </span>
@@ -100,7 +100,7 @@ const RouteMap = ({ allPlaces }) => {
   );
 
   return (
-    <div style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--card-border)', marginTop: '16px' }}>
+    <div style={{ borderRadius: 'var(--r-md)', overflow: 'hidden', border: '1px solid var(--card-border)', marginTop: '16px' }}>
       <MapContainer center={FOZ_CENTER} zoom={12} style={{ height: '320px', width: '100%' }} scrollWheelZoom={false}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -120,11 +120,11 @@ const RouteMap = ({ allPlaces }) => {
                 <div style={{ minWidth: '160px' }}>
                   {place.image && (
                     <img src={place.image} alt={place.name}
-                      style={{ width: '100%', height: '90px', objectFit: 'cover', borderRadius: '6px', marginBottom: '8px' }} />
+                      style={{ width: '100%', height: '90px', objectFit: 'cover', borderRadius: 'var(--r-xs)', marginBottom: '8px' }} />
                   )}
                   <strong style={{ fontSize: '0.85rem' }}>{place.name}</strong>
                   {place.address && (
-                    <p style={{ fontSize: '0.78rem', color: '#5f7268', marginTop: '4px' }}>{place.address}</p>
+                    <p style={{ fontSize: 'var(--text-caption)', color: 'var(--text-muted)', marginTop: '4px' }}>{place.address}</p>
                   )}
                 </div>
               </Popup>
@@ -132,7 +132,7 @@ const RouteMap = ({ allPlaces }) => {
           );
         })}
       </MapContainer>
-      <p style={{ padding: '8px 14px', fontSize: '0.75rem', color: 'var(--text-muted)', background: 'var(--primary-dark)' }}>
+      <p style={{ padding: '8px 14px', fontSize: 'var(--text-caption)', color: 'var(--text-muted)', background: 'var(--primary-dark)' }}>
         📍 As posições são aproximadas pela região de cada local. Clique nos marcadores para ver detalhes.
       </p>
     </div>
@@ -180,7 +180,7 @@ const SavedRouteCard = ({ route, index, expanded: expandedProp, onToggle }) => {
       transition={{ delay: index * 0.08 }}
       style={{
         border: '1px solid var(--card-border)',
-        borderRadius: '12px',
+        borderRadius: 'var(--r-md)',
         // Sem overflow:hidden de propósito: os papéis da pasta saem para fora do
         // cabeçalho quando ela abre, e seriam cortados. Quem recorta o painel que
         // expande é o próprio painel, que já tem overflow:hidden.
@@ -199,8 +199,7 @@ const SavedRouteCard = ({ route, index, expanded: expandedProp, onToggle }) => {
           borderRadius: expanded ? '12px 12px 0 0' : '12px',
           transition: cssTransition(['background'], DUR.fast),
         }}
-        onMouseEnter={e => e.currentTarget.style.background = 'var(--card-highlight)'}
-        onMouseLeave={e => e.currentTarget.style.background = 'none'}
+        className="row-hover"
       >
         <div style={{ width: '46px', height: '38px', flexShrink: 0, position: 'relative' }}>
           {/* O elemento da pasta ocupa 100x80 no layout mesmo escalado, então fica
@@ -217,7 +216,7 @@ const SavedRouteCard = ({ route, index, expanded: expandedProp, onToggle }) => {
         </div>
         <div style={{ flex: 1 }}>
           <p style={{ fontWeight: 700, fontSize: '0.95rem' }}>{route.name}</p>
-          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+          <p style={{ fontSize: 'var(--text-caption)', color: 'var(--text-muted)', marginTop: '2px' }}>
             {new Date(route.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
             {totalPlaces > 0 && ` · ${totalPlaces} paradas`}
             {route.days && ` · ${route.days.length} dia${route.days.length > 1 ? 's' : ''}`}
@@ -255,13 +254,13 @@ const SavedRouteCard = ({ route, index, expanded: expandedProp, onToggle }) => {
                       }}>
                         <span style={{
                           width: '26px', height: '26px', borderRadius: '50%',
-                          background: 'var(--accent-gold)', color: 'var(--green-dark)',
+                          background: 'var(--accent-gold)', color: 'var(--brand-green)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '0.75rem', fontWeight: 800, flexShrink: 0
+                          fontSize: 'var(--text-caption)', fontWeight: 800, flexShrink: 0
                         }}>{dayPlan.day}</span>
                         Dia {dayPlan.day}
                         {dayPlan.weekday !== undefined && (
-                          <span style={{ fontSize: '0.78rem', fontWeight: 400, color: 'var(--text-muted)' }}>
+                          <span style={{ fontSize: 'var(--text-caption)', fontWeight: 400, color: 'var(--text-muted)' }}>
                             — {WEEKDAY_LABELS[dayPlan.weekday]}
                           </span>
                         )}

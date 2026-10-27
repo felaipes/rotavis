@@ -81,7 +81,7 @@ const AIProgressBar = ({ progress, color }) => (
     width: '100%',
     height: '6px',
     background: 'rgba(0,0,0,0.07)',
-    borderRadius: '99px',
+    borderRadius: 'var(--r-pill)',
     overflow: 'hidden',
     position: 'relative',
   }}>
@@ -91,7 +91,7 @@ const AIProgressBar = ({ progress, color }) => (
       transition={T.base}
       style={{
         height: '100%',
-        borderRadius: '99px',
+        borderRadius: 'var(--r-pill)',
         background: `linear-gradient(90deg, ${color}aa, ${color})`,
         position: 'relative',
         overflow: 'hidden',
@@ -202,7 +202,7 @@ const RouteLoadingScreen = ({ onComplete }) => {
       <div style={{
         position: 'absolute', top: '-10%', right: '-8%',
         width: '400px', height: '400px', borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(27,94,60,0.07) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, var(--tint-soft) 0%, transparent 70%)',
         pointerEvents: 'none',
       }} />
       <div style={{
@@ -216,9 +216,9 @@ const RouteLoadingScreen = ({ onComplete }) => {
 
         {/* Logo */}
         <motion.img
-          src="/logo.png"
+          src="/logo-transparent.png" className="app-logo"
           alt="RotaVis"
-          style={{ height: '52px', mixBlendMode: 'multiply' }}
+          style={{ height: '52px' }}
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -278,7 +278,7 @@ const RouteLoadingScreen = ({ onComplete }) => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <PulseDot color="var(--green)" />
-              <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+              <span style={{ fontSize: 'var(--text-caption)', fontWeight: 600, color: 'var(--text-muted)' }}>
                 Gerando roteiro...
               </span>
             </div>
@@ -299,7 +299,7 @@ const RouteLoadingScreen = ({ onComplete }) => {
           width: '100%',
           background: 'var(--card-bg)',
           border: '1px solid var(--card-border)',
-          borderRadius: '12px',
+          borderRadius: 'var(--r-md)',
           padding: '16px 20px',
           display: 'flex', flexDirection: 'column', gap: '10px',
         }}>
@@ -321,7 +321,7 @@ const RouteLoadingScreen = ({ onComplete }) => {
                 <div style={{
                   width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
                   background: isDone
-                    ? `linear-gradient(135deg, var(--green-dark), var(--green))`
+                    ? `var(--tint)`
                     : isActive ? `${step.color}18` : 'var(--card-highlight)',
                   border: `1.5px solid ${isDone ? 'var(--green)' : isActive ? step.color : 'var(--card-border)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -362,7 +362,7 @@ const RouteLoadingScreen = ({ onComplete }) => {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     style={{
-                      fontSize: '0.7rem', fontWeight: 700,
+                      fontSize: 'var(--text-caption)', fontWeight: 700,
                       color: step.color, flexShrink: 0,
                     }}
                   >
@@ -379,7 +379,7 @@ const RouteLoadingScreen = ({ onComplete }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textAlign: 'center', fontStyle: 'italic' }}
+          style={{ fontSize: 'var(--text-caption)', color: 'var(--text-muted)', textAlign: 'center', fontStyle: 'italic' }}
         >
           💡 Dica: Você pode marcar os locais visitados na aba "Sua Rota" durante a viagem!
         </motion.p>

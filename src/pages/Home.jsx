@@ -36,6 +36,10 @@ const Home = () => {
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         minHeight: '60vh',
+        // A foto se dissolve no fundo do app (que também é foto, com véu) em vez de
+        // terminar numa faixa creme fixa — que no modo escuro virava uma barra branca.
+        WebkitMaskImage: 'linear-gradient(to bottom, #000 72%, transparent 100%)',
+        maskImage: 'linear-gradient(to bottom, #000 72%, transparent 100%)',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -44,7 +48,7 @@ const Home = () => {
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: 'radial-gradient(ellipse 60% 50% at 30% 20%, rgba(242, 183, 10, 0.16) 0%, transparent 60%), linear-gradient(to bottom, rgba(10, 31, 23, 0.55) 0%, rgba(10, 31, 23, 0.4) 65%, #faf7ef 100%)'
+          background: 'radial-gradient(ellipse 60% 50% at 30% 20%, rgba(242, 183, 10, 0.16) 0%, transparent 60%), linear-gradient(to bottom, rgba(10, 31, 23, 0.55) 0%, rgba(10, 31, 23, 0.4) 100%)'
         }}></div>
 
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '800px' }}>
@@ -75,7 +79,9 @@ const Home = () => {
               <Search color="var(--text-muted)" size={20} />
             </div>
             <input
-              type="text"
+              type="search"
+              enterKeyHint="search"
+              aria-label="Buscar no catálogo"
               placeholder="Busque por cataratas, gastronomia, bares, compras..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -86,7 +92,7 @@ const Home = () => {
                 padding: '15px 10px',
                 width: '100%',
                 outline: 'none',
-                fontSize: '1.1rem'
+                fontSize: 'max(1rem, 16px)'
               }}
             />
           </motion.div>

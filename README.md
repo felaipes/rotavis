@@ -24,7 +24,7 @@
 - **Gerador de Roteiros Inteligente:** Leva em conta interesses, orçamento, transporte, origem e grupo.
 - **Disponibilidade Real:** Verifica dias e horários de funcionamento dos atrativos em Foz do Iguaçu antes de recomendar.
 - **Exportação em PDF:** Permite que o turista baixe o roteiro final para o celular com facilidade.
-- **UI/UX Premium:** Design imersivo usando conceitos de *Glassmorphism*, transições fluidas e paleta de cores inspirada na natureza local.
+- **UI/UX alinhada à Apple HIG:** tab bar no celular, folhas que fecham arrastando, modo claro e escuro automáticos, fonte do sistema com Dynamic Type, safe areas e alvos de toque de 44px. Barras translúcidas e paleta inspirada na natureza local.
 - **Avaliação de Experiência (NPS):** Captura simplificada de feedback ao final do planejamento.
 
 ### 📊 Para a Gestão do Destino (Painel Admin)
@@ -96,7 +96,7 @@ rotavis/
 ## 🛠️ Tecnologias Utilizadas
 
 - **Core:** [React](https://reactjs.org/) & [Vite](https://vitejs.dev/)
-- **Estilização:** CSS3 Vanilla Avançado (Variáveis, Animações, Glassmorphism)
+- **Estilização:** CSS3 com tokens semânticos (claro/escuro) em `src/index.css`
 - **Gráficos:** [Recharts](https://recharts.org/)
 - **Ícones:** [Lucide React](https://lucide.dev/)
 - **Animações:** [Framer Motion](https://www.framer.com/motion/)

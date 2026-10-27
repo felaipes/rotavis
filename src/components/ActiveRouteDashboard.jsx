@@ -114,20 +114,20 @@ const ActiveRouteDashboard = () => {
     >
       {/* Header */}
       <div style={{
-        background: 'linear-gradient(135deg, rgba(27, 94, 60, 0.08), rgba(212, 175, 55, 0.06))',
+        background: 'linear-gradient(135deg, var(--tint-soft), rgba(212, 175, 55, 0.06))',
         padding: '24px 28px', borderBottom: '1px solid var(--card-border)',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px'
       }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
             <span style={{
-              background: 'linear-gradient(135deg, var(--green-dark), var(--green))',
-              color: '#fff', fontSize: '0.7rem', fontWeight: 800, padding: '4px 10px',
-              borderRadius: '14px', textTransform: 'uppercase', letterSpacing: '0.5px'
+              background: 'var(--tint)',
+              color: '#fff', fontSize: 'var(--text-caption)', fontWeight: 800, padding: '4px 10px',
+              borderRadius: 'var(--r-md)', textTransform: 'uppercase', letterSpacing: '0.5px'
             }}>
               📍 Rota Ativa
             </span>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+            <span style={{ fontSize: 'var(--text-caption)', color: 'var(--text-muted)' }}>
               {daysLeft > 0 ? `${daysLeft} dia(s) restante(s)` : 'Expira hoje'}
             </span>
           </div>
@@ -146,13 +146,13 @@ const ActiveRouteDashboard = () => {
             {stats.visitedPlaces}/{stats.totalPlaces} locais · {Math.round(stats.progress)}%
           </span>
         </div>
-        <div style={{ height: '10px', background: 'var(--card-border)', borderRadius: '99px', overflow: 'hidden' }}>
+        <div style={{ height: '10px', background: 'var(--card-border)', borderRadius: 'var(--r-pill)', overflow: 'hidden' }}>
           <motion.div
             initial={false}
             animate={{ width: `${stats.progress}%` }}
             transition={T.slow}
             style={{
-              height: '100%', borderRadius: '99px',
+              height: '100%', borderRadius: 'var(--r-pill)',
               background: stats.progress === 100
                 ? 'linear-gradient(90deg, var(--green), #4ade80)'
                 : 'linear-gradient(90deg, var(--green-dark), var(--green), var(--accent-gold))'
@@ -175,7 +175,7 @@ const ActiveRouteDashboard = () => {
 
             return (
               <div key={di} style={{
-                padding: '16px', borderRadius: '12px',
+                padding: '16px', borderRadius: 'var(--r-md)',
                 background: dayDone ? 'rgba(61, 155, 79, 0.06)' : 'var(--primary-dark)',
                 border: `1px solid ${dayDone ? 'var(--green)' : 'var(--card-border)'}`,
                 transition: cssTransition(['background', 'border-color'])
@@ -197,7 +197,7 @@ const ActiveRouteDashboard = () => {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     {dayDone && <CheckCircle2 size={16} style={{ color: 'var(--green)' }} />}
-                    <span style={{ fontSize: '0.78rem', fontWeight: 600, color: dayDone ? 'var(--green)' : 'var(--text-muted)' }}>
+                    <span style={{ fontSize: 'var(--text-caption)', fontWeight: 600, color: dayDone ? 'var(--green)' : 'var(--text-muted)' }}>
                       {visited}/{total}
                     </span>
                   </div>
@@ -214,7 +214,7 @@ const ActiveRouteDashboard = () => {
                         onClick={() => handleToggle(di, period, place.id)}
                         style={{
                           display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer',
-                          padding: '6px 8px', borderRadius: '8px',
+                          padding: '6px 8px', borderRadius: 'var(--r-sm)',
                           opacity: place.visited ? 0.6 : 1,
                           transition: cssTransition(['opacity'], DUR.fast)
                         }}
@@ -234,7 +234,7 @@ const ActiveRouteDashboard = () => {
                 {/* Daily cost estimate */}
                 <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid var(--card-border)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Wallet size={13} style={{ color: 'var(--accent-gold)' }} />
-                  <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+                  <span style={{ fontSize: 'var(--text-caption)', fontWeight: 600, color: 'var(--text-muted)' }}>
                     Estimativa: R$ {dayCost.toFixed(0)}
                   </span>
                 </div>
@@ -246,7 +246,7 @@ const ActiveRouteDashboard = () => {
         {/* Right: Map */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {allStops.length > 0 && (
-            <div style={{ borderRadius: '14px', overflow: 'hidden', border: '1px solid var(--card-border)', flexGrow: 1, minHeight: '280px' }}>
+            <div style={{ borderRadius: 'var(--r-md)', overflow: 'hidden', border: '1px solid var(--card-border)', flexGrow: 1, minHeight: '280px' }}>
               <MapContainer
                 center={allStops[0]?.coords || [-25.5478, -54.5658]}
                 zoom={12}
@@ -273,7 +273,7 @@ const ActiveRouteDashboard = () => {
           
           {/* Cost summary */}
           <div style={{
-            padding: '16px', borderRadius: '12px',
+            padding: '16px', borderRadius: 'var(--r-md)',
             background: 'var(--primary-dark)', border: '1px solid var(--card-border)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>

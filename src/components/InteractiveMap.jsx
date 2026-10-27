@@ -123,7 +123,7 @@ const InteractiveMap = ({ places, categories }) => {
           ))}
         </div>
 
-        <div style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--card-border)', boxShadow: 'var(--card-shadow)' }}>
+        <div style={{ borderRadius: 'var(--r-lg)', overflow: 'hidden', border: '1px solid var(--card-border)', boxShadow: 'var(--card-shadow)' }}>
           <MapContainer center={FOZ_CENTER} zoom={12} style={{ height: 'min(70vh, 560px)', width: '100%' }} scrollWheelZoom={true}>
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -157,7 +157,7 @@ const InteractiveMap = ({ places, categories }) => {
                       <img
                         src={place.image}
                         alt={place.name}
-                        style={{ width: '150px', height: '95px', objectFit: 'cover', borderRadius: '8px', display: 'block', marginBottom: '6px' }}
+                        style={{ width: '150px', height: '95px', objectFit: 'cover', borderRadius: 'var(--r-sm)', display: 'block', marginBottom: '6px' }}
                       />
                       <strong style={{ fontSize: '0.82rem' }}>{place.name}</strong>
                     </div>
@@ -165,7 +165,7 @@ const InteractiveMap = ({ places, categories }) => {
                   <Popup>
                     <div style={{ minWidth: '180px' }}>
                       <strong>{place.name}</strong>
-                      <p style={{ margin: '4px 0', fontSize: '0.85rem', color: '#5f7268' }}>{place.address}</p>
+                      <p style={{ margin: '4px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>{place.address}</p>
                       {(place.avgPrice || place.entryFee !== undefined) && (
                         <p style={{ margin: '4px 0', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <Wallet size={13} />
@@ -211,7 +211,7 @@ const InteractiveMap = ({ places, categories }) => {
                 <div key={place.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem' }}>
                   <span style={{
                     width: '22px', height: '22px', borderRadius: '50%', background: 'var(--blue)', color: '#fff',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--text-caption)', fontWeight: 700, flexShrink: 0
                   }}>
                     {idx + 1}
                   </span>

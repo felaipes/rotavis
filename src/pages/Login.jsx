@@ -49,7 +49,7 @@ const Login = () => {
           style={{ width: '100%', maxWidth: '450px', padding: '40px' }}
         >
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <div style={{ background: 'var(--green-dark)', width: '60px', height: '60px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: '#ffffff' }}>
+            <div style={{ background: 'var(--tint)', width: '60px', height: '60px', borderRadius: 'var(--r-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: '#ffffff' }}>
               <LogIn size={32} />
             </div>
             <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Bem-vindo de volta</h1>
@@ -57,7 +57,7 @@ const Login = () => {
           </div>
 
           {error && (
-            <div style={{ background: '#ef444422', border: '1px solid #ef4444', color: '#ef4444', padding: '12px', borderRadius: '8px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ background: 'var(--danger-soft)', border: '1px solid var(--danger)', color: 'var(--danger)', padding: '12px', borderRadius: 'var(--r-sm)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <AlertCircle size={18} />
               <span>{error}</span>
             </div>
@@ -74,7 +74,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="input-field"
-                  style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', borderRadius: '8px', color: 'var(--text-main)' }}
+                  style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', borderRadius: 'var(--r-sm)', color: 'var(--text-main)' }}
                   placeholder="exemplo@email.com"
                 />
               </div>
@@ -90,7 +90,7 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="input-field"
-                  style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', borderRadius: '8px', color: 'var(--text-main)' }}
+                  style={{ width: '100%', padding: '12px 15px 12px 45px', background: 'var(--primary-dark)', borderRadius: 'var(--r-sm)', color: 'var(--text-main)' }}
                   placeholder="••••••••"
                 />
               </div>

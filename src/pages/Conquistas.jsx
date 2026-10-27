@@ -8,7 +8,7 @@ import { T, fadeUp, stagger } from '../motion';
 
 const StatTile = ({ label, value, sub }) => (
   <div style={{
-    background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px',
+    background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 'var(--r-md)',
     padding: '16px 18px', flex: '1 1 140px', minWidth: 0
   }}>
     <div style={{ fontSize: '1.7rem', fontWeight: 800, color: 'var(--green-dark)', lineHeight: 1.1 }}>{value}</div>
@@ -30,7 +30,7 @@ const TrophyCard = ({ achievement, index }) => {
       style={{
         border: `1px solid ${unlocked ? tier.color : 'var(--card-border)'}`,
         background: unlocked ? tier.soft : 'var(--card-bg)',
-        borderRadius: '16px', padding: '16px', display: 'flex', gap: '14px', alignItems: 'flex-start',
+        borderRadius: 'var(--r-lg)', padding: '16px', display: 'flex', gap: '14px', alignItems: 'flex-start',
         opacity: unlocked ? 1 : 0.72
       }}
     >
@@ -53,7 +53,7 @@ const TrophyCard = ({ achievement, index }) => {
             fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.4px',
             color: unlocked ? tier.color : 'var(--text-muted)',
             border: `1px solid ${unlocked ? tier.color : 'var(--card-border)'}`,
-            borderRadius: '99px', padding: '1px 8px'
+            borderRadius: 'var(--r-pill)', padding: '1px 8px'
           }}>
             {tier.label}
           </span>
@@ -62,15 +62,15 @@ const TrophyCard = ({ achievement, index }) => {
           {achievement.description}
         </p>
 
-        <div style={{ marginTop: '10px', height: '6px', background: 'var(--card-border)', borderRadius: '99px', overflow: 'hidden' }}>
+        <div style={{ marginTop: '10px', height: '6px', background: 'var(--card-border)', borderRadius: 'var(--r-pill)', overflow: 'hidden' }}>
           <motion.div
             initial={false}
             animate={{ width: `${percent}%` }}
             transition={T.slow}
-            style={{ height: '100%', borderRadius: '99px', background: unlocked ? tier.color : 'var(--green)' }}
+            style={{ height: '100%', borderRadius: 'var(--r-pill)', background: unlocked ? tier.color : 'var(--green)' }}
           />
         </div>
-        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+        <div style={{ fontSize: 'var(--text-caption)', color: 'var(--text-muted)', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '5px' }}>
           {/* Texto num <span>, e não solto ao lado do ícone condicional: com o tradutor
               do navegador ligado, o nó de texto vira um <font> dele e o React quebra ao
               inserir o ícone. Mesmo motivo do StateSelect. */}
@@ -119,13 +119,13 @@ const Conquistas = () => {
               {stats.percent.toFixed(0)}%
             </span>
           </div>
-          <div style={{ height: '12px', background: 'var(--card-border)', borderRadius: '99px', overflow: 'hidden' }}>
+          <div style={{ height: '12px', background: 'var(--card-border)', borderRadius: 'var(--r-pill)', overflow: 'hidden' }}>
             <motion.div
               initial={false}
               animate={{ width: `${stats.percent}%` }}
               transition={T.slow}
               style={{
-                height: '100%', borderRadius: '99px',
+                height: '100%', borderRadius: 'var(--r-pill)',
                 background: 'linear-gradient(90deg, var(--blue), var(--green), var(--accent-gold))'
               }}
             />
@@ -154,8 +154,8 @@ const Conquistas = () => {
             <div key={group.id} style={{ marginBottom: '26px' }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
                 <strong style={{ fontSize: '0.98rem' }}>{group.label}</strong>
-                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--green-dark)' }}>{done}/{items.length}</span>
-                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{group.hint}</span>
+                <span style={{ fontSize: 'var(--text-caption)', fontWeight: 700, color: 'var(--green-dark)' }}>{done}/{items.length}</span>
+                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--text-muted)' }}>{group.hint}</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: '12px' }}>
                 {items.map((a, i) => <TrophyCard key={a.id} achievement={a} index={i} />)}
@@ -175,7 +175,7 @@ const Conquistas = () => {
                   <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {v.place ? v.place.name : 'Local removido do catálogo'}
                   </span>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem', flexShrink: 0 }}>
+                  <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-caption)', flexShrink: 0 }}>
                     {new Date(v.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
                   </span>
                 </div>
@@ -196,7 +196,7 @@ const Conquistas = () => {
 
         <div className="search-field-wrapper" style={{
           display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--card-bg)',
-          border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px 16px', marginBottom: '12px'
+          border: '1px solid var(--card-border)', borderRadius: 'var(--r-md)', padding: '12px 16px', marginBottom: '12px'
         }}>
           <Search size={18} color="var(--text-muted)" />
           <input
@@ -240,21 +240,21 @@ const Conquistas = () => {
                 key={place.id}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px',
-                  background: count > 0 ? 'rgba(61, 155, 79, 0.07)' : 'var(--card-bg)',
+                  background: count > 0 ? 'var(--tint-soft)' : 'var(--card-bg)',
                   border: `1px solid ${count > 0 ? 'var(--green)' : 'var(--card-border)'}`,
-                  borderRadius: '12px'
+                  borderRadius: 'var(--r-md)'
                 }}
               >
                 <img
                   src={place.image}
                   alt={place.name}
-                  style={{ width: '44px', height: '44px', objectFit: 'cover', borderRadius: '8px', flexShrink: 0 }}
+                  style={{ width: '44px', height: '44px', objectFit: 'cover', borderRadius: 'var(--r-sm)', flexShrink: 0 }}
                 />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 600, fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {place.name}
                   </div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{place.zone}</div>
+                  <div style={{ fontSize: 'var(--text-caption)', color: 'var(--text-muted)' }}>{place.zone}</div>
                 </div>
 
                 {/* Com visita registrada, os dois lados ficam com o mesmo peso visual e
@@ -278,8 +278,8 @@ const Conquistas = () => {
                     <span style={{
                       minWidth: '58px', minHeight: '44px', display: 'flex', alignItems: 'center',
                       justifyContent: 'center', gap: '5px', fontSize: '0.8rem', fontWeight: 700,
-                      color: 'var(--green-dark)', background: 'rgba(27, 94, 60, 0.07)',
-                      border: '1px solid rgba(27, 94, 60, 0.22)', borderRadius: '10px'
+                      color: 'var(--green-dark)', background: 'var(--tint-soft)',
+                      border: '1px solid color-mix(in srgb, var(--leaf) 35%, transparent)', borderRadius: 'var(--r-sm)'
                     }}>
                       <Check size={14} /> {count}x
                     </span>

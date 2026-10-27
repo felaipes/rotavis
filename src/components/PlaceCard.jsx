@@ -3,6 +3,17 @@ import { MapPin, Clock, Wallet, ChefHat, Sparkles, Check, Plus, Minus } from 'lu
 import { useCheckIns } from '../context/CheckInContext';
 import { cssTransition, CSS_EASE_OUT, DUR } from '../motion';
 
+const PHOTO_BADGE = {
+  background: 'rgba(7, 11, 20, 0.66)',
+  WebkitBackdropFilter: 'blur(12px) saturate(160%)',
+  backdropFilter: 'blur(12px) saturate(160%)',
+  padding: '4px 10px',
+  borderRadius: 'var(--r-pill)',
+  fontSize: 'var(--text-caption)',
+  fontWeight: 600,
+  whiteSpace: 'nowrap'
+};
+
 const PlaceCard = ({ place }) => {
   const { stats, addCheckIn, undoCheckIn } = useCheckIns();
   const visitCount = stats.countByPlace[place.id] || 0;
@@ -87,46 +98,26 @@ const PlaceCard = ({ place }) => {
           />
         ))}
 
+        {/* Selos sobre a foto: numa linha que quebra, para não se sobreporem quando o
+            cartão é estreito (coluna do roteiro no celular). Material escuro translúcido
+            com texto claro, legível sobre qualquer foto. */}
         <div style={{
-          position: 'absolute',
-          top: '10px',
-          right: '10px',
-          zIndex: 2,
-          background: 'rgba(7, 11, 20, 0.7)',
-          backdropFilter: 'blur(10px)',
-          padding: '4px 12px',
-          borderRadius: '99px',
-          fontSize: '0.8rem',
-          color: 'var(--accent-gold)',
-          fontWeight: '600',
-          textTransform: 'uppercase'
+          position: 'absolute', top: '10px', left: '10px', right: '10px', zIndex: 2,
+          display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '6px',
+          pointerEvents: 'none'
         }}>
-          {place.category.replace('_', ' ')}
-        </div>
-
-        {(place.avgPrice || place.entryFee !== undefined) && (
-          <div style={{
-            position: 'absolute',
-            top: '10px',
-            left: '10px',
-            zIndex: 2,
-            background: 'rgba(7, 11, 20, 0.7)',
-            backdropFilter: 'blur(10px)',
-            padding: '4px 12px',
-            borderRadius: '99px',
-            fontSize: '0.8rem',
-            color: '#ffffff',
-            fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}>
-            <Wallet size={13} />
-            {place.avgPrice
-              ? `~R$ ${place.avgPrice} / pessoa`
-              : (place.entryFee === 'Gratuito' ? 'Entrada Gratuita' : `R$ ${place.entryFee} / ingresso`)}
+          {(place.avgPrice || place.entryFee !== undefined) && (
+            <div style={{ ...PHOTO_BADGE, color: '#ffffff', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Wallet size={13} aria-hidden="true" />
+              {place.avgPrice
+                ? `~R$ ${place.avgPrice} / pessoa`
+                : (place.entryFee === 'Gratuito' ? 'Entrada Gratuita' : `R$ ${place.entryFee} / ingresso`)}
+            </div>
+          )}
+          <div style={{ ...PHOTO_BADGE, marginLeft: 'auto', color: 'var(--brand-gold)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+            {place.category.replaceAll('_', ' ')}
           </div>
-        )}
+        </div>
 
         {hasCarousel && (
           <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', zIndex: 2, display: 'flex', gap: '5px' }}>
@@ -204,8 +195,8 @@ const PlaceCard = ({ place }) => {
             <span style={{
               flex: 1, minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center',
               gap: '6px', fontSize: '0.84rem', fontWeight: 600, color: 'var(--green-dark)',
-              background: 'rgba(27, 94, 60, 0.07)', border: '1px solid rgba(27, 94, 60, 0.22)',
-              borderRadius: '10px'
+              background: 'var(--tint-soft)', border: '1px solid color-mix(in srgb, var(--leaf) 35%, transparent)',
+              borderRadius: 'var(--r-sm)'
             }}>
               <Check size={15} /> Visitado {visitCount}x
             </span>
@@ -228,12 +219,12 @@ const PlaceCard = ({ place }) => {
         <div style={{ marginTop: '15px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
           {place.tags.slice(0, 3).map(tag => (
             <span key={tag} style={{
-              background: 'rgba(27, 94, 60, 0.07)',
-              border: '1px solid rgba(27, 94, 60, 0.18)',
+              background: 'var(--tint-soft)',
+              border: '1px solid color-mix(in srgb, var(--leaf) 35%, transparent)',
               padding: '2px 8px',
-              borderRadius: '6px',
-              fontSize: '0.75rem',
-              color: '#4a6b58'
+              borderRadius: 'var(--r-xs)',
+              fontSize: 'var(--text-caption)',
+              color: 'var(--text-muted)'
             }}>
               #{tag}
             </span>
@@ -267,7 +258,7 @@ const PlaceCard = ({ place }) => {
                 fontSize: '0.85rem',
                 background: 'var(--accent-gold-glow)',
                 border: '1px solid rgba(242, 183, 10, 0.35)',
-                borderRadius: '8px',
+                borderRadius: 'var(--r-sm)',
                 padding: '10px 12px'
               }}>
                 <Sparkles size={16} color="#b8860b" style={{ flexShrink: 0, marginTop: '2px' }} />

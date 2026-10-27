@@ -55,7 +55,7 @@ const ExpenseList = ({ expenses, onRemove }) => {
             </div>
             <button 
               onClick={() => onRemove(expense.id)}
-              style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', opacity: 0.7 }}
+              style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', opacity: 0.7 }}
               title="Remover"
             >
               <Trash2 size={18} />

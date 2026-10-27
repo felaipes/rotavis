@@ -26,7 +26,7 @@ const StateChip = ({ name, selected, onSelect }) => (
     aria-pressed={selected}
     className={`btn-glass wizard-option ${selected ? 'active' : ''}`}
     style={{
-      padding: '8px 14px', borderRadius: '30px', fontSize: '0.88rem', fontWeight: 500,
+      padding: '8px 14px', borderRadius: 'var(--r-pill)', fontSize: '0.88rem', fontWeight: 500,
       display: 'inline-flex', alignItems: 'center', gap: '6px'
       // Sem borderColor inline: o estado selecionado é desenhado por .wizard-option.active,
       // no index.css, e um valor inline aqui venceria a regra e deixaria a borda de uma cor
@@ -78,7 +78,7 @@ const StateSelect = ({ value, onSelect }) => {
         className="search-field-wrapper"
         style={{
           display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--card-bg)',
-          border: '1px solid var(--card-border)', borderRadius: '12px', padding: '11px 14px'
+          border: '1px solid var(--card-border)', borderRadius: 'var(--r-md)', padding: '11px 14px'
         }}
       >
         <Search size={17} color="var(--text-muted)" style={{ flexShrink: 0 }} />

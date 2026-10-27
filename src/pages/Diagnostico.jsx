@@ -65,7 +65,7 @@ const Diagnostico = () => {
               <div key={i} className="liquid-glass" style={{ padding: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginBottom: '8px' }}>
                   <strong style={{ color: 'var(--green-dark)', fontSize: '0.9rem' }}>{e.tipo}</strong>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                  <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-caption)' }}>
                     {new Date(e.quando).toLocaleString('pt-BR')}
                   </span>
                 </div>
@@ -82,7 +82,7 @@ const Diagnostico = () => {
                     </summary>
                     <pre style={{
                       background: 'var(--card-highlight)', border: '1px solid var(--card-border)',
-                      borderRadius: '8px', padding: '10px', fontSize: '0.7rem', lineHeight: 1.45,
+                      borderRadius: 'var(--r-sm)', padding: '10px', fontSize: 'var(--text-caption)', lineHeight: 1.45,
                       whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: '200px',
                       overflow: 'auto', marginTop: '8px'
                     }}>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   User, Mail, Lock, Eye, EyeOff, MapPin, Calendar,
   Edit3, Check, X, LogOut, Route, Shield, Sparkles, Wallet
@@ -9,7 +9,8 @@ import {
 import SavedRouteCard from '../components/SavedRouteCard';
 import ActiveRouteCard from '../components/ActiveRouteCard';
 import Financas from './Financas';
-import { T, cssTransition, DUR } from '../motion';
+import Sheet from '../components/Sheet';
+import { T } from '../motion';
 
 const BRAZILIAN_STATES = [
   'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS',
@@ -158,10 +159,10 @@ const Profile = () => {
             {/* Avatar */}
             <div style={{
               width: '90px', height: '90px', borderRadius: '50%',
-              background: 'linear-gradient(135deg, var(--green-dark), var(--green))',
+              background: 'var(--tint)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff', fontSize: '2.2rem', fontWeight: 800,
-              boxShadow: '0 6px 20px rgba(27, 94, 60, 0.25)',
+              boxShadow: 'var(--shadow-1)',
               flexShrink: 0, border: '3px solid #fff'
             }}>
               {user.name?.charAt(0)?.toUpperCase() || 'U'}
@@ -172,9 +173,9 @@ const Profile = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                 <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }}>{user.name}</h1>
                 <span style={{
-                  background: 'linear-gradient(135deg, var(--green-dark), var(--green))',
-                  color: '#fff', fontSize: '0.7rem', fontWeight: 700,
-                  padding: '4px 10px', borderRadius: '20px',
+                  background: 'var(--tint)',
+                  color: '#fff', fontSize: 'var(--text-caption)', fontWeight: 700,
+                  padding: '4px 10px', borderRadius: 'var(--r-lg)',
                   display: 'inline-flex', alignItems: 'center', gap: '4px'
                 }}>
                   <Sparkles size={12} /> Explorador
@@ -304,7 +305,7 @@ const Profile = () => {
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     className="input-field"
-                    style={{ width: '100%', padding: '12px 14px 12px 44px', background: 'var(--primary-dark)', borderRadius: '8px', color: 'var(--text-main)', fontSize: '0.95rem' }}
+                    style={{ width: '100%', padding: '12px 14px 12px 44px', background: 'var(--primary-dark)', borderRadius: 'var(--r-sm)', color: 'var(--text-main)', fontSize: '0.95rem' }}
                   />
                 </div>
               ) : (
@@ -362,7 +363,7 @@ const Profile = () => {
                       onChange={(e) => setEditAge(e.target.value)}
                       className="input-field"
                       placeholder="Ex: 28"
-                      style={{ width: '100%', padding: '12px 14px 12px 44px', background: 'var(--primary-dark)', borderRadius: '8px', color: 'var(--text-main)', fontSize: '0.95rem' }}
+                      style={{ width: '100%', padding: '12px 14px 12px 44px', background: 'var(--primary-dark)', borderRadius: 'var(--r-sm)', color: 'var(--text-main)', fontSize: '0.95rem' }}
                     />
                   </div>
                 ) : (
@@ -385,7 +386,7 @@ const Profile = () => {
                       value={editState}
                       onChange={(e) => setEditState(e.target.value)}
                       className="input-field"
-                      style={{ width: '100%', padding: '12px 14px 12px 44px', background: 'var(--primary-dark)', borderRadius: '8px', color: 'var(--text-main)', fontSize: '0.95rem', appearance: 'auto' }}
+                      style={{ width: '100%', padding: '12px 14px 12px 44px', background: 'var(--primary-dark)', borderRadius: 'var(--r-sm)', color: 'var(--text-main)', fontSize: '0.95rem', appearance: 'auto' }}
                     >
                       <option value="">Selecione</option>
                       {BRAZILIAN_STATES.map((uf) => (
@@ -417,7 +418,7 @@ const Profile = () => {
             Rotas Salvas
             <span style={{
               background: 'var(--card-highlight)', color: 'var(--green-dark)',
-              fontSize: '0.75rem', fontWeight: 700, padding: '3px 10px', borderRadius: '20px',
+              fontSize: 'var(--text-caption)', fontWeight: 700, padding: '3px 10px', borderRadius: 'var(--r-lg)',
               marginLeft: '4px'
             }}>
               {savedRoutes.length}
@@ -451,15 +452,8 @@ const Profile = () => {
         >
           <button
             onClick={handleLogout}
-            style={{
-              background: 'transparent', border: '1px solid #ef444444',
-              color: '#ef4444', borderRadius: '10px', padding: '12px 30px',
-              cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600,
-              display: 'inline-flex', alignItems: 'center', gap: '8px',
-              transition: cssTransition(['background', 'border-color'], DUR.fast)
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = '#ef444411'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+            className="btn-glass btn-destructive"
+            style={{ padding: '12px 30px', fontWeight: 600 }}
           >
             <LogOut size={18} /> Sair da Conta
           </button>
@@ -468,57 +462,46 @@ const Profile = () => {
         ) : null}
       </motion.div>
 
-      {/* Modal de Encerramento de Rota */}
-      <AnimatePresence>
-        {showEndRouteModal && (
-          <div style={{
-            position: 'fixed', inset: 0, zIndex: 999,
-            background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
-          }}>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="liquid-glass"
-              style={{ width: '100%', maxWidth: '500px', padding: '30px', maxHeight: '80vh', overflowY: 'auto' }}
-            >
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '15px' }}>Você não visitou todos os lugares!</h3>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '20px' }}>
-                Para melhorar nossas futuras recomendações, conte-nos o motivo de não ter visitado esses locais:
-              </p>
+      {/* Encerramento de rota: folha no celular, diálogo no desktop. */}
+      <Sheet
+        open={showEndRouteModal}
+        onClose={() => setShowEndRouteModal(false)}
+        title="Você não visitou todos os lugares"
+      >
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '20px' }}>
+          Para melhorar nossas futuras recomendações, conte-nos o motivo de não ter visitado esses locais:
+        </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '25px' }}>
-                {unvisitedPlaces.map(place => (
-                  <div key={place.id} style={{ background: 'var(--primary-dark)', padding: '15px', borderRadius: '10px' }}>
-                    <p style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '10px' }}>{place.name}</p>
-                    <select
-                      className="input-field"
-                      style={{ width: '100%', padding: '10px', borderRadius: '8px', background: 'var(--card-bg)', color: 'var(--text-main)', appearance: 'auto' }}
-                      value={placeReasons[place.id] || ''}
-                      onChange={(e) => handleReasonChange(place.id, e.target.value)}
-                    >
-                      <option value="">Selecione um motivo...</option>
-                      <option value="nao_deu_tempo">Não deu tempo</option>
-                      <option value="nao_gostei">Não gostei do local</option>
-                      <option value="mudei_planos">Mudei os planos no meio do dia</option>
-                      <option value="outro">Outro</option>
-                    </select>
-                  </div>
-                ))}
-              </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '25px' }}>
+          {unvisitedPlaces.map(place => (
+            <div key={place.id} style={{ background: 'var(--primary-dark)', padding: '15px', borderRadius: 'var(--r-sm)' }}>
+              <p style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '10px' }}>{place.name}</p>
+              <select
+                aria-label={`Motivo de não visitar ${place.name}`}
+                className="input-field"
+                style={{ width: '100%', padding: '10px', borderRadius: 'var(--r-sm)', background: 'var(--card-bg)', color: 'var(--text-main)', appearance: 'auto' }}
+                value={placeReasons[place.id] || ''}
+                onChange={(e) => handleReasonChange(place.id, e.target.value)}
+              >
+                <option value="">Selecione um motivo...</option>
+                <option value="nao_deu_tempo">Não deu tempo</option>
+                <option value="nao_gostei">Não gostei do local</option>
+                <option value="mudei_planos">Mudei os planos no meio do dia</option>
+                <option value="outro">Outro</option>
+              </select>
+            </div>
+          ))}
+        </div>
 
-              <div style={{ display: 'flex', gap: '15px', justifyContent: 'flex-end' }}>
-                <button onClick={() => setShowEndRouteModal(false)} className="btn-glass" style={{ padding: '10px 20px' }}>
-                  Cancelar
-                </button>
-                <button onClick={() => finishRoute(placeReasons)} className="btn-gold" style={{ padding: '10px 20px' }}>
-                  Encerrar Rota
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+        <div className="sheet-actions" style={{ justifyContent: 'flex-start' }}>
+          <button onClick={() => finishRoute(placeReasons)} className="btn-gold" style={{ padding: '10px 20px' }}>
+            Encerrar Rota
+          </button>
+          <button onClick={() => setShowEndRouteModal(false)} className="btn-glass" style={{ padding: '10px 20px' }}>
+            Cancelar
+          </button>
+        </div>
+      </Sheet>
     </div>
   );
 };

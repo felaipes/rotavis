@@ -43,7 +43,7 @@ class ErrorBoundary extends React.Component {
 
           <pre style={{
             background: 'var(--card-highlight)', border: '1px solid var(--card-border)',
-            borderRadius: '10px', padding: '14px', fontSize: '0.78rem', lineHeight: 1.5,
+            borderRadius: 'var(--r-sm)', padding: '14px', fontSize: 'var(--text-caption)', lineHeight: 1.5,
             whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: '220px', overflow: 'auto',
             color: 'var(--text-main)', marginBottom: '18px'
           }}>

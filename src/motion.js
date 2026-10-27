@@ -24,6 +24,20 @@ export const EASE = {
   inOut: [0.65, 0, 0.35, 1]
 };
 
+// Molas para o que a pessoa toca e arrasta. Diferente de uma curva com duração fixa, a
+// mola parte da posição e da velocidade atuais, então pode ser agarrada e invertida no
+// meio do caminho sem saltos. Valores das molas que a Apple usa (WWDC 2018, "Designing
+// Fluid Interfaces"): amortecimento 1,0 (sem quique) por padrão; quique leve (bounce
+// ~0,15–0,2) só quando um gesto com impulso veio antes, como soltar uma folha arrastada.
+export const SPRING = {
+  // Reposicionar, abrir/fechar: criticamente amortecida.
+  default: { type: 'spring', bounce: 0, duration: 0.4 },
+  // Folha que sobe do rodapé (drawer/sheet da Apple: amortecimento 0,8, resposta 0,3).
+  sheet: { type: 'spring', bounce: 0.12, duration: 0.42 },
+  // Elementos pequenos que "pulam" para dar ênfase (troféu, check-in).
+  pop: { type: 'spring', bounce: 0.25, duration: 0.35 }
+};
+
 // Transições prontas, para não repetir objeto solto pelos componentes.
 export const T = {
   fast: { duration: DUR.fast, ease: EASE.out },

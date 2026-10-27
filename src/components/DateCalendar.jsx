@@ -72,7 +72,7 @@ const DateCalendar = ({ value, min, max, rangeStart, onChange, range = false, st
 
   const navBtnStyle = (enabled) => ({
     width: '34px', height: '34px', borderRadius: '50%', border: 'none',
-    background: 'transparent', color: enabled ? 'var(--green-dark)' : 'var(--card-border)',
+    background: 'transparent', color: enabled ? 'var(--green-dark)' : 'var(--label-3)',
     cursor: enabled ? 'pointer' : 'not-allowed',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     transition: cssTransition(['background'], DUR.fast)
@@ -81,7 +81,7 @@ const DateCalendar = ({ value, min, max, rangeStart, onChange, range = false, st
   return (
     <div style={{
       background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '18px',
-      padding: '18px', width: '100%', maxWidth: '360px', boxShadow: '0 6px 20px rgba(27, 94, 60, 0.08)'
+      padding: '18px', width: '100%', maxWidth: '360px', boxShadow: 'var(--shadow-1)'
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
         <button
@@ -113,7 +113,7 @@ const DateCalendar = ({ value, min, max, rangeStart, onChange, range = false, st
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: '6px' }}>
         {WEEKDAY_INITIALS.map((d, i) => (
-          <span key={i} style={{ textAlign: 'center', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', padding: '4px 0' }}>
+          <span key={i} style={{ textAlign: 'center', fontSize: 'var(--text-caption)', fontWeight: 700, color: 'var(--text-muted)', padding: '4px 0' }}>
             {d}
           </span>
         ))}
@@ -151,22 +151,22 @@ const DateCalendar = ({ value, min, max, rangeStart, onChange, range = false, st
                 fontWeight: selected || isToday || isRangeStart ? 700 : 500,
                 cursor: disabled ? 'not-allowed' : 'pointer',
                 background: selected
-                  ? 'var(--green-dark)'
+                  ? 'var(--tint)'
                   : isRangeStart
                     ? 'var(--accent-gold-glow)'
                     : inRange
-                      ? 'rgba(61, 155, 79, 0.12)'
+                      ? 'var(--tint-soft)'
                       : 'transparent',
                 color: selected
                   ? '#ffffff'
                   : disabled
-                    ? 'var(--card-border)'
+                    ? 'var(--label-3)'
                     : outsideMonth
                       ? 'var(--text-muted)'
                       : isToday
                         ? 'var(--green-dark)'
                         : 'var(--text-main)',
-                opacity: disabled ? 0.6 : outsideMonth ? 0.45 : 1,
+                opacity: disabled ? 0.4 : outsideMonth ? 0.45 : 1,
                 boxShadow: isToday && !selected ? 'inset 0 0 0 1.5px var(--green)' : 'none',
                 transition: cssTransition(['background', 'transform'], DUR.fast)
               }}
@@ -175,7 +175,7 @@ const DateCalendar = ({ value, min, max, rangeStart, onChange, range = false, st
                 if (!selected) {
                   e.currentTarget.style.background = isRangeStart
                     ? 'var(--accent-gold-glow)'
-                    : inRange ? 'rgba(61, 155, 79, 0.12)' : 'transparent';
+                    : inRange ? 'var(--tint-soft)' : 'transparent';
                 }
               }}
             >

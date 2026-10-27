@@ -1,30 +1,112 @@
-:root {
-  /* Paleta baseada na logo RotaVis */
-  --primary-dark: #faf7ef;
-  /* Fundo principal (creme da logo) */
-  --secondary-dark: #ffffff;
-  /* Fundo secundário */
-  --accent-gold: #f2b70a;
-  /* Amarelo do sol da logo */
-  --accent-gold-glow: rgba(242, 183, 10, 0.25);
-  --green-dark: #17512f;
-  /* Verde escuro da logo (texto "Rota") */
-  --green: #3d9b4f;
-  /* Verde folha */
-  --blue: #1e88e5;
-  /* Azul da onda / "V" */
-  --text-main: #22382c;
-  /* Escurecidos para o texto continuar legível sobre a foto das Cataratas que agora é o
-     fundo do site. Medidos contra os 5% mais escuros da imagem sob o véu de 0,72:
-     muted 4,9 e green-dark 5,5, ambos acima do mínimo AA de 4,5. Sobre os cartões
-     (opacos) eles também ficam melhores do que antes, sem perder a hierarquia. */
-  --text-muted: #425147;
+/* Sistema visual do RotaVis.
 
-  /* Solid Card variables */
-  --card-bg: #ffffff;
-  --card-border: #e6e0cf;
-  --card-highlight: #f2eee0;
-  --card-shadow: 0 4px 10px rgba(27, 94, 60, 0.08);
+   Organizado em camadas, como os tokens do iOS:
+   1. Cores semânticas (--bg, --surface, --label...) com variante clara e escura. Os
+      componentes usam o papel da cor ("texto secundário"), nunca o valor — é isso que
+      deixa o modo escuro funcionar sem tocar em cada tela.
+   2. Aliases com os nomes antigos (--card-bg, --text-muted...), que continuam valendo
+      para todo o JSX escrito antes dos tokens.
+   3. Tipografia, raios e espaços com nome, para os valores deixarem de ser avulsos.
+
+   Referência: Apple Human Interface Guidelines (cores semânticas, Dark Mode, Dynamic
+   Type, safe areas, alvos de 44pt) adaptada para web. */
+
+:root {
+  color-scheme: light dark;
+
+  /* --- Marca (não muda com o tema) --- */
+  --brand-green: #17512f;
+  --brand-leaf: #3d9b4f;
+  --brand-blue: #1e88e5;
+  --brand-gold: #f2b70a;
+
+  /* --- Cores semânticas: claro --- */
+  --bg: #faf7ef;               /* fundo do app (creme da logo) */
+  --surface: #ffffff;          /* cartões, folhas, campos */
+  --surface-2: #f2eee0;        /* agrupado / realce dentro de cartão */
+  --separator: #e6e0cf;
+  --label: #22382c;            /* texto principal */
+  --label-2: #425147;          /* texto secundário — 4,9:1 sobre a foto com véu */
+  --label-3: #6a756d;          /* placeholder, desabilitado */
+
+  --tint: #17512f;             /* preenchimento de ação principal */
+  --tint-pressed: #0f3b22;
+  --tint-hover: #1f6a3f;
+  --on-tint: #ffffff;
+  --tint-text: #17512f;        /* verde usado como cor de texto/ícone */
+  --tint-soft: rgba(23, 81, 47, 0.08);  /* fundo de item selecionado */
+
+  --leaf: #3d9b4f;
+  --blue: #1e88e5;
+  --danger: #d92d20;
+  --danger-soft: rgba(217, 45, 32, 0.08);
+
+  --scrim: rgba(7, 11, 20, 0.42);
+  --shadow-1: 0 1px 2px rgba(27, 94, 60, 0.06), 0 4px 12px rgba(27, 94, 60, 0.06);
+  --shadow-2: 0 2px 6px rgba(27, 94, 60, 0.08), 0 12px 32px rgba(27, 94, 60, 0.12);
+  --shadow-sheet: 0 -8px 40px rgba(7, 11, 20, 0.18);
+
+  /* Material translúcido das barras (cabeçalho, tab bar). */
+  --bar-material: rgba(250, 247, 239, 0.78);
+  --bar-hairline: rgba(34, 56, 44, 0.12);
+
+  /* Gradiente do título de display — tons escuros da marca, 3,3 a 5,5:1 no creme. */
+  --grad-1: #1565c0;
+  --grad-2: #17512f;
+  --grad-3: #8a6100;
+
+  /* Véu sobre a foto de fundo das Cataratas. */
+  --falls-scrim: rgba(250, 247, 239, 0.72);
+  --falls-scrim-top: rgba(250, 247, 239, 0.76);
+  --falls-filter: blur(2.5px) saturate(1.14) contrast(1.05);
+
+  /* --- Aliases com os nomes antigos --- */
+  --primary-dark: var(--bg);
+  --secondary-dark: var(--surface);
+  --accent-gold: var(--brand-gold);
+  --accent-gold-glow: rgba(242, 183, 10, 0.28);
+  --green-dark: var(--tint-text);
+  --green: var(--leaf);
+  --text-main: var(--label);
+  --text-muted: var(--label-2);
+  --card-bg: var(--surface);
+  --card-border: var(--separator);
+  --card-highlight: var(--surface-2);
+  --card-shadow: var(--shadow-1);
+
+  /* --- Tipografia ---
+     Fonte do sistema: SF Pro no iPhone/Mac, Segoe no Windows, Roboto no Android. A
+     "Inter" declarada antes nunca era carregada, então cada aparelho caía numa fonte
+     diferente. Escala inspirada nos text styles do iOS (Large Title 34, Title 1 28,
+     Title 2 22, Title 3 20, Headline/Body 17, Subheadline 15, Footnote 13, Caption 12). */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --text-large-title: clamp(1.875rem, 5vw, 2.5rem);
+  --text-title-1: 1.75rem;
+  --text-title-2: 1.375rem;
+  --text-title-3: 1.25rem;
+  --text-body: 1rem;
+  --text-subhead: 0.9375rem;
+  --text-footnote: 0.8125rem;
+  --text-caption: 0.75rem;
+
+  /* --- Raios ---
+     Cinco degraus em vez dos onze valores soltos de antes (4 a 30px). */
+  --r-xs: 6px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-pill: 999px;
+
+  /* --- Barras e safe areas --- */
+  --tabbar-h: 49px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  /* Distância que elementos fixos no rodapé precisam manter para não cobrir a tab bar.
+     Zero no desktop, onde não há tab bar (ver media query abaixo). */
+  --bottom-chrome: 0px;
 
   /* Movimento — mesmos valores de src/motion.js, para CSS e Framer Motion
      não divergirem. Ver o comentário daquele arquivo para os princípios. */
@@ -35,6 +117,52 @@
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* --- Cores semânticas: escuro ---
+   Fundo quase preto puxado para o verde da marca, superfícies sobem de luminosidade
+   em degraus (como systemBackground → secondarySystemBackground), e os acentos ficam
+   mais claros e saturados para continuar aparecendo. */
+@media (prefers-color-scheme: dark) {
+  :root:not(.theme-light) {
+    --bg: #0e1311;
+    --surface: #18201c;
+    --surface-2: #212b26;
+    --separator: #2f3a34;
+    --label: #ecf0ea;
+    --label-2: #aab6ae;
+    --label-3: #7c8a81;
+
+    --tint: #2a7d45;           /* 5,1:1 com texto branco */
+    --tint-pressed: #22693a;
+    --tint-hover: #318f50;
+    --on-tint: #ffffff;
+    --tint-text: #8fd6a4;
+    --tint-soft: rgba(143, 214, 164, 0.14);
+
+    --leaf: #5cc271;
+    --blue: #64b0f4;
+    --danger: #ff6b5e;
+    --danger-soft: rgba(255, 107, 94, 0.12);
+
+    --scrim: rgba(0, 0, 0, 0.6);
+    --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 4px 14px rgba(0, 0, 0, 0.35);
+    --shadow-2: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 14px 36px rgba(0, 0, 0, 0.5);
+    --shadow-sheet: 0 -8px 40px rgba(0, 0, 0, 0.55);
+
+    --bar-material: rgba(14, 19, 17, 0.74);
+    --bar-hairline: rgba(255, 255, 255, 0.09);
+
+    --grad-1: #7ab8ff;
+    --grad-2: #8fd6a4;
+    --grad-3: #f2c94c;
+
+    /* Foto escurecida antes do véu: o branco das quedas vira ~0,36 de luminância, e o
+       véu de 0,85 leva o pior caso a 4,5:1 com o texto secundário. */
+    --falls-scrim: rgba(14, 19, 17, 0.85);
+    --falls-scrim-top: rgba(14, 19, 17, 0.88);
+    --falls-filter: blur(2.5px) saturate(1.05) brightness(0.6);
+  }
 }
 
 /* Acessibilidade: quem pede menos movimento no sistema recebe a interface sem
@@ -57,12 +185,71 @@
   box-sizing: border-box;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Dynamic Type: no Safari do iOS, esta fonte segue o tamanho de texto escolhido em
+   Ajustes > Tela e Brilho. Como a interface é toda em rem, ela escala junto. */
+@supports (font: -apple-system-body) {
+  html {
+    font: -apple-system-body;
+  }
+}
+
 body {
-  background-color: var(--primary-dark);
-  color: var(--text-main);
-  font-family: 'Inter', 'Roboto', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg);
+  color: var(--label);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: 1.45;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Controles de formulário não herdam a fonte por padrão — era por isso que os botões
+   apareciam em Arial no meio do resto do texto. */
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  touch-action: manipulation;
+}
+
+/* Tracking por tamanho: título grande pede espaçamento negativo, texto pequeno fica
+   perto de zero. Um valor fixo para tudo fica errado em algum lugar. */
+h1,
+h2 {
+  font-family: var(--font-display);
+  line-height: 1.12;
+  letter-spacing: -0.022em;
+}
+
+h3,
+h4 {
+  font-family: var(--font-display);
+  line-height: 1.25;
+  letter-spacing: -0.012em;
+}
+
+::placeholder {
+  color: var(--label-3);
+  opacity: 1;
+}
+
+:focus-visible {
+  outline: 2px solid var(--tint-text);
+  outline-offset: 2px;
 }
 
 a {
@@ -75,7 +262,7 @@ a {
 .skeleton {
   position: relative;
   overflow: hidden;
-  background: var(--card-highlight);
+  background: var(--surface-2);
 }
 
 .skeleton::after {
@@ -83,7 +270,7 @@ a {
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--surface) 65%, transparent), transparent);
   animation: skeleton-sweep 1.1s var(--ease-in-out) infinite;
 }
 
@@ -93,82 +280,272 @@ a {
   }
 }
 
-/* Solid Elements (Replacing Liquid Glass) */
+/* Cartão sólido. O nome ficou de quando era vidro; o material translúcido agora é só
+   das barras, que flutuam sobre o conteúdo — cartão translúcido sobre foto perdia
+   legibilidade. */
 .liquid-glass {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 12px;
-  box-shadow: var(--card-shadow);
-  transition: background var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
+  background: var(--surface);
+  border: 1px solid var(--separator);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+  transition: border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
 }
 
-.liquid-glass:hover {
-  background: var(--card-bg);
-  border: 1px solid var(--green);
-  box-shadow: 0 6px 14px rgba(27, 94, 60, 0.15);
+/* --- Barras translúcidas ---
+   Cabeçalho e tab bar são uma camada de material por cima do conteúdo, que rola por
+   baixo e aparece desfocado — em vez de uma faixa opaca que come altura fixa. */
+.liquid-glass-header,
+.tab-bar,
+.route-accessory {
+  background: var(--bar-material);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
 }
 
 .liquid-glass-header {
-  background: #fffdf6;
-  border-bottom: 1px solid var(--card-border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding-top: var(--safe-top);
+  border-bottom: 0.5px solid var(--bar-hairline);
 }
 
-/* Buttons */
-.btn-gold {
-  background: var(--green-dark);
-  color: #ffffff;
-  font-weight: bold;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 28px;
-  cursor: pointer;
-  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
-  box-shadow: 0 4px 8px rgba(27, 94, 60, 0.25);
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 72px;
+}
+
+.app-logo {
+  display: block;
+  height: 44px;
+  width: auto;
+}
+
+@media (max-width: 768px) {
+  .header-row {
+    min-height: 52px;
+  }
+
+  .app-logo {
+    height: 34px;
+  }
+}
+
+/* Logo sobre fundo escuro: o verde-escuro do "Rota" some no preto. Uma placa creme
+   pequena mantém as cores originais da marca intactas. */
+@media (prefers-color-scheme: dark) {
+  :root:not(.theme-light) .app-logo {
+    background: #faf7ef;
+    border-radius: var(--r-sm);
+    padding: 3px 6px;
+    box-sizing: content-box;
+  }
+}
+
+/* --- Tab bar (só celular) ---
+   As cinco áreas principais ficam ao alcance do polegar, como no iOS. Fixa no rodapé,
+   respeitando a área do indicador de início (home indicator). */
+.tab-bar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --bottom-chrome: calc(var(--tabbar-h) + var(--safe-bottom));
+  }
+
+  .tab-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    padding: 0 var(--safe-right) var(--safe-bottom) var(--safe-left);
+    border-top: 0.5px solid var(--bar-hairline);
+  }
+
+  .app-main {
+    padding-bottom: calc(var(--bottom-chrome) + 16px);
+  }
+}
+
+.tab-bar__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: var(--tabbar-h);
+  color: var(--label-3);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.tab-bar__item svg {
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.tab-bar__item[aria-current='page'] {
+  color: var(--tint-text);
+}
+
+.tab-bar__item:active svg {
+  transform: scale(0.88);
+  transition-duration: var(--dur-instant);
+}
+
+/* Rota em andamento: barra curta acima da tab bar, como o mini player do Música. Fica
+   à vista em qualquer aba sem gastar uma das cinco posições. */
+.route-accessory {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .route-accessory {
+    position: fixed;
+    left: calc(10px + var(--safe-left));
+    right: calc(10px + var(--safe-right));
+    bottom: calc(var(--bottom-chrome) + 8px);
+    z-index: 59;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 52px;
+    padding: 8px 14px;
+    border-radius: var(--r-md);
+    border: 0.5px solid var(--bar-hairline);
+    box-shadow: var(--shadow-2);
+    color: var(--label);
+  }
+
+  .app-main.has-accessory {
+    padding-bottom: calc(var(--bottom-chrome) + 76px);
+  }
+}
+
+/* Avatar circular com a inicial do nome. */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--tint);
+  color: var(--on-tint);
+  font-weight: 700;
+}
+
+/* --- Botões ---
+   Altura mínima de 44px (alvo de toque da HIG). Feedback no instante do toque
+   (:active), e o hover só existe onde há mouse de verdade — no iPhone o hover "gruda"
+   depois do toque e deixava botões presos no estado errado. */
+.btn-gold,
+.btn-glass {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  min-height: 44px;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  font-weight: 600;
+  line-height: 1.2;
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 }
 
-.btn-gold:hover {
-  transform: translateY(-2px);
-  background: #27754c;
-  box-shadow: 0 6px 12px rgba(27, 94, 60, 0.35);
-}
-
-/* Feedback de toque: o botão "afunda" ao ser pressionado. */
-.btn-gold:active,
-.btn-glass:active {
-  transform: translateY(1px) scale(0.985);
-  transition-duration: var(--dur-instant);
+.btn-gold {
+  background: var(--tint);
+  color: var(--on-tint);
+  border: none;
+  padding: 12px 24px;
+  box-shadow: 0 1px 2px rgba(7, 11, 20, 0.12);
 }
 
 .btn-glass {
-  background: var(--secondary-dark);
-  border: 1px solid var(--card-border);
-  color: var(--text-main);
+  background: var(--surface);
+  border: 1px solid var(--separator);
+  color: var(--label);
   font-weight: 500;
-  border-radius: 8px;
-  padding: 10px 20px;
-  cursor: pointer;
-  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  padding: 10px 18px;
 }
 
-.btn-glass:hover,
 .btn-glass.active {
-  background: #ecf5ee;
-  border-color: var(--green);
-  color: var(--green-dark);
+  background: var(--tint-soft);
+  border-color: var(--leaf);
+  color: var(--tint-text);
 }
 
-/* Botões do questionário — efeito inspirado no site da Gumroad: ao passar o mouse o
-   botão pula para cima e para a esquerda e deixa uma sombra dura atrás, exatamente no
-   lugar de onde saiu; ao ser pressionado ele volta e a sombra some, como se afundasse.
-   Vem depois de .btn-gold/.btn-glass de propósito: mesma especificidade, então estas
-   regras é que valem nos botões do assistente.
+.btn-gold:active,
+.btn-glass:active {
+  transform: scale(0.97);
+  transition-duration: var(--dur-instant);
+}
 
-   Duração pelo token do app (160ms) em vez dos 0,2s do original, para o questionário
-   inteiro responder no mesmo tempo — ver src/motion.js. */
+.btn-gold:active {
+  background: var(--tint-pressed);
+}
+
+.btn-gold:disabled,
+.btn-glass:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Botão de ação destrutiva (sair, apagar): vermelho do sistema, nunca por cor só —
+   sempre com rótulo. */
+.btn-destructive {
+  color: var(--danger);
+}
+
+.btn-plain {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--tint-text);
+  font-weight: 600;
+  min-height: 44px;
+  padding: 0 8px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .liquid-glass:hover {
+    border-color: color-mix(in srgb, var(--leaf) 55%, var(--separator));
+    box-shadow: var(--shadow-2);
+  }
+
+  .btn-gold:hover {
+    background: var(--tint-hover);
+  }
+
+  .btn-gold:hover:active {
+    background: var(--tint-pressed);
+  }
+
+  .btn-glass:hover {
+    background: var(--tint-soft);
+    border-color: var(--leaf);
+    color: var(--tint-text);
+  }
+
+  .btn-destructive:hover {
+    background: var(--danger-soft);
+    color: var(--danger);
+    border-color: var(--danger);
+  }
+}
+
+/* Botões do questionário.
+   No toque: afundam ao pressionar e a opção escolhida fica marcada com borda e
+   sombra dura. Com mouse: o efeito inspirado no site da Gumroad — o botão pula para
+   cima e para a esquerda e deixa a sombra no lugar de onde saiu. Separado por media
+   query porque, no iPhone, o hover ficava preso depois do toque. */
 .wizard-option,
 .btn-wizard {
   --wz-shadow: #234832;
@@ -182,56 +559,68 @@ a {
     color var(--dur-fast) var(--ease-out);
 }
 
+/* No escuro a sombra dura precisa ser clara para aparecer. */
+@media (prefers-color-scheme: dark) {
+  :root:not(.theme-light) .wizard-option {
+    --wz-shadow: #8fd6a4;
+  }
+}
+
 /* Estado de repouso dos botões de ação (Voltar, Próximo, Gerar): verde da marca. */
 .btn-wizard {
-  color: #ffffff;
-  background: var(--wz-shadow);
-  border: 1px solid var(--wz-shadow);
-  border-radius: 8px;
+  color: var(--on-tint);
+  background: var(--tint);
+  border: 1px solid var(--tint);
+  border-radius: var(--r-md);
   cursor: pointer;
-  /* Sem sombra parada: a sombra é o que aparece no hover, e é ela que dá o efeito. */
+  min-height: 44px;
   box-shadow: none;
-}
-
-.wizard-option:hover,
-.btn-wizard:hover {
-  color: var(--wz-hover-text);
-  background: var(--wz-hover-bg);
-  border-color: var(--wz-shadow);
-  transform: translate(-0.25rem, -0.25rem);
-  box-shadow: 0.25rem 0.25rem 0 var(--wz-shadow);
-}
-
-/* Os ícones vêm com a cor verde fixa no próprio SVG; sem isto ficariam verdes sobre o
-   âmbar. currentColor faz cada um seguir a cor do texto do botão. */
-.wizard-option:hover svg,
-.btn-wizard:hover svg {
-  stroke: currentColor;
 }
 
 .wizard-option:active,
 .btn-wizard:active {
-  transform: translate(0);
+  transform: scale(0.97);
   box-shadow: none;
   transition-duration: var(--dur-instant);
 }
 
 /* Opção já escolhida: fica marcada sem depender do mouse estar em cima. */
-.wizard-option.active {
+.wizard-option.active,
+.wizard-option[aria-pressed='true'] {
   border-color: var(--wz-shadow);
   box-shadow: 0.25rem 0.25rem 0 var(--wz-shadow);
 }
 
-/* Botão "Gerar Meu Roteiro" — modelo do Uiverse (JaydipPrajapati1910). Ao passar o
-   mouse o texto some e o ícone desliza para o centro, ocupando o botão inteiro.
-   Tudo aninhado em .btn-generate porque .icon e .text são nomes genéricos demais para
-   soltar no CSS global (já existe um .icon no App.css).
+@media (hover: hover) and (pointer: fine) {
 
-   Duas correções em relação ao original:
-   - o .icon é position:absolute mas o botão não era position:relative, então ele se
-     posicionaria por algum ancestral distante;
-   - o background vinha "#2348326", sete dígitos, que não é cor válida — o navegador
-     descartaria e o botão ficaria transparente. Ficou o verde da marca com alpha. */
+  .wizard-option:hover,
+  .btn-wizard:hover {
+    color: var(--wz-hover-text);
+    background: var(--wz-hover-bg);
+    border-color: #234832;
+    transform: translate(-0.25rem, -0.25rem);
+    box-shadow: 0.25rem 0.25rem 0 #234832;
+  }
+
+  /* Os ícones vêm com a cor verde fixa no próprio SVG; sem isto ficariam verdes sobre
+     o âmbar. currentColor faz cada um seguir a cor do texto do botão. */
+  .wizard-option:hover svg,
+  .btn-wizard:hover svg {
+    stroke: currentColor;
+  }
+
+  .wizard-option:hover:active,
+  .btn-wizard:hover:active {
+    transform: translate(0);
+    box-shadow: none;
+  }
+}
+
+/* Botão "Gerar Meu Roteiro" — modelo do Uiverse (JaydipPrajapati1910). Com mouse, o
+   ícone desliza e ocupa o botão inteiro. No toque o rótulo nunca some: o efeito
+   escondia o texto no hover, e no iPhone o hover fica preso depois do toque, deixando
+   o botão sem rótulo. Tudo aninhado em .btn-generate porque .icon e .text são nomes
+   genéricos demais para soltar no CSS global. */
 .btn-generate {
   position: relative;
   display: inline-flex;
@@ -239,20 +628,14 @@ a {
   height: 52px;
   padding: 0;
   border: none;
-  border-radius: 5px;
+  border-radius: var(--r-md);
   cursor: pointer;
   overflow: hidden;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
-  font-size: 1.05rem;
+  font-size: 1.0625rem;
   font-weight: 600;
-  color: #234832;
-  background: rgba(35, 72, 50, 0.15);
-  transition: box-shadow var(--dur-slow) var(--ease-out), background var(--dur-slow) var(--ease-out);
-}
-
-.btn-generate:hover {
-  background: rgba(35, 72, 50, 0.22);
-  box-shadow: 0 0 20px 0 rgba(46, 46, 46, 0.23);
+  color: var(--tint-text);
+  background: var(--tint-soft);
+  transition: box-shadow var(--dur-slow) var(--ease-out), background var(--dur-slow) var(--ease-out), transform var(--dur-fast) var(--ease-out);
 }
 
 .btn-generate .btn-generate__icon {
@@ -264,9 +647,7 @@ a {
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 4px;
-  /* Largura em %, e não os 175px fixos do original, para o botão poder acompanhar o
-     tamanho do rótulo em português sem o ícone parar no meio do caminho. */
+  border-radius: calc(var(--r-md) - 4px);
   transition: width var(--dur-slow) var(--ease-out), transform var(--dur-fast) var(--ease-out);
 }
 
@@ -277,12 +658,27 @@ a {
   transition: opacity var(--dur-slow) var(--ease-out);
 }
 
-.btn-generate:hover .btn-generate__icon {
-  width: calc(100% - 10px);
+.btn-generate:active {
+  transform: scale(0.97);
+  transition-duration: var(--dur-instant);
 }
 
-.btn-generate:hover .btn-generate__text {
-  opacity: 0;
+@media (hover: hover) and (pointer: fine) {
+  .btn-generate:hover {
+    box-shadow: 0 0 20px 0 rgba(46, 46, 46, 0.23);
+  }
+
+  .btn-generate:hover .btn-generate__icon {
+    width: calc(100% - 10px);
+  }
+
+  .btn-generate:hover .btn-generate__text {
+    opacity: 0;
+  }
+
+  .btn-generate:active .btn-generate__icon {
+    transform: scale(0.85);
+  }
 }
 
 .btn-generate:focus {
@@ -290,12 +686,8 @@ a {
 }
 
 .btn-generate:focus-visible {
-  outline: 2px solid var(--green-dark);
+  outline: 2px solid var(--tint-text);
   outline-offset: 3px;
-}
-
-.btn-generate:active .btn-generate__icon {
-  transform: scale(0.85);
 }
 
 .btn-generate:disabled {
@@ -309,11 +701,11 @@ a {
   position: relative;
   z-index: 0;
   overflow: hidden;
-  background: var(--card-highlight);
+  background: var(--surface-2);
 }
 
 .wizard-card:hover {
-  background: var(--card-highlight);
+  background: var(--surface-2);
 }
 
 .wizard-card::before {
@@ -328,7 +720,13 @@ a {
   pointer-events: none;
 }
 
-/* Fundo do questionário: foto das Cataratas com deriva lenta, véu creme por cima e o
+@media (prefers-color-scheme: dark) {
+  :root:not(.theme-light) .wizard-card::before {
+    opacity: 0.22;
+  }
+}
+
+/* Fundo do questionário: foto das Cataratas com deriva lenta, véu por cima e o
    traçado de rota animado por último. Movimento longo e de baixa amplitude — é cenário,
    não pode competir com o conteúdo nem pesar. Tudo aqui é decorativo e desliga sozinho
    em prefers-reduced-motion (regra no topo do arquivo). */
@@ -339,11 +737,10 @@ a {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* O desfoque mantém a foto como cenário e disfarça compressão. A escala > 1 evita a
-     borda transparente que o blur cria nas beiradas. */
   /* Desfoque leve: o suficiente para disfarçar a ampliação da imagem em telas grandes
-     sem apagar as quedas. Quem segura a leitura do texto é o véu, não o borrão. */
-  filter: blur(2.5px) saturate(1.14) contrast(1.05);
+     sem apagar as quedas. Quem segura a leitura do texto é o véu, não o borrão. No
+     escuro o filtro também baixa o brilho (ver --falls-filter). */
+  filter: var(--falls-filter);
   transform: scale(1.14);
   will-change: transform;
 }
@@ -364,20 +761,17 @@ a {
   }
 }
 
-/* Véu creme: mais denso no topo, onde ficam título, subtítulo e barra de progresso —
-   texto verde-escuro sobre água ensolarada não teria contraste. Mais aberto embaixo,
-   onde os cartões (opacos) já garantem a leitura e a foto pode aparecer. */
+/* Véu: quase uniforme, porque o fundo vale para o site todo e não dá para assumir
+   onde o texto vai cair. 0,72 é o piso medido para o texto secundário passar em AA
+   sobre os trechos escuros da foto (claro); no escuro, ver --falls-scrim. */
 .falls-scrim {
   position: absolute;
   inset: 0;
-  /* Quase uniforme: como o fundo agora vale para o site todo, não dá para assumir onde
-     o texto vai cair — cada tela põe conteúdo numa altura diferente. 0,72 é o piso
-     medido para o texto secundário passar em AA sobre os trechos escuros da foto. */
   background:
     linear-gradient(180deg,
-      rgba(250, 247, 239, 0.76) 0%,
-      rgba(250, 247, 239, 0.72) 40%,
-      rgba(250, 247, 239, 0.72) 100%);
+      var(--falls-scrim-top) 0%,
+      var(--falls-scrim) 40%,
+      var(--falls-scrim) 100%);
 }
 
 /* O conteúdo precisa de contexto de empilhamento próprio para ficar acima do fundo
@@ -394,18 +788,34 @@ a {
   border: none;
 }
 
-/* Typography */
-.text-gradient {
-  color: var(--green-dark);
+/* Mapa no modo escuro: os tiles do OpenStreetMap só existem claros. Inverter e girar
+   o matiz dá um mapa escuro legível sem trocar de provedor; os pinos (divIcon) ficam
+   fora do filtro e mantêm as cores das categorias. */
+@media (prefers-color-scheme: dark) {
+  :root:not(.theme-light) .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.6);
+  }
+
+  :root:not(.theme-light) .leaflet-container {
+    background: #1b2320;
+  }
+
+  :root:not(.theme-light) .leaflet-popup-content-wrapper,
+  :root:not(.theme-light) .leaflet-popup-tip {
+    background: var(--surface);
+    color: var(--label);
+  }
 }
 
-/* Versões escuras do azul/verde/dourado da logo. O gradiente claro original mal
-   aparecia: o dourado #f2b70a dá 1,7 de contraste até no fundo creme liso, e sobre a
-   foto some de vez. Estes tons mantêm a mesma sequência de cores da marca com 3,3 a
-   5,5 de contraste — acima do mínimo de 3,0 para texto grande, que é onde a classe é
-   usada (só em h1/h2 de display). */
+/* Typography */
+.text-gradient {
+  color: var(--tint-text);
+}
+
+/* Versões escuras do azul/verde/dourado da logo (no claro) e claras (no escuro), para
+   o gradiente manter contraste de texto grande nos dois temas. Usado só em h1/h2. */
 .gold-gradient {
-  background: linear-gradient(90deg, #1565c0, var(--green-dark), #8a6100);
+  background: linear-gradient(90deg, var(--grad-1), var(--grad-2), var(--grad-3));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -415,7 +825,13 @@ a {
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 max(20px, var(--safe-right)) 0 max(20px, var(--safe-left));
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 max(16px, var(--safe-right)) 0 max(16px, var(--safe-left));
+  }
 }
 
 img,
@@ -423,26 +839,32 @@ video {
   max-width: 100%;
 }
 
-/* Campos de formulário: borda + anel de foco visíveis para navegação por teclado */
+/* Campos de formulário: borda + anel de foco visíveis para navegação por teclado.
+   min-height 44px e 16px de fonte — abaixo de 16px o Safari dá zoom na página ao
+   focar o campo. */
 .input-field {
-  border: 1px solid var(--card-border);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid var(--separator);
+  background-color: var(--surface);
+  color: var(--label);
+  min-height: 44px;
+  font-size: max(1rem, 16px);
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 }
 
 .input-field:focus {
   outline: none;
-  border-color: var(--green);
+  border-color: var(--leaf);
   box-shadow: 0 0 0 3px var(--accent-gold-glow);
 }
 
 /* Contêineres com input sem borda própria: mostra o anel de foco no contêiner */
 .search-field-wrapper {
   border: 1px solid transparent;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 }
 
 .search-field-wrapper:focus-within {
-  border-color: var(--green) !important;
+  border-color: var(--leaf) !important;
   box-shadow: 0 0 0 3px var(--accent-gold-glow);
 }
 
@@ -461,32 +883,45 @@ video {
   }
 }
 
-/* Botões só-ícone: alvo de toque mínimo de 44x44px (WCAG / mobile UX) */
+/* Botões só-ícone: alvo de toque mínimo de 44x44px (HIG / WCAG) */
 .icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 44px;
   min-height: 44px;
-}
-
-/* Header navigation: nav completa no desktop, botão hamburguer no mobile */
-.nav-desktop {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-}
-
-.mobile-menu-btn {
-  display: none;
+  border-radius: 50%;
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--green-dark);
+  color: var(--label-2);
+}
+
+.icon-btn:active {
+  background: var(--tint-soft);
+}
+
+/* Navegação: barra completa no desktop; no celular a navegação vai para a tab bar e
+   o cabeçalho mostra só a logo e o acesso à conta. */
+.nav-desktop {
+  display: flex;
+  gap: 8px;
   align-items: center;
-  justify-content: center;
-  min-width: 44px;
-  min-height: 44px;
+}
+
+.nav-desktop .btn-glass {
+  border-color: transparent;
+  background: transparent;
+  padding: 8px 14px;
+}
+
+.nav-desktop .btn-glass.active {
+  background: var(--tint-soft);
+  border-color: transparent;
+}
+
+.header-account-mobile {
+  display: none;
 }
 
 @media (max-width: 768px) {
@@ -494,9 +929,156 @@ video {
     display: none;
   }
 
-  .mobile-menu-btn {
+  .header-account-mobile {
     display: flex;
+    align-items: center;
   }
+}
+
+/* --- Folha (sheet) e diálogo ---
+   No celular a folha sobe do rodapé e pode ser arrastada para baixo para fechar; no
+   desktop vira diálogo centralizado. Ver components/Sheet.jsx. */
+.sheet-root {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.sheet-scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--scrim);
+}
+
+.sheet-panel {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  max-height: min(86vh, 760px);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  color: var(--label);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-2);
+  overflow: hidden;
+}
+
+.sheet-grabber {
+  display: none;
+}
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 8px 6px 20px;
+  touch-action: none;
+}
+
+.sheet-title {
+  flex: 1;
+  font-size: var(--text-title-3);
+  font-weight: 700;
+}
+
+.sheet-body {
+  padding: 8px 20px 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 768px) {
+  .sheet-root {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .sheet-panel {
+    max-width: none;
+    max-height: calc(100dvh - var(--safe-top) - 12px);
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    box-shadow: var(--shadow-sheet);
+  }
+
+  .sheet-grabber {
+    display: block;
+    width: 36px;
+    height: 5px;
+    border-radius: var(--r-pill);
+    background: var(--label-3);
+    opacity: 0.5;
+    margin: 6px auto 0;
+  }
+
+  .sheet-header {
+    padding-top: 6px;
+  }
+
+  .sheet-body {
+    padding-bottom: calc(24px + var(--safe-bottom));
+  }
+}
+
+/* Ações de uma folha: no desktop lado a lado, com a principal à direita; no celular
+   empilhadas em largura total, a principal em cima, perto do polegar. */
+.sheet-actions {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: center;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .sheet-actions {
+    flex-direction: column;
+  }
+
+  .sheet-actions > * {
+    width: 100%;
+  }
+}
+
+/* Cartões flutuantes no rodapé (avaliação, avisos): no celular ficam acima da tab
+   bar, ocupando a largura com margem; no desktop, no canto inferior direito. */
+.floating-card {
+  position: fixed;
+  z-index: 70;
+  right: 24px;
+  bottom: 24px;
+  width: 100%;
+  max-width: 340px;
+}
+
+@media (max-width: 768px) {
+  .floating-card {
+    left: calc(10px + var(--safe-left));
+    right: calc(10px + var(--safe-right));
+    bottom: calc(var(--bottom-chrome) + 10px);
+    width: auto;
+    max-width: none;
+  }
+}
+
+/* Aviso de troféu: centralizado no rodapé, acima da tab bar. */
+.toast-anchor {
+  position: fixed;
+  z-index: 200;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--bottom-chrome) + 16px);
+  display: flex;
+  justify-content: center;
+  padding: 0 16px;
+  pointer-events: none;
+}
+
+.toast-anchor > * {
+  pointer-events: auto;
 }
 
 /* background-attachment: fixed é lento/instável em navegadores mobile */
@@ -510,20 +1092,69 @@ video {
   }
 }
 
+/* Menos transparência: as barras e folhas viram superfícies sólidas. */
+@media (prefers-reduced-transparency: reduce) {
+
+  .liquid-glass-header,
+  .tab-bar,
+  .route-accessory {
+    background: var(--bg);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Mais contraste: bordas definidas e texto secundário mais forte. */
+@media (prefers-contrast: more) {
+  :root {
+    --label-2: var(--label);
+    --separator: #9a9381;
+    --bar-hairline: rgba(34, 56, 44, 0.4);
+  }
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--primary-dark);
+  background: var(--bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d4cdb8;
+  background: color-mix(in srgb, var(--label-3) 50%, transparent);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--green);
+  background: var(--leaf);
+}
+
+/* Linha clicável de lista: realce só com mouse; no toque, realce enquanto pressiona. */
+.row-hover:active {
+  background: var(--surface-2) !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .row-hover:hover {
+    background: var(--surface-2) !important;
+  }
+}
+
+/* O painel recebe foco programático ao abrir; o anel fica só nos controles. */
+.sheet-panel:focus {
+  outline: none;
+}
+
+/* Com a barra de rota em andamento visível, avisos e cartões flutuantes sobem acima
+   dela em vez de cobri-la. */
+@media (max-width: 768px) {
+  .app-container:has(.route-accessory) .toast-anchor {
+    bottom: calc(var(--bottom-chrome) + 76px);
+  }
+
+  .app-container:has(.route-accessory) .floating-card {
+    bottom: calc(var(--bottom-chrome) + 70px);
+  }
 }

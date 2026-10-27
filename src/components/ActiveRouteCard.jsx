@@ -20,7 +20,7 @@ const ActiveRouteCard = ({ route, onToggleVisited, onEndRoute }) => {
       animate={{ opacity: 1, y: 0 }}
       style={{
         border: '2px solid var(--accent-gold)',
-        borderRadius: '12px',
+        borderRadius: 'var(--r-md)',
         overflow: 'hidden',
         background: 'var(--card-bg)',
         boxShadow: '0 8px 24px rgba(212, 175, 55, 0.15)',
@@ -35,8 +35,8 @@ const ActiveRouteCard = ({ route, onToggleVisited, onEndRoute }) => {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
               <span style={{ 
-                background: 'var(--accent-gold)', color: '#fff', fontSize: '0.7rem', 
-                fontWeight: 800, padding: '3px 8px', borderRadius: '12px', textTransform: 'uppercase'
+                background: 'var(--accent-gold)', color: '#fff', fontSize: 'var(--text-caption)', 
+                fontWeight: 800, padding: '3px 8px', borderRadius: 'var(--r-md)', textTransform: 'uppercase'
               }}>
                 Em Andamento
               </span>
@@ -53,8 +53,8 @@ const ActiveRouteCard = ({ route, onToggleVisited, onEndRoute }) => {
             onClick={onEndRoute}
             className="btn-glass"
             style={{ 
-              borderColor: '#ef4444', color: '#ef4444', fontSize: '0.85rem', 
-              padding: '8px 14px', borderRadius: '8px'
+              borderColor: 'var(--danger)', color: 'var(--danger)', fontSize: '0.85rem', 
+              padding: '8px 14px', borderRadius: 'var(--r-sm)'
             }}
           >
             Encerrar Rota
@@ -72,7 +72,7 @@ const ActiveRouteCard = ({ route, onToggleVisited, onEndRoute }) => {
             }}>
               <span style={{
                 width: '28px', height: '28px', borderRadius: '50%',
-                background: 'var(--green-dark)', color: '#fff',
+                background: 'var(--tint)', color: '#fff',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '0.8rem', fontWeight: 800
               }}>{dayPlan.day}</span>
@@ -100,7 +100,7 @@ const ActiveRouteCard = ({ route, onToggleVisited, onEndRoute }) => {
                         style={{
                           display: 'flex', alignItems: 'center', gap: '14px',
                           padding: '12px 16px', background: place.visited ? 'rgba(61, 155, 79, 0.05)' : 'var(--primary-dark)',
-                          borderRadius: '10px', border: `1px solid ${place.visited ? 'var(--green)' : 'var(--card-border)'}`,
+                          borderRadius: 'var(--r-sm)', border: `1px solid ${place.visited ? 'var(--green)' : 'var(--card-border)'}`,
                           transition: cssTransition(['background', 'border-color'], DUR.fast), cursor: 'pointer'
                         }}
                         onClick={() => onToggleVisited(di, period, place.id)}

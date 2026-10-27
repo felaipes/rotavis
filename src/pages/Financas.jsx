@@ -20,13 +20,13 @@ const Financas = () => {
 
   return (
     <div style={{ width: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', marginBottom: '25px' }}>
         <div>
-          <h1 className="text-gradient" style={{ fontSize: '2rem' }}>Minha Carteira</h1>
+          <h1 className="text-gradient" style={{ fontSize: 'var(--text-title-1)' }}>Minha Carteira</h1>
           <p style={{ color: 'var(--text-muted)' }}>Controle seus gastos na tríplice fronteira.</p>
         </div>
-        <button onClick={() => setIsModalOpen(true)} className="btn-gold">
-          <Plus size={18} />
+        <button onClick={() => setIsModalOpen(true)} className="btn-gold" aria-label="Novo gasto" style={{ minWidth: '44px', padding: '10px 14px', flexShrink: 0 }}>
+          <Plus size={20} aria-hidden="true" />
           <span style={{ display: 'none' }} className="mobile-hide">Novo Gasto</span>
         </button>
       </div>
